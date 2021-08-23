@@ -1,92 +1,47 @@
+using SGL.Analytics.DTO;
 using SGL.Analytics.Utilities;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+using System.Linq;
+using System.Net.Http.Headers;
 using Xunit;
-using Xunit.Abstractions;
 
-namespace SGL.Analytics.Client.Tests {
-	public class DictionaryDataMappingUnitTest {
-		private ITestOutputHelper output;
+namespace SGL.Analytics.Utilities.Tests {
+	public class DataBindingExtensionsUnitTest {
+		private class FakeHeaders : HttpHeaders { }
 
-		public DictionaryDataMappingUnitTest(ITestOutputHelper output) {
-			this.output = output;
+		[Fact]
+		public void MapObjectPropertiesCanMapLogMetadataDTOCorrectly() {
+			var headers = new FakeHeaders();
+			LogMetadataDTO dto = new LogMetadataDTO(AppName: "UnitTestDummy", UserId: Guid.NewGuid(), LogFileId: Guid.NewGuid(), CreationTime: DateTime.Now.AddMinutes(-5), EndTime: DateTime.Now);
+			headers.MapObjectProperties(dto);
+			Assert.Equal(dto.AppName, headers.GetValues("AppName").Single());
+			Assert.Equal(dto.UserId, Guid.Parse(headers.GetValues("UserId").Single()));
+			Assert.Equal(dto.LogFileId, Guid.Parse(headers.GetValues("LogFileId").Single()));
+			Assert.Equal(dto.CreationTime, DateTime.Parse(headers.GetValues("CreationTime").Single()));
+			Assert.Equal(dto.EndTime, DateTime.Parse(headers.GetValues("EndTime").Single()));
 		}
 
-		public class TestUserData {
-			public enum SomeEnum { A, B, C, D }
-			public string Username { get; set; } = "Testuser";
-			public int Age { get; set; } = 60;
-			public double Height { get; set; } = 175.0;
-			public SomeEnum SomeEnumValue { get; set; } = SomeEnum.C;
-			public class SomeMeasurement {
-				public int Value1 { get; set; } = 5;
-				public double Value2 { get; set; } = 123.4;
-				public string Location { get; set; } = "Somewhere";
-			}
-			public SomeMeasurement CurrentMeasurement { get; set; } = new();
-			public Dictionary<DateTime, SomeMeasurement> TimeSeries { get; set; } = new() { [DateTime.Now.AddDays(-14)] = new(), [DateTime.Now.AddDays(-7)] = new() };
-			public Dictionary<string, int> SomeRatings { get; set; } = new() { ["Foo"] = 9, ["Bar"] = 4 };
-			public List<SomeMeasurement> SomeList { get; set; } = new() { new SomeMeasurement(), new SomeMeasurement() };
+		private enum TestEnum { EnumValue }
+		private class TestData {
+			public TestEnum MyEnum { get; set; }
+			public bool MyBool { get; set; }
+			public short MyShort { get; set; }
+			public int MyInt { get; set; }
+			public long MyLong { get; set; }
+			public double MyDouble { get; set; }
 		}
 
 		[Fact]
-		public void ToDictionaryCanMapExampleTypeCorrectly() {
-			TestUserData ud = new TestUserData();
-			var dict = DictionaryDataMapping.ToDataMappingDictionary(ud);
-			Assert.Equal(ud.Username, dict["Username"]);
-			Assert.Equal(ud.Age, dict["Age"]);
-			Assert.Equal(ud.Height, dict["Height"]);
-			Assert.Equal(ud.SomeEnumValue, dict["SomeEnumValue"]);
-			Assert.Equal(ud.CurrentMeasurement.Value1, (dict["CurrentMeasurement"] as IDictionary<string, object?>)?["Value1"]);
-			Assert.Equal(ud.CurrentMeasurement.Value2, (dict["CurrentMeasurement"] as IDictionary<string, object?>)?["Value2"]);
-			Assert.Equal(ud.CurrentMeasurement.Location, (dict["CurrentMeasurement"] as IDictionary<string, object?>)?["Location"]);
-
-			Assert.All(ud.TimeSeries.Keys, k => Assert.Contains(k.ToString("O"), dict["TimeSeries"] as IDictionary<string, object?>));
-			Assert.All(ud.SomeRatings.Keys, k => {
-				var d = dict["SomeRatings"] as IDictionary<string, object?>;
-				Assert.NotNull(d);
-				Assert.Equal(ud.SomeRatings[k], Assert.Contains(k, d));
-			});
-			var sLst = dict["SomeList"] as IList<object>;
-			for (int i = 0; i < ud.SomeList.Count; ++i) {
-				var measurement = sLst?[i] as IDictionary<string, object?>;
-				Assert.Equal(ud.SomeList[i].Value1, measurement?["Value1"]);
-				Assert.Equal(ud.SomeList[i].Value2, measurement?["Value2"]);
-				Assert.Equal(ud.SomeList[i].Location, measurement?["Location"]);
-			}
-		}
-
-		public class JsonConversionTestData {
-			[JsonConverter(typeof(ObjectDictionaryJsonConverter))]
-			public Dictionary<string, object?> ObjectData { get; set; } = new();
-		}
-
-		[Fact]
-		public async Task DataMappingDictionaryRoundTripsThroughJson() {
-			JsonSerializerOptions options = new() { WriteIndented = true };
-			JsonConversionTestData orig = new();
-			orig.ObjectData["Null"] = null;
-			orig.ObjectData["BoolTrue"] = true;
-			orig.ObjectData["BoolFalse"] = false;
-			orig.ObjectData["Int"] = 1234;
-			orig.ObjectData["Long"] = 12345678910111213;
-			orig.ObjectData["Double"] = 12345.6789;
-			orig.ObjectData["Guid"] = Guid.NewGuid();
-			orig.ObjectData["DateTime"] = DateTime.Now;
-			orig.ObjectData["String"] = "Hello World!";
-			orig.ObjectData["Array"] = new List<object?> { null, 12345, "Test", true, Guid.NewGuid(), DateTime.Now };
-			orig.ObjectData["Dict"] = new Dictionary<string, object?> { ["A"] = "X", ["B"] = 42, ["C"] = true };
-			MemoryStream stream = new();
-			await JsonSerializer.SerializeAsync(stream, orig, options);
-			stream.Position = 0;
-			output.WriteStreamContents(stream);
-			stream.Position = 0;
-			var deserialized = await JsonSerializer.DeserializeAsync<JsonConversionTestData>(stream, options);
-			Assert.All(orig.ObjectData, origElem => Assert.Equal(origElem.Value, Assert.Contains(origElem.Key, deserialized?.ObjectData as IDictionary<string, object?>)));
+		public void MapObjectPropertiesCanMapPrimitivesCorrectly() {
+			var headers = new FakeHeaders();
+			var testData = new TestData() { MyEnum = TestEnum.EnumValue, MyBool = true, MyShort = 12345, MyInt = -1234567890, MyLong = 123456789012345, MyDouble = 123456.78912 };
+			headers.MapObjectProperties(testData);
+			Assert.Equal("EnumValue", headers.GetValues("MyEnum").Single());
+			Assert.Equal("True", headers.GetValues("MyBool").Single());
+			Assert.Equal("12345", headers.GetValues("MyShort").Single());
+			Assert.Equal("-1234567890", headers.GetValues("MyInt").Single());
+			Assert.Equal("123456789012345", headers.GetValues("MyLong").Single());
+			Assert.Equal("123456.78912", headers.GetValues("MyDouble").Single());
 		}
 	}
 }
