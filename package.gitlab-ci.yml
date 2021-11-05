@@ -1,0 +1,39 @@
+.nuget-package:
+  stage: package
+  needs:
+  - job: build-debug
+    artifacts: false
+  - job: build-release
+    artifacts: false
+  - job: test
+    artifacts: false
+  script:
+    - 'cd ${PACKAGE_DIRECTORY}'
+    - 'dotnet pack -c Release -p:Version="$(git describe --tags --abbrev=0)${VERSION_SUFFIX}"'
+    - 'dotnet nuget add source "${CI_API_V4_URL}/projects/${PACKAGE_REPO_PROJECT_ID}/packages/nuget/index.json" --name gitlab --username gitlab-ci-token --password $CI_JOB_TOKEN --store-password-in-clear-text'
+    - 'dotnet nuget push "bin/Release/*.nupkg" --source gitlab --symbol-source gitlab'
+  parallel:
+    matrix:
+    - PACKAGE_DIRECTORY: "SGL.Utilities"
+    - PACKAGE_DIRECTORY: "SGL.Utilities.Backend"
+    - PACKAGE_DIRECTORY: "SGL.Utilities.Backend.AspNetCore"
+    - PACKAGE_DIRECTORY: "SGL.Utilities.Backend.Security"
+    - PACKAGE_DIRECTORY: "SGL.Utilities.Backend.TestUtilities"
+    - PACKAGE_DIRECTORY: "SGL.Utilities.Logging"
+    - PACKAGE_DIRECTORY: "SGL.Utilities.TestUtilities.XUnit"
+
+nuget-package-main:
+  extends: .nuget-package
+  variables:
+    GIT_DEPTH: 0
+    VERSION_SUFFIX: "-dev"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+nuget-package-tags:
+  extends: .nuget-package
+  variables:
+    GIT_DEPTH: 0
+    VERSION_SUFFIX: ""
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^\d+(\.\d+)*$/'

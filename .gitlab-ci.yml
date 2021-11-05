@@ -1,0 +1,90 @@
+image: mcr.microsoft.com/dotnet/sdk:latest
+
+stages:
+  - build
+  - test
+  - package
+  - deploy
+
+variables:
+  NUGET_PACKAGES_DIRECTORY: '.nuget'
+
+cache:
+  key: "$CI_JOB_STAGE-$CI_COMMIT_REF_SLUG"
+  paths:
+    - '*/obj/project.assets.json'
+    - '*/obj/*.csproj.nuget.*'
+    - '$NUGET_PACKAGES_DIRECTORY'
+
+before_script:
+  - 'dotnet restore --packages $NUGET_PACKAGES_DIRECTORY SGL.Utilities.sln'
+
+.build:
+  needs: []
+  stage: build
+  script:
+    - 'dotnet build --configuration ${CONFIG} --no-restore SGL.Utilities.sln'
+
+build-debug:
+  extends: .build
+  variables:
+    CONFIG: Debug
+  artifacts:
+    expire_in: 2 days
+    paths:
+      - SGL.Utilities.*/bin/Debug/*/SGL.Utilities.*.xml
+      - SGL.Utilities.*/bin/Debug/*/SGL.Utilities.*.dll
+
+build-release:
+  extends: .build
+  variables:
+    CONFIG: Release
+
+test:
+  stage: test
+  needs: []
+  script:
+    - 'rm -f */TestResults/*/coverage.cobertura.xml'
+    - 'dotnet test --no-restore --configuration Debug --collect:"XPlat Code Coverage" --test-adapter-path:. --logger:"junit;LogFilePath=../TestResults/{assembly}.xml;MethodFormat=Class;FailureBodyFormat=Verbose" SGL.Utilities.sln'
+  artifacts:
+    expire_in: 14 days
+    when: always
+    paths:
+     - ./TestResults/*.xml
+     - '*/TestResults/*/coverage.cobertura.xml'
+    reports:
+      junit:
+       - ./TestResults/*.xml
+      cobertura:
+       - '*/TestResults/*/coverage.cobertura.xml'
+
+docs:
+  stage: build
+  needs:
+  - build-debug
+  image: ${CI_REGISTRY}/serious-games-lab/docfx-ci-build-image
+  before_script: []
+  script:
+    - docfx docfx_project/docfx.json
+  artifacts:
+    expire_in: 14 days
+    paths:
+      - docfx_output
+
+pages:
+  stage: deploy
+  needs:
+  - docs
+  before_script: []
+  script:
+    - rm -rf public
+    - mv docfx_output public
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+include:
+- template: 'Workflows/Branch-Pipelines.gitlab-ci.yml'
+- local: '/package.gitlab-ci.yml'
