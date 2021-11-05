@@ -1,5 +1,4 @@
 ﻿using Microsoft.IdentityModel.Tokens;
-using SGL.Analytics.DTO;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -46,10 +45,10 @@ namespace SGL.Analytics.Backend.TestUtilities {
 		/// Validates the given token against the parameters specified in the constructor and returns a principal with the contained claims and the decoded token.
 		/// It throws exceptions from <see cref="JwtSecurityTokenHandler.ValidateToken(string, TokenValidationParameters, out SecurityToken)"/> if validation fails.
 		/// </summary>
-		/// <param name="token">The token to validate.</param>
+		/// <param name="token">The token to validatem, encoded as a string.</param>
 		/// <returns>A principal containing the claims from the token and the decoded token</returns>
-		public (ClaimsPrincipal principal, SecurityToken validatedToken) Validate(AuthorizationToken token) {
-			var principal = tokenHandler.ValidateToken(token.Value, tokenValidationParameters, out var validatedToken);
+		public (ClaimsPrincipal principal, SecurityToken validatedToken) Validate(string token) {
+			var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var validatedToken);
 			return (principal, validatedToken);
 		}
 	}

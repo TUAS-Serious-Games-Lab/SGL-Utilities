@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using SGL.Analytics.DTO;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -120,8 +119,8 @@ namespace SGL.Analytics.Backend.Security {
 		/// Asynchronously performs a login attemp with the given credentials, using the given delegates to access the user management as described in <see cref="ILoginService"/>,
 		/// and upon success, issues a JWT bearer token with a <c>userid</c> claim for the user's id, as well as the additional claims specified in <c>additionalClaims</c>.
 		/// </summary>
-		/// <returns>A task representing the operation with a result of <see langword="null"/> for failed attempts and with <see cref="AuthorizationToken"/> containing a JWT bearer token for a successful login.</returns>
-		public async Task<AuthorizationToken?> LoginAsync<TUserId, TUser>(TUserId userId, string providedPlainSecret,
+		/// <returns>A task representing the operation with a result of <see langword="null"/> for failed attempts and with a string containing a JWT bearer authorization token for a successful login.</returns>
+		public async Task<string?> LoginAsync<TUserId, TUser>(TUserId userId, string providedPlainSecret,
 			Func<TUserId, Task<TUser?>> lookupUserAsync,
 			Func<TUser, string> getHashedSecret,
 			Func<TUser, string, Task> updateHashedSecretAsync,
@@ -171,7 +170,7 @@ namespace SGL.Analytics.Backend.Security {
 			);
 			var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 			logger.LogInformation("Login succeeded for user {userId}.", userId);
-			return new AuthorizationToken(tokenString);
+			return tokenString;
 		}
 	}
 }

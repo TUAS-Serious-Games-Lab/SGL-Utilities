@@ -4,23 +4,13 @@
       "src": [
         {
           "files": [
-            "SGL.Analytics.Backend.AppRegistrationTool/bin/Debug/*/SGL.Analytics.Backend.AppRegistrationTool.dll",
-            "SGL.Analytics.Backend.Domain/bin/Debug/*/SGL.Analytics.Backend.Domain.dll",
-            "SGL.Analytics.Backend.Logs.Application/bin/Debug/*/SGL.Analytics.Backend.Logs.Application.dll",
-            "SGL.Analytics.Backend.Logs.Collector/bin/Debug/*/SGL.Analytics.Backend.Logs.Collector.dll",
-            "SGL.Analytics.Backend.Logs.Infrastructure/bin/Debug/*/SGL.Analytics.Backend.Logs.Infrastructure.dll",
-            "SGL.Analytics.Backend.Security/bin/Debug/*/SGL.Analytics.Backend.Security.dll",
-            "SGL.Analytics.Backend.TestUtilities/bin/Debug/*/SGL.Analytics.Backend.TestUtilities.dll",
-            "SGL.Analytics.Backend.Users.Application/bin/Debug/*/SGL.Analytics.Backend.Users.Application.dll",
-            "SGL.Analytics.Backend.Users.Infrastructure/bin/Debug/*/SGL.Analytics.Backend.Users.Infrastructure.dll",
-            "SGL.Analytics.Backend.Users.Registration/bin/Debug/*/SGL.Analytics.Backend.Users.Registration.dll",
-            "SGL.Analytics.Backend.Utilities/bin/Debug/*/SGL.Analytics.Backend.Utilities.dll",
-            "SGL.Analytics.Backend.WebUtilities/bin/Debug/*/SGL.Analytics.Backend.WebUtilities.dll",
-            "SGL.Analytics.Client/bin/Debug/*/SGL.Analytics.Client.dll",
-            "SGL.Analytics.DTO/bin/Debug/*/SGL.Analytics.DTO.dll",
-            "SGL.Analytics.TestUtilities/bin/Debug/*/SGL.Analytics.TestUtilities.dll",
-            "SGL.Analytics.Utilities/bin/Debug/*/SGL.Analytics.Utilities.dll",
-            "SGL.Analytics.Utilities.Logging/bin/Debug/*/SGL.Analytics.Utilities.Logging.dll"
+            "SGL.Utilities/bin/Debug/*/SGL.Utilities.dll",
+            "SGL.Utilities.Backend/bin/Debug/*/SGL.Utilities.Backend.dll",
+            "SGL.Utilities.Backend.AspNetCore/bin/Debug/*/SGL.Utilities.Backend.AspNetCore.dll",
+            "SGL.Utilities.Backend.Security/bin/Debug/*/SGL.Utilities.Backend.Security.dll",
+            "SGL.Utilities.Backend.TestUtilities/bin/Debug/*/SGL.Utilities.Backend.TestUtilities.dll",
+            "SGL.Utilities.Logging/bin/Debug/*/SGL.Utilities.Logging.dll",
+            "SGL.Utilities.TestUtilities.XUnit/bin/Debug/*/SGL.Utilities.TestUtilities.XUnit.dll"
           ],
           "src": ".."
         }
@@ -36,17 +26,11 @@
         "files": [
           "docs/**.md",
           "docs/**/toc.yml",
-          "SGL.Analytics.*/toc.yml",
-          "SGL.Analytics.*/index.md",
+          "SGL.Utilities.*/toc.yml",
+          "SGL.Utilities.*/index.md",
           "index.md"
         ],
         "src": ".."
-      },
-      {
-        "files": [
-          "restapi/*.swagger.json",
-          "restapi/toc.yml"
-        ]
       },
       {
         "files": [
@@ -56,9 +40,7 @@
       },
       {
         "files": [
-          "toc.yml",
-          "tools/toc.yml",
-          "tools/index.md"
+          "toc.yml"
         ]
       }
     ],

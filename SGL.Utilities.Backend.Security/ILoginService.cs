@@ -1,5 +1,4 @@
-﻿using SGL.Analytics.DTO;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -8,7 +7,7 @@ using System.Threading.Tasks;
 namespace SGL.Analytics.Backend.Security {
 	/// <summary>
 	/// Specifies the interface for a login service, that authenicates users using credentials in the form of a userid and a secret string.
-	/// If the authentication is successful, it issues an <see cref="AuthorizationToken"/> for the user.
+	/// If the authentication is successful, it issues an authorization token for the user and returns it as <see cref="string"/>.
 	/// Otherwise, implementations should wait for a fixed delay timer, started at the beginning of the authentication, in all failure paths to prevent timing attacks to reveal if the user id or the secret was incorrect.
 	/// This delay timer is represented by an <see cref="IDelayHandle"/> and started using <see cref="StartFixedFailureDelay(CancellationToken)"/>.
 	///
@@ -83,13 +82,13 @@ namespace SGL.Analytics.Backend.Security {
 		/// <param name="updateHashedSecretAsync">A delegate to update the login secret hash if the login is successful but the secret needed to be rehashed (due to updated hashing settings).</param>
 		/// <param name="fixedFailureDelay">A fixed delay handle to be awaited in case of login failure to prevent timing attacks.</param>
 		/// <param name="ct">A <see cref="CancellationToken"/> that cancels the login operation when the token is cancelled.</param>
-		/// <param name="additionalClaims">A collection of claim type names and corresponding value getters to specify claims that should be issued in the <see cref="AuthorizationToken"/> in addition to the claims normally issued by the implementation.</param>
+		/// <param name="additionalClaims">A collection of claim type names and corresponding value getters to specify claims that should be issued in the authorization token in addition to the claims normally issued by the implementation.</param>
 		/// <returns>
 		/// A task representing the asynchronous operation.
-		/// It provides an <see cref="AuthorizationToken"/> as its result if the login was successful.
+		/// It provides an authorization token, encoded as a <see cref="string"/>, as its result if the login was successful.
 		/// If the login failed it has a <see langword="null"/> result after the fixed delay time has expired.
 		/// </returns>
-		Task<AuthorizationToken?> LoginAsync<TUserId, TUser>(
+		Task<string?> LoginAsync<TUserId, TUser>(
 			TUserId userId, string providedPlainSecret,
 			Func<TUserId, Task<TUser?>> lookupUserAsync,
 			Func<TUser, string> getHashedSecret,
@@ -101,7 +100,7 @@ namespace SGL.Analytics.Backend.Security {
 		/// An overload of <c>LoginAsync</c> where no <see cref="IDelayHandle"/> is given and <see cref="StartFixedFailureDelay(CancellationToken)"/> is called at the start instead.
 		/// See the full overload for further details.
 		/// </summary>
-		Task<AuthorizationToken?> LoginAsync<TUserId, TUser>(
+		Task<string?> LoginAsync<TUserId, TUser>(
 			TUserId userId, string providedPlainSecret,
 			Func<TUserId, Task<TUser?>> lookupUserAsync,
 			Func<TUser, string> getHashedSecret,
@@ -114,7 +113,7 @@ namespace SGL.Analytics.Backend.Security {
 		/// An overload of <c>LoginAsync</c> where no <see cref="CancellationToken"/> is given and the default token is used with the effect that this operation can not be cancelled.
 		/// See the full overload for further details.
 		/// </summary>
-		Task<AuthorizationToken?> LoginAsync<TUserId, TUser>(
+		Task<string?> LoginAsync<TUserId, TUser>(
 			TUserId userId, string providedPlainSecret,
 			Func<TUserId, Task<TUser?>> lookupUserAsync,
 			Func<TUser, string> getHashedSecret,
@@ -129,7 +128,7 @@ namespace SGL.Analytics.Backend.Security {
 		/// The operation therefore automatically calls <see cref="StartFixedFailureDelay(CancellationToken)"/> at the beginning and can not be cancelled.
 		/// See the full overload for further details.
 		/// </summary>
-		Task<AuthorizationToken?> LoginAsync<TUserId, TUser>(
+		Task<string?> LoginAsync<TUserId, TUser>(
 			TUserId userId, string providedPlainSecret,
 			Func<TUserId, Task<TUser?>> lookupUserAsync,
 			Func<TUser, string> getHashedSecret,

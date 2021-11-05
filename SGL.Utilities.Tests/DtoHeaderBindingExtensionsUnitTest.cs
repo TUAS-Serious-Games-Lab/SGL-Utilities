@@ -1,4 +1,3 @@
-using SGL.Analytics.DTO;
 using SGL.Analytics.Utilities;
 using System;
 using System.Linq;
@@ -8,6 +7,8 @@ using Xunit;
 namespace SGL.Analytics.Utilities.Tests {
 	public class DtoHeaderBindingExtensionsUnitTest {
 		private class FakeHeaders : HttpHeaders { }
+
+		private record LogMetadataDTO(Guid LogFileId, DateTime CreationTime, DateTime EndTime);
 
 		[Fact]
 		public void MapDtoPropertiesCanMapLogMetadataDTOCorrectly() {
