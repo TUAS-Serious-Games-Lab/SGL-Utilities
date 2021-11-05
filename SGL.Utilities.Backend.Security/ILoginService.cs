@@ -118,7 +118,7 @@ namespace SGL.Utilities.Backend.Security {
 			Func<TUser, string, Task> updateHashedSecretAsync,
 			IDelayHandle fixedFailureDelay,
 			params (string ClaimType, Func<TUser, string> GetClaimValue)[] additionalClaims) {
-			return LoginAsync(userId, providedPlainSecret, lookupUserAsync, getHashedSecret, updateHashedSecretAsync, fixedFailureDelay, default(CancellationToken), additionalClaims);
+			return LoginAsync(userId, providedPlainSecret, lookupUserAsync, getHashedSecret, updateHashedSecretAsync, fixedFailureDelay, default, additionalClaims);
 		}
 
 		/// <summary>
@@ -132,7 +132,7 @@ namespace SGL.Utilities.Backend.Security {
 			Func<TUser, string> getHashedSecret,
 			Func<TUser, string, Task> updateHashedSecretAsync,
 			params (string ClaimType, Func<TUser, string> GetClaimValue)[] additionalClaims) {
-			return LoginAsync(userId, providedPlainSecret, lookupUserAsync, getHashedSecret, updateHashedSecretAsync, StartFixedFailureDelay(), default(CancellationToken), additionalClaims);
+			return LoginAsync(userId, providedPlainSecret, lookupUserAsync, getHashedSecret, updateHashedSecretAsync, StartFixedFailureDelay(), default, additionalClaims);
 		}
 	}
 }

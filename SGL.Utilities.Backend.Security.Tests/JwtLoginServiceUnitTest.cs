@@ -54,7 +54,7 @@ namespace SGL.Utilities.Backend.Security.Tests {
 			Assert.NotNull(token);
 			var (principal, validatedToken) = tokenValidator.Validate(token!);
 			Assert.Equal("JwtLoginServiceUnitTest", validatedToken.Issuer);
-			Assert.Equal(42, principal.GetClaim<int>("userid", Int32.TryParse));
+			Assert.Equal(42, principal.GetClaim<int>("userid", int.TryParse));
 		}
 
 		[Fact]
@@ -75,9 +75,9 @@ namespace SGL.Utilities.Backend.Security.Tests {
 			Assert.NotNull(token);
 			var (principal, validatedToken) = tokenValidator.Validate(token!);
 			Assert.Equal("JwtLoginServiceUnitTest", validatedToken.Issuer);
-			Assert.Equal(42, principal.GetClaim<int>("userid", Int32.TryParse));
+			Assert.Equal(42, principal.GetClaim<int>("userid", int.TryParse));
 			Assert.Equal("Hello World", principal.GetClaim("message"));
-			Assert.Equal(1234, principal.GetClaim<int>("number", Int32.TryParse));
+			Assert.Equal(1234, principal.GetClaim<int>("number", int.TryParse));
 		}
 
 		[Fact]
@@ -159,7 +159,7 @@ namespace SGL.Utilities.Backend.Security.Tests {
 			Assert.NotNull(token);
 			var (principal, validatedToken) = tokenValidator.Validate(token!);
 			Assert.Equal("JwtLoginServiceUnitTest", validatedToken.Issuer);
-			Assert.Equal(42, principal.GetClaim<int>("userid", Int32.TryParse));
+			Assert.Equal(42, principal.GetClaim<int>("userid", int.TryParse));
 		}
 	}
 }

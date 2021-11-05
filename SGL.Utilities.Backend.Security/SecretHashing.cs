@@ -18,7 +18,7 @@ namespace SGL.Utilities.Backend.Security {
 	/// The IterationCount is 10 times the default value. At the time of writing, the default is 10000 and we thus use 100000.
 	/// </remarks>
 	public static class SecretHashing {
-		private static readonly IOptions<PasswordHasherOptions> options = Options.Create(new PasswordHasherOptions() { IterationCount = 10 * (new PasswordHasherOptions().IterationCount) });
+		private static readonly IOptions<PasswordHasherOptions> options = Options.Create(new PasswordHasherOptions() { IterationCount = 10 * new PasswordHasherOptions().IterationCount });
 		private class DummyUser { }
 		private static readonly DummyUser dummyUser = new DummyUser();
 

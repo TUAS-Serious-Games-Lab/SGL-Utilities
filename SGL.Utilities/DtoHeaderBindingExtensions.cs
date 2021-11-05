@@ -20,7 +20,7 @@ namespace SGL.Utilities {
 				case { IsEnum: true }:
 					return source => prop.GetValue(source)?.ToString();
 				case { IsPrimitive: true }:
-					return source => String.Format(CultureInfo.InvariantCulture, "{0}", prop.GetValue(source));
+					return source => string.Format(CultureInfo.InvariantCulture, "{0}", prop.GetValue(source));
 				default:
 					return null;
 			}
@@ -43,7 +43,7 @@ namespace SGL.Utilities {
 							select new { NameMapping = getNameMapping(prop), TypeMapping = getTypeMapping(prop), OriginalProperty = prop }).ToList();
 			var unmapped = mappings.Where(m => m.TypeMapping is null).ToList();
 			if (unmapped.Count > 0) {
-				throw new ArgumentException("Not all properties of the given object could be mapped. The following properties are of types that could not be mapped: " + String.Join(", ", unmapped.Select(um => $"{um.OriginalProperty.Name} of type {um.OriginalProperty.PropertyType.FullName}")), nameof(source));
+				throw new ArgumentException("Not all properties of the given object could be mapped. The following properties are of types that could not be mapped: " + string.Join(", ", unmapped.Select(um => $"{um.OriginalProperty.Name} of type {um.OriginalProperty.PropertyType.FullName}")), nameof(source));
 			}
 			foreach (var mapping in mappings) {
 				headers.Add(mapping.NameMapping, mapping.TypeMapping(source));

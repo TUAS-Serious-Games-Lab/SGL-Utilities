@@ -107,7 +107,7 @@ namespace SGL.Utilities.Backend.Security {
 		/// A convenience method to apply <see cref="GetClaim{T}(IEnumerable{Claim}, string, TryParser{T})"/> to the claims of a <see cref="ClaimsPrincipal"/>.
 		/// </summary>
 		public static T GetClaim<T>(this ClaimsPrincipal principal, string claimType, TryParser<T> tryParser) {
-			return principal.Claims.GetClaim<T>(claimType, tryParser);
+			return principal.Claims.GetClaim(claimType, tryParser);
 		}
 	}
 }

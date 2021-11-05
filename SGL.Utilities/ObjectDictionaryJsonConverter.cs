@@ -28,7 +28,7 @@ namespace SGL.Utilities {
 					var list = new List<object?>();
 					while (reader.Read()) {
 						if (reader.TokenType == JsonTokenType.EndArray) break;
-						list.Add(this.Read(ref reader, typeof(object), options));
+						list.Add(Read(ref reader, typeof(object), options));
 					}
 					if (reader.TokenType == JsonTokenType.EndArray) {
 						return list;

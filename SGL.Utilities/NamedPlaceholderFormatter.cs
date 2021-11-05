@@ -132,7 +132,7 @@ namespace SGL.Utilities {
 			int start = 0;
 			for (int cur = 0; cur < format.Length; ++cur) {
 				switch (format[cur]) {
-					case '{' when (cur + 1 < format.Length && format[cur + 1] == '{'):
+					case '{' when cur + 1 < format.Length && format[cur + 1] == '{':
 						++cur;
 						pushLiteral(components, format.Substring(start, cur - start));
 						start = cur + 1;
@@ -152,11 +152,11 @@ namespace SGL.Utilities {
 							int separator = cur;
 							for (; cur < format.Length && format[cur] != '}'; ++cur) ;
 							if (cur == format.Length) throw new InvalidOperationException("Unexpected end inside placeholder.");
-							pushPlaceholder(components, format.Substring(start, separator - start), format.Substring(separator, cur - (separator)));
+							pushPlaceholder(components, format.Substring(start, separator - start), format.Substring(separator, cur - separator));
 						}
 						start = cur + 1;
 						break;
-					case '}' when (cur + 1 < format.Length && format[cur + 1] == '}'):
+					case '}' when cur + 1 < format.Length && format[cur + 1] == '}':
 						++cur;
 						pushLiteral(components, format.Substring(start, cur - start));
 						start = cur + 1;

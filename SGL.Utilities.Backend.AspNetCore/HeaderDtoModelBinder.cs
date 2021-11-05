@@ -59,18 +59,18 @@ namespace SGL.Utilities.Backend.AspNetCore {
 					return source => Guid.TryParse(source, out var guid) ? guid : null;
 				case { IsEnum: true }:
 					return source => Enum.TryParse(type, source, out var e) ? e : null;
-				case Type _ when type == typeof(Int16):
-					return source => Int16.TryParse(source, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i) ? i : null;
-				case Type _ when type == typeof(Int32):
-					return source => Int32.TryParse(source, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i) ? i : null;
-				case Type _ when type == typeof(Int64):
-					return source => Int64.TryParse(source, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i) ? i : null;
-				case Type _ when type == typeof(Double):
-					return source => Double.TryParse(source, NumberStyles.Float, CultureInfo.InvariantCulture, out var fp) ? fp : null;
-				case Type _ when type == typeof(Decimal):
-					return source => Decimal.TryParse(source, NumberStyles.Float, CultureInfo.InvariantCulture, out var fp) ? fp : null;
-				case Type _ when type == typeof(Boolean):
-					return source => Boolean.TryParse(source, out var b) ? b : null;
+				case Type _ when type == typeof(short):
+					return source => short.TryParse(source, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i) ? i : null;
+				case Type _ when type == typeof(int):
+					return source => int.TryParse(source, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i) ? i : null;
+				case Type _ when type == typeof(long):
+					return source => long.TryParse(source, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i) ? i : null;
+				case Type _ when type == typeof(double):
+					return source => double.TryParse(source, NumberStyles.Float, CultureInfo.InvariantCulture, out var fp) ? fp : null;
+				case Type _ when type == typeof(decimal):
+					return source => decimal.TryParse(source, NumberStyles.Float, CultureInfo.InvariantCulture, out var fp) ? fp : null;
+				case Type _ when type == typeof(bool):
+					return source => bool.TryParse(source, out var b) ? b : null;
 				default:
 					return source => null;
 			}

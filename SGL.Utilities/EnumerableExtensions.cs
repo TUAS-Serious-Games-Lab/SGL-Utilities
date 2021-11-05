@@ -120,9 +120,9 @@ namespace SGL.Utilities {
 		/// <returns>The element of source if source has exactly one element, default(TSource) otherwise.</returns>
 		public static TSource? SingleOrDefaultNoExcept<TSource>(this IEnumerable<TSource> source) {
 			var enumerator = source.GetEnumerator();
-			if (!enumerator.MoveNext()) return default(TSource);
+			if (!enumerator.MoveNext()) return default;
 			var value = enumerator.Current;
-			if (enumerator.MoveNext()) return default(TSource);
+			if (enumerator.MoveNext()) return default;
 			return value;
 		}
 	}

@@ -142,7 +142,7 @@ namespace SGL.Utilities {
 			public void Clear() => throw new NotImplementedException();
 
 			/// <inheritdoc/>
-			public bool Contains(TValue item) => cache.entryMap.Values.Any(v => object.Equals(item, v.Value.Value));
+			public bool Contains(TValue item) => cache.entryMap.Values.Any(v => Equals(item, v.Value.Value));
 
 			/// <inheritdoc/>
 			public void CopyTo(TValue[] array, int arrayIndex) {
@@ -206,7 +206,7 @@ namespace SGL.Utilities {
 		}
 
 		/// <inheritdoc/>
-		public bool Contains(KeyValuePair<TKey, TValue> item) => entryMap.TryGetValue(item.Key, out var node) && object.Equals(node.Value.Value, item.Value);
+		public bool Contains(KeyValuePair<TKey, TValue> item) => entryMap.TryGetValue(item.Key, out var node) && Equals(node.Value.Value, item.Value);
 
 		/// <inheritdoc/>
 		public bool ContainsKey(TKey key) => entryMap.ContainsKey(key);
