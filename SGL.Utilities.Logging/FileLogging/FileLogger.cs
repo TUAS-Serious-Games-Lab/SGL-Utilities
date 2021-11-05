@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SGL.Analytics.Utilities.Logging.FileLogging {
+namespace SGL.Utilities.Logging.FileLogging {
 	internal class FileLogger : ILogger {
 		private string categoryName;
 		private FileLoggingProvider provider;

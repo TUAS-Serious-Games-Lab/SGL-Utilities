@@ -1,13 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SGL.Analytics.Backend.Utilities {
+namespace SGL.Utilities.Backend {
 
 	/// <summary>
 	/// The interface required for background service classes that are to be used with <see cref="ScopingBackgroundService{TService}"/> and <see cref="ScopedBackgroundServiceExtensions.AddScopedBackgroundService{TService}(IServiceCollection)"/>.

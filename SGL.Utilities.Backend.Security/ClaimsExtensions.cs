@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SGL.Analytics.Backend.Security {
+namespace SGL.Utilities.Backend.Security {
 
 	/// <summary>
 	/// An exception base class for exceptions representing errors with authentication claims.

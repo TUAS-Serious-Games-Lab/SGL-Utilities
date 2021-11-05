@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace SGL.Analytics.Utilities {
+namespace SGL.Utilities {
 	/// <summary>
 	/// Provides an utility method <see cref="ToDataMappingDictionary(object)"/> that allows mapping POD objects to JSON-like <c><![CDATA[Dictionary<string, object?>]]></c>s.
 	/// </summary>

@@ -1,12 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SGL.Analytics.Backend.Security {
+namespace SGL.Utilities.Backend.Security {
 	/// <summary>
 	/// Centralizes hashing for user secrets to simplify change.
 	/// </summary>

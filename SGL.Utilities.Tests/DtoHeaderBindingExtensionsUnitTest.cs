@@ -1,10 +1,9 @@
-using SGL.Analytics.Utilities;
 using System;
 using System.Linq;
 using System.Net.Http.Headers;
 using Xunit;
 
-namespace SGL.Analytics.Utilities.Tests {
+namespace SGL.Utilities.Tests {
 	public class DtoHeaderBindingExtensionsUnitTest {
 		private class FakeHeaders : HttpHeaders { }
 

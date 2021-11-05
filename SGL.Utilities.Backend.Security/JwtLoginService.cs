@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -12,7 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SGL.Analytics.Backend.Security {
+namespace SGL.Utilities.Backend.Security {
 	/// <summary>
 	/// Provides the <see cref="UseJwtLoginService(IServiceCollection, IConfiguration)"/> extension method.
 	/// </summary>

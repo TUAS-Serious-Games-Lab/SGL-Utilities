@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SGL.Analytics.Utilities.Logging.FileLogging {
+namespace SGL.Utilities.Logging.FileLogging {
 	internal class FileLoggingSink : IDisposable, IAsyncDisposable {
 		private NamedPlaceholderFormatter<LogMessage> baseDirectoryFormatter;
 		private NamedPlaceholderFormatter<LogMessage> normalMessageFormatter;
@@ -107,7 +106,7 @@ namespace SGL.Analytics.Utilities.Logging.FileLogging {
 
 		private bool filter(LogMessage msg) {
 			if (msg.Level < options.MinLevel) return false;
-			return (options.Categories.Count == 0 && options.CategoryContains.Count == 0) ||
+			return options.Categories.Count == 0 && options.CategoryContains.Count == 0 ||
 				options.Categories.Contains(msg.Category) ||
 				options.CategoryContains.Any(c => msg.Category.Contains(c));
 		}

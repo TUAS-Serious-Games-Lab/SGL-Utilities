@@ -1,16 +1,11 @@
 ﻿using Microsoft.AspNetCore.Builder;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Net;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using System.Net;
 
-namespace SGL.Analytics.Backend.WebUtilities {
+namespace SGL.Utilities.Backend.AspNetCore {
 
 	/// <summary>
 	/// Provides the <see cref="UseLoggingExceptionHandler{TStartup}(IApplicationBuilder)"/> extension method.

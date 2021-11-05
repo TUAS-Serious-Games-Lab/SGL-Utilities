@@ -1,10 +1,9 @@
-using SGL.Analytics.Utilities;
 using System.IO;
 using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SGL.Analytics.TestUtilities {
+namespace SGL.Utilities.TestUtilities.XUnit {
 	/// <summary>
 	/// Provides utility methods and extension methods for working with streams in test code.
 	/// </summary>

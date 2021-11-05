@@ -4,12 +4,9 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SGL.Analytics.Backend.TestUtilities {
+namespace SGL.Utilities.Backend.TestUtilities {
 	/// <summary>
 	/// Provides a base class for test fixtures for ASP.Net Core web applications that use a database using Entity Framework Core.
 	/// It hosts the application as specified by its Startup class in <see cref="WebApplicationFactory{TEntryPoint}"/>,

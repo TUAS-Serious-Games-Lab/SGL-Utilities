@@ -2,11 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SGL.Analytics.Utilities.Logging.FileLogging {
+namespace SGL.Utilities.Logging.FileLogging {
 
 	/// <summary>
 	/// Encapsulates the configurations options for a single sink used by <see cref="FileLoggingProvider"/> to output messages to files in different ways.

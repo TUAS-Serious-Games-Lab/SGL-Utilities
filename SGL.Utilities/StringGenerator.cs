@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 
-namespace SGL.Analytics.Utilities {
+namespace SGL.Utilities {
 	/// <summary>
 	/// A simple utility class to generate pseudo-random strings.
 	/// Note: The randomness used by this class is NOT cryptographically secure true randomness but just from a regular PRNG.

@@ -1,13 +1,10 @@
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Xunit.Abstractions;
 
-namespace SGL.Analytics.TestUtilities {
+namespace SGL.Utilities.TestUtilities.XUnit {
 
 	/// <summary>
 	/// An <see cref="ILoggerProvider"/> implementation that outputs the log messages to a <see cref="ITestOutputHelper"/> to provide log output for test cases.

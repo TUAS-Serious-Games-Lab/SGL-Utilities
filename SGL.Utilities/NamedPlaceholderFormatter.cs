@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace SGL.Analytics.Utilities {
+namespace SGL.Utilities {
 
 	/// <summary>
 	/// A delegate, used to retrieve the value of the placeholder defined together with the delegate in <see cref="INamedPlaceholderFormatterFactoryBuilder{T}.AddPlaceholder(string, PlaceholderValueGetter{T})"/> for the given formatted object.
@@ -54,7 +53,7 @@ namespace SGL.Analytics.Utilities {
 	}
 
 	/// <summary>
-	/// Creates <see cref="NamedPlaceholderFormatter{T}"/>s for formatting objects of a given type <c>T</c> using format strings with named placeholders (instead of using index-based placeholders like e.g. <see cref="String.Format(string, object?[])"/> does).
+	/// Creates <see cref="NamedPlaceholderFormatter{T}"/>s for formatting objects of a given type <c>T</c> using format strings with named placeholders (instead of using index-based placeholders like e.g. <see cref="string.Format(string, object?[])"/> does).
 	/// The factory holds the definitions of the placeholders available for the specific type, parses format strings and produces a <see cref="NamedPlaceholderFormatter{T}"/> for each format string passed to <see cref="Create(string)"/>.
 	/// The <see cref="NamedPlaceholderFormatter{T}"/>s can then be used to efficiently format objects without having to parse the format string each time.
 	/// </summary>

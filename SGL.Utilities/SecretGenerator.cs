@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SGL.Analytics.Utilities {
+namespace SGL.Utilities {
 
 	/// <summary>
 	/// Provides a generator for cryptographically random base64 strings.

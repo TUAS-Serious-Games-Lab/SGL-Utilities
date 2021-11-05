@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SGL.Analytics.Utilities {
+namespace SGL.Utilities {
 	/// <summary>
 	/// A stream wrapper that allows to artificially delay the completion of I/O operations of the wrapped stream or to inject errors into the operations.
 	/// This can be useful to simulate waiting times and I/O errors for testing.

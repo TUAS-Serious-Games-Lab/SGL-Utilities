@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SGL.Analytics.Utilities {
+namespace SGL.Utilities {
 	/// <summary>
 	/// Implements a caching data structure using the least-recently-used strategy, providing access through the <see cref="IDictionary{TKey, TValue}"/> interface.
 	/// </summary>

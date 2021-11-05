@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SGL.Analytics.Utilities.Logging.FileLogging {
+namespace SGL.Utilities.Logging.FileLogging {
 	/// <summary>
 	/// Represents the properties of a log message that is processed by an <see cref="ILogger{TCategoryName}"/> created from <see cref="FileLoggingProvider"/>.
 	/// These properties are used for (custom) placeholder getters in message and filename formatting (as well as for internally passing the messages from the loggers to the sinks).

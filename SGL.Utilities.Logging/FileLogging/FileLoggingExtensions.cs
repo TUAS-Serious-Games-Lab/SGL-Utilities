@@ -1,14 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Configuration;
+using System;
 
-namespace SGL.Analytics.Utilities.Logging.FileLogging {
+namespace SGL.Utilities.Logging.FileLogging {
 	/// <summary>
 	/// Provides extension methods to add an <see cref="FileLoggingProvider"/> to an <see cref="ILoggingBuilder"/>.
 	/// </summary>

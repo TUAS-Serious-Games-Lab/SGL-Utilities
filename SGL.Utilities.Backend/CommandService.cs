@@ -3,7 +3,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SGL.Analytics.Backend.Utilities {
+namespace SGL.Utilities.Backend {
 
 	/// <summary>
 	/// A base class for command classes that run in the service container and need to be able to consume scoped DI services.

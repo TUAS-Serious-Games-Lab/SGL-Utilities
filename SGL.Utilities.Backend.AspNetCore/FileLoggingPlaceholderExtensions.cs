@@ -1,11 +1,7 @@
-﻿using SGL.Analytics.Utilities.Logging.FileLogging;
-using System;
-using System.Collections.Generic;
+﻿using SGL.Utilities.Logging.FileLogging;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SGL.Analytics.Backend.WebUtilities {
+namespace SGL.Utilities.Backend.AspNetCore {
 
 	/// <summary>
 	/// Provides extension methods to add placeholders to a <see cref="FileLoggingProvider"/> that lookup webapp- / webapi-centric scope data.

@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SGL.Analytics.Backend.Security {
+namespace SGL.Utilities.Backend.Security {
 	/// <summary>
 	/// Specifies the interface for a login service, that authenicates users using credentials in the form of a userid and a secret string.
 	/// If the authentication is successful, it issues an authorization token for the user and returns it as <see cref="string"/>.

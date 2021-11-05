@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SGL.Analytics.Backend.Utilities {
+﻿namespace SGL.Utilities.Backend {
 
 	/// <summary>
 	/// A simple wrapper class to hold a result value for a service in the DI container.

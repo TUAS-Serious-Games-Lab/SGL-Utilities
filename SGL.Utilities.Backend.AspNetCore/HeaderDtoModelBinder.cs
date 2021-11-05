@@ -1,14 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace SGL.Analytics.Backend.WebUtilities {
+namespace SGL.Utilities.Backend.AspNetCore {
 	internal class HeaderDtoModelBinder : IModelBinder {
 		public async Task BindModelAsync(ModelBindingContext bindingContext) {
 			if (bindingContext == null) throw new ArgumentNullException(nameof(bindingContext));

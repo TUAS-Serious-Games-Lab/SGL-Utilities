@@ -1,16 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SGL.Analytics.Utilities;
 using System.Threading;
-using Microsoft.Extensions.Configuration;
+using System.Threading.Tasks;
 
-namespace SGL.Analytics.Backend.Utilities {
+namespace SGL.Utilities.Backend {
 	/// <summary>
 	/// Provides extension methods for <see cref="IHost"/> to help with application startup.
 	/// </summary>

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace SGL.Analytics.Utilities {
+namespace SGL.Utilities {
 	/// <summary>
 	/// Provides miscellaneous utility extension methods.
 	/// </summary>

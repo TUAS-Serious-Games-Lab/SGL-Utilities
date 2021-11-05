@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SGL.Analytics.Utilities {
+namespace SGL.Utilities {
 
 	/// <summary>
 	/// Provides utility extension methods for working with enumerables.

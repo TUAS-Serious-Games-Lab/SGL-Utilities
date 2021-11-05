@@ -1,13 +1,9 @@
 ﻿using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Data.Common;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SGL.Analytics.Backend.TestUtilities {
+namespace SGL.Utilities.Backend.TestUtilities {
 	/// <summary>
 	/// A test utility class that provides a connection and DB context options for an in-memory Sqlite database for a given DbContext type.
 	/// </summary>

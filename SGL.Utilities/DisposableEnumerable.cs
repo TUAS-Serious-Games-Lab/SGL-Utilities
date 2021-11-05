@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SGL.Analytics.Utilities {
+namespace SGL.Utilities {
 	/// <summary>
 	/// Wraps an <see cref="IEnumerable{T}"/> with <see cref="IDisposable"/> <c>T</c>s in an <see cref="IDisposable"/> object that also <see cref="IEnumerable{T}"/> and 
 	/// disposes each of the elements of the original <see cref="IEnumerable{T}"/> when it is disposed.

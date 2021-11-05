@@ -1,5 +1,4 @@
-using SGL.Analytics.TestUtilities;
-using SGL.Analytics.Utilities;
+using SGL.Utilities.TestUtilities.XUnit;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +8,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SGL.Analytics.Utilities.Tests {
+namespace SGL.Utilities.Tests {
 	public class DictionaryDataMappingUnitTest {
 		private ITestOutputHelper output;
 

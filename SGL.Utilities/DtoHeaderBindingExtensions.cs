@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net.Http.Headers;
 using System.Reflection;
 
-namespace SGL.Analytics.Utilities {
+namespace SGL.Utilities {
 
 	/// <summary>
 	/// Provides the <see cref="MapDtoProperties(HttpHeaders, object)"/> extension method.

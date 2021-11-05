@@ -1,22 +1,17 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using SGL.Analytics.Backend.TestUtilities;
-using SGL.Analytics.TestUtilities;
+using SGL.Utilities.Backend.TestUtilities;
+using SGL.Utilities.TestUtilities.XUnit;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace SGL.Analytics.Backend.Security.Tests {
+namespace SGL.Utilities.Backend.Security.Tests {
 	public class JwtLoginServiceUnitTest {
 		private ITestOutputHelper output;
 		private ILoggerFactory loggerFactory;

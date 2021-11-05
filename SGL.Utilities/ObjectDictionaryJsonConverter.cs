@@ -1,12 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
-namespace SGL.Analytics.Utilities {
+namespace SGL.Utilities {
 	/// <summary>
 	/// A <see cref="JsonConverter{T}"/> implementation that reads values statically typed as <c>object?</c> which are dynamically of a type that matches what type of value is present in the JSON input.
 	/// I.e., booleans in JSON are read as <see langword="bool"/>s, numbers in JSON are read as the appropriate numeric type, strings containing a Guid are read as <see cref="Guid"/>s,

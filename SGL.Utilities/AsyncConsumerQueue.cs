@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Channels;
-using System.Threading.Tasks;
 
-namespace SGL.Analytics.Utilities {
+namespace SGL.Utilities {
 
 	/// <summary>
 	/// Provides a queue for elements that are produced by arbitrary threads and asynchronously consumed by a single consumer thread or task.
-	/// It acts as a convenient wrapper around an appropriately parameterized <see cref="System.Threading.Channels.Channel{T}"/> object.
+	/// It acts as a convenient wrapper around an appropriately parameterized <see cref="Channel{T}"/> object.
 	/// </summary>
 	/// <typeparam name="T">The type of the elements, the queue should hold.</typeparam>
 	public class AsyncConsumerQueue<T> {
