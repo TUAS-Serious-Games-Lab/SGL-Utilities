@@ -22,7 +22,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SGL.Analytics.Utilities\SGL.Analytics.Utilities.csproj" />
+    <ProjectReference Include="..\SGL.Utilities\SGL.Utilities.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

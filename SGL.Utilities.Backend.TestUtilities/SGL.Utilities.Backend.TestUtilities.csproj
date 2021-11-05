@@ -21,9 +21,6 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.10" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.12.2" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\SGL.Analytics.DTO\SGL.Analytics.DTO.csproj" />
-  </ItemGroup>
 
   <PropertyGroup>
     <PackageId>SGL.Utilities.Backend.TestUtilities</PackageId>

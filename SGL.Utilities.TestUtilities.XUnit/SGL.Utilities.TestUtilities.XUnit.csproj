@@ -22,7 +22,7 @@
     <PackageReference Include="xunit.assert" Version="2.4.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SGL.Analytics.Utilities\SGL.Analytics.Utilities.csproj" />
+    <ProjectReference Include="..\SGL.Utilities\SGL.Utilities.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -23,10 +23,10 @@
     <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="5.0.10" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SGL.Analytics.Backend.Security\SGL.Analytics.Backend.Security.csproj" />
-    <ProjectReference Include="..\SGL.Analytics.Backend.Utilities\SGL.Analytics.Backend.Utilities.csproj" />
-    <ProjectReference Include="..\SGL.Analytics.Utilities.Logging\SGL.Analytics.Utilities.Logging.csproj" />
-    <ProjectReference Include="..\SGL.Analytics.Utilities\SGL.Analytics.Utilities.csproj" />
+    <ProjectReference Include="..\SGL.Utilities.Backend.Security\SGL.Utilities.Backend.Security.csproj" />
+    <ProjectReference Include="..\SGL.Utilities.Backend\SGL.Utilities.Backend.csproj" />
+    <ProjectReference Include="..\SGL.Utilities.Logging\SGL.Utilities.Logging.csproj" />
+    <ProjectReference Include="..\SGL.Utilities\SGL.Utilities.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
