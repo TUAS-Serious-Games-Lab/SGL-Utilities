@@ -25,7 +25,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.gitlab-ci.yml = .gitlab-ci.yml
 		docfx_project\docfx.json = docfx_project\docfx.json
+		index.md = index.md
 		package.gitlab-ci.yml = package.gitlab-ci.yml
+		docfx_project\toc.yml = docfx_project\toc.yml
 	EndProjectSection
 EndProject
 Global
