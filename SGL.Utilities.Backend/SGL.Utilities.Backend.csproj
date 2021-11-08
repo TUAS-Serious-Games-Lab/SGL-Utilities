@@ -28,7 +28,7 @@
   <PropertyGroup>
     <PackageId>SGL.Utilities.Backend</PackageId>
     <Version>0.0.0-dev</Version>
-    <Authors>Stefan Bodenschatz</Authors>
+    <Authors>Serious Games Lab Team at Hochschule Trier</Authors>
     <Company>Hochschule Trier, Serious Games Lab</Company>
     <Description>A library providing common backend service functionality for SGL projects.</Description>
   </PropertyGroup>
