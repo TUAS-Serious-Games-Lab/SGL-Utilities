@@ -32,6 +32,8 @@ build-debug:
   artifacts:
     expire_in: 2 days
     paths:
+      - SGL.Utilities/bin/Debug/*/SGL.Utilities.xml
+      - SGL.Utilities/bin/Debug/*/SGL.Utilities.dll
       - SGL.Utilities.*/bin/Debug/*/SGL.Utilities.*.xml
       - SGL.Utilities.*/bin/Debug/*/SGL.Utilities.*.dll
 
