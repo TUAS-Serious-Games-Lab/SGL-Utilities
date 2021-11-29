@@ -91,7 +91,7 @@ namespace SGL.Utilities.Backend.Security {
 		public JwtLoginService(ILogger<JwtLoginService> logger, IOptions<JwtOptions> options) {
 			this.logger = logger;
 			this.options = options.Value;
-			if (this.options.SymmetricKey is not null) {
+			if (this.options.SymmetricKey != null) {
 				signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(this.options.SymmetricKey));
 				signingCredentials = new SigningCredentials(signingKey, this.options.LoginService.SigningAlgorithm);
 			}
@@ -131,13 +131,13 @@ namespace SGL.Utilities.Backend.Security {
 			TUser? user;
 			string? hashedSecret = null;
 			try {
-				if (userId is null) {
+				if (userId == null) {
 					logger.LogError("Login failed because no userId was given.");
 					await fixedFailureDelay.WaitAsync().ConfigureAwait(false);
 					return null;
 				}
 				user = await lookupUserAsync(userId).ConfigureAwait(false);
-				if (user is null) {
+				if (user == null) {
 					logger.LogError("Login failed because the user with id {userId} was not found.", userId);
 					await fixedFailureDelay.WaitAsync().ConfigureAwait(false);
 					return null;
