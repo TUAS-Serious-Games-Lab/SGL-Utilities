@@ -20,6 +20,7 @@
     - PACKAGE_DIRECTORY: "SGL.Utilities.Backend.Security"
     - PACKAGE_DIRECTORY: "SGL.Utilities.Backend.TestUtilities"
     - PACKAGE_DIRECTORY: "SGL.Utilities.Logging"
+    - PACKAGE_DIRECTORY: "SGL.Utilities.PrometheusNet"
     - PACKAGE_DIRECTORY: "SGL.Utilities.TestUtilities.XUnit"
 
 nuget-package-main:
