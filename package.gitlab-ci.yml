@@ -10,7 +10,7 @@ nuget-package:
   variables:
     GIT_DEPTH: 0
   script:
-    - VERSION="$(./get_version_from_git.sh)${CI_COMMIT_BRANCH:0:63}"
+    - VERSION="$(./get_version_from_git.sh)${CI_COMMIT_BRANCH:+-${CI_COMMIT_BRANCH:0:63}}"
     - 'cd ${PACKAGE_NAME}'
     - 'dotnet pack -c Release -p:Version="${VERSION}"'
     - 'dotnet nuget add source "${CI_API_V4_URL}/projects/${PACKAGE_REPO_PROJECT_ID}/packages/nuget/index.json" --name gitlab --username gitlab-ci-token --password $CI_JOB_TOKEN --store-password-in-clear-text'
