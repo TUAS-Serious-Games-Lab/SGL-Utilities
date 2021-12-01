@@ -37,3 +37,11 @@ nuget-package-tags:
     VERSION_SUFFIX: ""
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+(\.\d+)*$/'
+
+nuget-package-metrics:
+  extends: .nuget-package
+  variables:
+    GIT_DEPTH: 0
+    VERSION_SUFFIX: "-metrics"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "3-add-utilities-to-handle-application-metrics-with-less-code-duplication"'
