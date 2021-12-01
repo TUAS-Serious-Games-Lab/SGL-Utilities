@@ -30,4 +30,9 @@
     <Description>A library providing common testing utilities for backend services in SGL projects.</Description>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
 </Project>

@@ -37,4 +37,9 @@
     <Description>A library providing common utilities for web services and web applications ASP.Net Core in SGL projects using.</Description>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
 </Project>

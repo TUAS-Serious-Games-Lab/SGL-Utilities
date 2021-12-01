@@ -32,4 +32,9 @@
     <Description>A library providing common logging-related functionality for SGL Projects.</Description>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
 </Project>
