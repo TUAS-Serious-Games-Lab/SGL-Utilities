@@ -13,7 +13,7 @@ namespace SGL.Utilities.PrometheusNet {
 
 	public static class MetricsExtensions {
 
-		private static Action<Gauge.Child>? getDisappearedLabelFunc(DisappearedMetricsLabelPolicy disappearedLabelPolicy) => disappearedLabelPolicy switch {
+		private static Action<Gauge.Child>? getDisappearedGaugeLabelFunc(DisappearedMetricsLabelPolicy disappearedLabelPolicy) => disappearedLabelPolicy switch {
 			DisappearedMetricsLabelPolicy.Remove => g => g.Remove(),
 			DisappearedMetricsLabelPolicy.Unpublish => g => g.Unpublish(),
 			DisappearedMetricsLabelPolicy.SetZero => g => g.Set(0),
@@ -25,7 +25,7 @@ namespace SGL.Utilities.PrometheusNet {
 				if (entry.Key == null || entry.Value == null) continue;
 				gauge.WithLabels(entry.Key).Set(convertValue(entry.Value));
 			}
-			Action<Gauge.Child>? handleDisappearedLabel = getDisappearedLabelFunc(disappearedLabelPolicy);
+			Action<Gauge.Child>? handleDisappearedLabel = getDisappearedGaugeLabelFunc(disappearedLabelPolicy);
 			if (handleDisappearedLabel == null) return;
 			var disappeared_app_labels = gauge.GetAllLabelValues().Select(e => e.SingleOrDefault()).Where(label => label != null && !currentValues.ContainsKey(label));
 			foreach (var label in disappeared_app_labels) {
@@ -38,7 +38,7 @@ namespace SGL.Utilities.PrometheusNet {
 				if (entry.Key == null || entry.Value == null) continue;
 				gauge.WithLabels(entry.Key).Set(convertValue(entry.Value));
 			}
-			Action<Gauge.Child>? handleDisappearedLabel = getDisappearedLabelFunc(disappearedLabelPolicy);
+			Action<Gauge.Child>? handleDisappearedLabel = getDisappearedGaugeLabelFunc(disappearedLabelPolicy);
 			if (handleDisappearedLabel == null) return;
 			var disappeared_app_labels = gauge.GetAllLabelValues().Where(label => !currentValues.ContainsKey(label));
 			foreach (var label in disappeared_app_labels) {
