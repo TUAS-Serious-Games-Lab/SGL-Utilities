@@ -9,11 +9,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DebugType>Portable</DebugType>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DebugSymbols>false</DebugSymbols>
-    <DebugType>None</DebugType>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.10" />
@@ -32,6 +29,10 @@
     <Authors>Serious Games Lab Team at Hochschule Trier</Authors>
     <Company>Hochschule Trier, Serious Games Lab</Company>
     <Description>A library providing common backend service functionality for SGL projects.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
 </Project>
