@@ -12,9 +12,9 @@ using System.Net;
 namespace SGL.Utilities.Backend.AspNetCore {
 
 	/// <summary>
-	/// Provides the <see cref="UseLoggingExceptionHandler{TStartup}(IApplicationBuilder)"/> extension method.
+	/// Provides the <see cref="UseLoggingExceptionHandler{TStartup}(IApplicationBuilder)"/>, <see cref="AddModelStateValidationErrorLogging(IServiceCollection)"/>, and <see cref="AddModelStateValidationErrorLogging(IServiceCollection, Action{ModelError})"/> extension methods.
 	/// </summary>
-	public static class LoggingExceptionHandlerExtensions {
+	public static class ErrorLoggingExtensions {
 		/// <summary>
 		/// Installs a simple exception handler in the <c>app</c> that logs the exception to an <c><![CDATA[ILogger<TStartup>]]></c> and responds with a generic plain text error message <c>"Internal server error."</c>.
 		/// </summary>
