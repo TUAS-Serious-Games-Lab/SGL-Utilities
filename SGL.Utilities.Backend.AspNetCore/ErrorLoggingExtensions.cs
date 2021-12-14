@@ -48,7 +48,7 @@ namespace SGL.Utilities.Backend.AspNetCore {
 		/// <param name="errorCallback">An action to be called for each error encountered.</param>
 		/// <returns>A reference to <paramref name="services"/> for chaining.</returns>
 		/// <remarks>Based on https://github.com/dotnet/AspNetCore.Docs/issues/12157#issuecomment-487756787 </remarks>
-		public static IServiceCollection AddModelStateValidationErrorLogging(this IServiceCollection services, Action<ModelError> errorCallback) {
+		public static IServiceCollection AddModelStateValidationErrorLogging(this IServiceCollection services, Action<ModelError, ActionContext> errorCallback) {
 			services.PostConfigure<ApiBehaviorOptions>(options => {
 				var builtInFactory = options.InvalidModelStateResponseFactory;
 
@@ -58,7 +58,7 @@ namespace SGL.Utilities.Backend.AspNetCore {
 					var errors = context.ModelState.SelectMany(msePair => msePair.Value.Errors);
 					logger.LogError("Request failed due to the following model state validation errors: {errors}", String.Join(", ", errors.Select(e => $"\"{e.ErrorMessage}\"")));
 					foreach (var error in errors) {
-						errorCallback(error);
+						errorCallback(error, context);
 					}
 					return builtInFactory(context);
 				};
