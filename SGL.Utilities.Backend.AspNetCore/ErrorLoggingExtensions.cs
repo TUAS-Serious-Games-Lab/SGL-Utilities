@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net;
 
 namespace SGL.Utilities.Backend.AspNetCore {
+	internal class ModelStateValidation { }
 
 	/// <summary>
 	/// Provides the <see cref="UseLoggingExceptionHandler{TStartup}(IApplicationBuilder)"/>, <see cref="AddModelStateValidationErrorLogging(IServiceCollection)"/>, and <see cref="AddModelStateValidationErrorLogging(IServiceCollection, Action{ModelError})"/> extension methods.
@@ -36,8 +37,6 @@ namespace SGL.Utilities.Backend.AspNetCore {
 			return app;
 		}
 
-		private const string ModelStateErrorCategoryName = "ModelStateValidation";
-
 		/// <summary>
 		/// Configures <see cref="ApiBehaviorOptions.InvalidModelStateResponseFactory"/> to use a warpper that logs encountered request errors and then calls the original factory to generate the actual repsonse.
 		/// The errors are logged in one combined message per failed request.
@@ -54,7 +53,7 @@ namespace SGL.Utilities.Backend.AspNetCore {
 
 				options.InvalidModelStateResponseFactory = context => {
 					var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-					var logger = loggerFactory.CreateLogger(ModelStateErrorCategoryName);
+					var logger = loggerFactory.CreateLogger<ModelStateValidation>();
 					var errors = context.ModelState.SelectMany(msePair => msePair.Value.Errors);
 					logger.LogError("Request failed due to the following model state validation errors: {errors}", String.Join(", ", errors.Select(e => $"\"{e.ErrorMessage}\"")));
 					foreach (var error in errors) {
@@ -79,7 +78,7 @@ namespace SGL.Utilities.Backend.AspNetCore {
 
 				options.InvalidModelStateResponseFactory = context => {
 					var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-					var logger = loggerFactory.CreateLogger(ModelStateErrorCategoryName);
+					var logger = loggerFactory.CreateLogger<ModelStateValidation>();
 					var errors = context.ModelState.SelectMany(msePair => msePair.Value.Errors);
 					logger.LogError("Request failed due to the following model state validation errors: {errors}", String.Join(", ", errors.Select(e => $"\"{e.ErrorMessage}\"")));
 					return builtInFactory(context);
