@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace SGL.Utilities.Crypto {
@@ -18,6 +19,9 @@ namespace SGL.Utilities.Crypto {
 	public class EncryptionInfo {
 		public DataEncryptionMode DataMode { get; set; }
 		public byte[] IV { get; set; } = new byte[0];
+#if !NET6_0_OR_GREATER
+		[JsonConverter(typeof(KeyIdDictionaryJsonConverter<DataKeyInfo>))]
+#endif
 		public Dictionary<KeyId, DataKeyInfo> DataKeys { get; set; } = new Dictionary<KeyId, DataKeyInfo>();
 		public byte[]? SenderPublicKey { get; set; }
 	}

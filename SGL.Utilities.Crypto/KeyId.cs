@@ -2,6 +2,7 @@
 using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Crypto.Parameters;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -94,7 +95,7 @@ namespace SGL.Utilities.Crypto {
 #if NET6_0_OR_GREATER
 		public override KeyId ReadAsPropertyName(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
 			var str = reader.GetString();
-			if (str == null) throw new Exception("Got null value for KeyId used in dictionary key.");
+			if (str == null) throw new NotSupportedException("Null values are not allowed as dictionary keys.");
 			return KeyId.Parse(str);
 		}
 #endif
@@ -108,5 +109,40 @@ namespace SGL.Utilities.Crypto {
 			writer.WritePropertyName(value.ToString()!);
 		}
 #endif
+	}
+
+	public class KeyIdDictionaryJsonConverter<Value> : JsonConverter<Dictionary<KeyId, Value>> {
+		public override Dictionary<KeyId, Value>? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+			if (reader.TokenType != JsonTokenType.StartObject) throw new JsonException("Unexpected JSON token.");
+			var dict = new Dictionary<KeyId, Value>();
+			while (reader.Read()) {
+				if (reader.TokenType == JsonTokenType.EndObject) break;
+				string keyStr = reader.GetString() ?? throw new JsonException("Couldn't read JSON property name.");
+				reader.Read();
+				var key = KeyId.Parse(keyStr);
+				var value = JsonSerializer.Deserialize<Value>(ref reader, options);
+				if (value == null) {
+					throw new JsonException($"Couldn't reed value for key '{keyStr}'.");
+				}
+				dict.Add(key, value);
+			}
+			if (reader.TokenType == JsonTokenType.EndObject) {
+				return dict;
+			}
+			else {
+				throw new JsonException("Unexpected end of JSON object.");
+			}
+		}
+
+		public override void Write(Utf8JsonWriter writer, Dictionary<KeyId, Value> value, JsonSerializerOptions options) {
+			writer.WriteStartObject();
+			foreach (var kv in value) {
+				var keyIdStr = kv.Key.ToString();
+				if (keyIdStr == null) throw new NotSupportedException("Null values are not allowed as dictionary keys.");
+				writer.WritePropertyName(keyIdStr);
+				JsonSerializer.Serialize<Value>(writer, kv.Value, options);
+			}
+			writer.WriteEndObject();
+		}
 	}
 }
