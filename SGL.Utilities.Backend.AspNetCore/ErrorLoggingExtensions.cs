@@ -13,7 +13,7 @@ namespace SGL.Utilities.Backend.AspNetCore {
 	internal class ModelStateValidation { }
 
 	/// <summary>
-	/// Provides the <see cref="UseLoggingExceptionHandler{TStartup}(IApplicationBuilder)"/>, <see cref="AddModelStateValidationErrorLogging(IServiceCollection)"/>, and <see cref="AddModelStateValidationErrorLogging(IServiceCollection, Action{ModelError})"/> extension methods.
+	/// Provides the <see cref="UseLoggingExceptionHandler{TStartup}(IApplicationBuilder)"/>, <see cref="AddModelStateValidationErrorLogging(IServiceCollection)"/>, and <see cref="AddModelStateValidationErrorLogging(IServiceCollection, Action{ModelError,ActionContext})"/> extension methods.
 	/// </summary>
 	public static class ErrorLoggingExtensions {
 		/// <summary>
