@@ -51,6 +51,10 @@ namespace SGL.Utilities.Crypto {
 			return ListKnownCertificates().Select(cert => cert.GetPublicKey());
 		}
 
+		public void LoadCertificatesFromEmbeddedStringConstant(string pemContent) {
+			LoadCertificatesFromReader(new StringReader(pemContent), "[embedded data]");
+		}
+
 		public Task LoadCertificatesFromHttpAsync(Uri source, CancellationToken ct = default) {
 			HttpClient httpClient = new();
 			return LoadCertificatesFromHttpAsync(httpClient, source, ct);
