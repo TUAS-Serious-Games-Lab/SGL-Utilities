@@ -66,6 +66,7 @@ namespace SGL.Utilities.Backend.AspNetCore {
 						var token = readTokenFromRequest(context.Request);
 						var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Authentication>>();
 						logger.LogError(context.Result.Failure, "Access forbidden for {verb} access to {path} from user {userid} and app {appName}.",
+							context.Request.Method, context.Request.Path.Value,
 							token?.Claims.GetClaim("userid") ?? "null", token?.Claims.GetClaim("appname") ?? "null");
 						return Task.CompletedTask;
 					},
