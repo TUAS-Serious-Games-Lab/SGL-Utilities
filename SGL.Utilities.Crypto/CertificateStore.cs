@@ -59,6 +59,9 @@ namespace SGL.Utilities.Crypto {
 		public IEnumerable<X509Name> ListKnownSubjectDNs() {
 			return certificatesBySubjectDN.Keys;
 		}
+		public IEnumerable<SubjectKeyIdentifier> ListKnownSubjectKeyIdentifiers() {
+			return certificatesBySKID.Keys;
+		}
 		public IEnumerable<X509Certificate> ListKnownCertificates() {
 			return certificatesByKeyId.Values;
 		}
