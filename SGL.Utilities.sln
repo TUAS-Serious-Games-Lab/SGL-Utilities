@@ -34,7 +34,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SGL.Utilities.PrometheusNet
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SGL.Utilities.Crypto", "SGL.Utilities.Crypto\SGL.Utilities.Crypto.csproj", "{AC62DF32-4571-42F9-9F30-3A270CCC66AF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SGL.Utilities.Crypto.Tests", "SGL.Utilities.Crypto.Tests\SGL.Utilities.Crypto.Tests.csproj", "{BA0F3932-4FCC-46B9-BF83-76EB86B470D4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SGL.Utilities.Crypto.Tests", "SGL.Utilities.Crypto.Tests\SGL.Utilities.Crypto.Tests.csproj", "{BA0F3932-4FCC-46B9-BF83-76EB86B470D4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

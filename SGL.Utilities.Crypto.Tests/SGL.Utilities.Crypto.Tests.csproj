@@ -22,6 +22,8 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\SGL.Utilities.Crypto\SGL.Utilities.Crypto.csproj" />
+		<ProjectReference Include="..\SGL.Utilities.TestUtilities.XUnit\SGL.Utilities.TestUtilities.XUnit.csproj" />
+		<ProjectReference Include="..\SGL.Utilities\SGL.Utilities.csproj" />
 	</ItemGroup>
 
 </Project>
