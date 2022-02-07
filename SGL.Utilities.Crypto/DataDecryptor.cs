@@ -25,5 +25,15 @@ namespace SGL.Utilities.Crypto {
 			cipher.Init(forEncryption: false, keyParams);
 			return new CipherStream(inputStream, cipher, null);
 		}
+
+		public static DataDecryptor? FromEncryptionInfo(EncryptionInfo encryptionInfo, KeyDecryptor keyDecryptor) {
+			var dataKey = keyDecryptor.DecryptKey(encryptionInfo);
+			if (dataKey != null) {
+				return new DataDecryptor(encryptionInfo.DataMode, encryptionInfo.IV, dataKey);
+			}
+			else {
+				return null;
+			}
+		}
 	}
 }
