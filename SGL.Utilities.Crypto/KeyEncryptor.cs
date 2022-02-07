@@ -75,6 +75,7 @@ namespace SGL.Utilities.Crypto {
 			var ecdh = new ECDHBasicAgreement();
 			ecdh.Init(senderKeyPair.Private);
 			var agreement = ecdh.CalculateAgreement(recipientKey);
+			// Decoding / Encoding as described here: https://stackoverflow.com/a/19614887
 			var encodedSenderPublicKey = SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(senderKeyPair.Public).GetEncoded();
 
 			var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
