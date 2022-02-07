@@ -25,10 +25,12 @@ namespace SGL.Utilities.Crypto {
 				return password;
 			}
 		}
-
 		public void LoadKeyPair(string path, char[] password) {
 			using var fileReader = File.OpenText(path);
-			PemReader pemReader = new PemReader(fileReader, new PasswordFinder(password));
+			LoadKeyPair(fileReader, password);
+		}
+		public void LoadKeyPair(TextReader reader, char[] password) {
+			PemReader pemReader = new PemReader(reader, new PasswordFinder(password));
 			var pemContent = pemReader.ReadObject();
 			if (pemContent == null) throw new Exception("Got null from loading PEM file.");
 			if (pemContent is AsymmetricCipherKeyPair kp) {
