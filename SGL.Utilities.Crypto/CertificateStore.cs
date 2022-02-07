@@ -21,6 +21,11 @@ namespace SGL.Utilities.Crypto {
 		private Dictionary<X509Name, X509Certificate> certificatesBySubjectDN = new Dictionary<X509Name, X509Certificate>();
 		private Dictionary<SubjectKeyIdentifier, X509Certificate> certificatesBySKID = new Dictionary<SubjectKeyIdentifier, X509Certificate>();
 
+		public CertificateStore(ILogger<CertificateStore> logger, ICertificateValidator validator) {
+			this.logger = logger;
+			this.validator = validator;
+		}
+
 		public X509Certificate? GetCertificateByKeyId(KeyId id) {
 			if (certificatesByKeyId.TryGetValue(id, out var cert)) {
 				return cert;
