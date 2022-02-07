@@ -122,7 +122,7 @@ namespace SGL.Utilities.Crypto {
 				}
 			}
 			if (certs.Count == 0) {
-				logger.LogWarning("Source {src} contained no certificates.", sourceName);
+				logger.LogWarning("Source {src} contained no valid certificates.", sourceName);
 			}
 			return certs;
 		}
