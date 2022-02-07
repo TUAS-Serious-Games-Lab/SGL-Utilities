@@ -9,12 +9,10 @@ using System.IO;
 namespace SGL.Utilities.Crypto {
 	public class DataEncryptor {
 		private SecureRandom random;
-		private KeyEncryptor keyEncryptor;
 		private byte[] iv;
 		private byte[] dataKey;
 
-		public DataEncryptor(KeyEncryptor keyEncryptor, SecureRandom random) {
-			this.keyEncryptor = keyEncryptor;
+		public DataEncryptor(SecureRandom random) {
 			this.random = random;
 			iv = new byte[7];
 			random.NextBytes(iv);
@@ -29,7 +27,7 @@ namespace SGL.Utilities.Crypto {
 			return new CipherStream(outputStream, null, cipher);
 		}
 
-		public EncryptionInfo GenerateEncryptionInfo() {
+		public EncryptionInfo GenerateEncryptionInfo(KeyEncryptor keyEncryptor) {
 			EncryptionInfo result = new EncryptionInfo();
 			result.DataMode = DataEncryptionMode.AES_256_CCM;
 			result.IV = iv;
