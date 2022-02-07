@@ -19,6 +19,7 @@ namespace SGL.Utilities.Crypto {
 		private readonly ICertificateValidator validator;
 		private Dictionary<KeyId, X509Certificate> certificatesByKeyId = new Dictionary<KeyId, X509Certificate>();
 		private Dictionary<X509Name, X509Certificate> certificatesBySubjectDN = new Dictionary<X509Name, X509Certificate>();
+		private Dictionary<SubjectKeyIdentifier, X509Certificate> certificatesBySKID = new Dictionary<SubjectKeyIdentifier, X509Certificate>();
 
 		public X509Certificate? GetCertificateByKeyId(KeyId id) {
 			if (certificatesByKeyId.TryGetValue(id, out var cert)) {
@@ -31,6 +32,15 @@ namespace SGL.Utilities.Crypto {
 
 		public X509Certificate? GetCertificateBySubjectDN(X509Name subjectDN) {
 			if (certificatesBySubjectDN.TryGetValue(subjectDN, out var cert)) {
+				return cert;
+			}
+			else {
+				return null;
+			}
+		}
+
+		public X509Certificate? GetCertificateBySubjectKeyIdentifier(SubjectKeyIdentifier skid) {
+			if (certificatesBySKID.TryGetValue(skid, out var cert)) {
 				return cert;
 			}
 			else {
@@ -80,6 +90,10 @@ namespace SGL.Utilities.Crypto {
 				if (validator.CheckCertificate(cert)) {
 					certificatesByKeyId[keyid] = cert;
 					certificatesBySubjectDN[cert.SubjectDN] = cert;
+					var skid = cert.GetExtensionValue(X509Extensions.SubjectKeyIdentifier);
+					if (skid != null) {
+						certificatesBySKID[new SubjectKeyIdentifier(skid)] = cert;
+					}
 				}
 				else {
 					logger.LogWarning("The certificate with subject {subject} and key ID {keyid} from {source} failed validation. It will not be added to the certificate store.", cert.SubjectDN, keyid, sourceName);
