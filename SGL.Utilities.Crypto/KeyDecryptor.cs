@@ -9,10 +9,21 @@ using System;
 
 namespace SGL.Utilities.Crypto {
 	public class KeyDecryptor {
-		private AsymmetricKeyParameter privateKey;
+		private AsymmetricCipherKeyPair keyPair;
+		private KeyId keyId;
 
-		public KeyDecryptor(AsymmetricKeyParameter privateKey) {
-			this.privateKey = privateKey;
+		public KeyDecryptor(AsymmetricCipherKeyPair keyPair) {
+			this.keyPair = keyPair;
+			keyId = KeyId.CalculateId(keyPair.Public);
+		}
+
+		public byte[]? DecryptKey(EncryptionInfo encryptionInfo) {
+			if (encryptionInfo.DataKeys.TryGetValue(keyId, out var dataKeyInfo)) {
+				return DecryptKey(dataKeyInfo, encryptionInfo.SenderPublicKey);
+			}
+			else {
+				return null;
+			}
 		}
 
 		public byte[] DecryptKey(DataKeyInfo dataKeyInfo, byte[]? sharedSenderPublicKey) {
@@ -28,7 +39,7 @@ namespace SGL.Utilities.Crypto {
 
 		private byte[] DecryptKeyRsa(DataKeyInfo dataKeyInfo) {
 			var engine = new Pkcs1Encoding(new RsaEngine());
-			engine.Init(forEncryption: false, privateKey);
+			engine.Init(forEncryption: false, keyPair.Private);
 			return engine.ProcessBlock(dataKeyInfo.EncryptedKey, 0, dataKeyInfo.EncryptedKey.Length);
 		}
 
@@ -40,7 +51,7 @@ namespace SGL.Utilities.Crypto {
 			// Decoding / Encoding as described here: https://stackoverflow.com/a/19614887
 			ECPublicKeyParameters senderPublicKey = (ECPublicKeyParameters)PublicKeyFactory.CreateKey(senderPublicKeyEncoded);
 			var ecdh = new ECDHBasicAgreement();
-			ecdh.Init(privateKey);
+			ecdh.Init(keyPair.Private);
 			var agreement = ecdh.CalculateAgreement(senderPublicKey);
 			var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
 			var keyParams = EcdhKdfHelper.DeriveKeyAndIV(agreement.ToByteArray(), senderPublicKeyEncoded);
