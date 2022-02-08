@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.OpenSsl;
@@ -103,7 +104,7 @@ namespace SGL.Utilities.Crypto {
 					certificatesBySubjectDN[cert.SubjectDN] = cert;
 					var skid = cert.GetExtensionValue(X509Extensions.SubjectKeyIdentifier);
 					if (skid != null) {
-						certificatesBySKID[new SubjectKeyIdentifier(skid)] = cert;
+						certificatesBySKID[SubjectKeyIdentifier.GetInstance(Asn1Object.FromByteArray(skid.GetOctets()))] = cert;
 					}
 				}
 				else {
