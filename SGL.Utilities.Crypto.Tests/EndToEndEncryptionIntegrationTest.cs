@@ -218,5 +218,73 @@ namespace SGL.Utilities.Crypto.Tests {
 		public async Task DataKeyCantBeDecryptedByOtherEcKeyPairs() {
 			await DataKeyCantBeDecryptedByOtherKeyPairs(KeyId.CalculateId(fixture.EcKeyPair1.Public), fixture.EcPrivAttackerPem);
 		}
+
+		[Fact]
+		public async Task EcSharedSenderKeyModeCorrectlyEncryptsForAllRecipients() {
+			KeyOnlyTrustValidator validator = new KeyOnlyTrustValidator(loggerFactory.CreateLogger<KeyOnlyTrustValidator>());
+			using var signerPemReader = new StreamReader(new MemoryStream(fixture.SignerPubPem));
+			validator.LoadPublicKeysFromReader(signerPemReader, "TestSigner.pem");
+			Assert.True(validator.CheckCertificate(fixture.RsaCert1));
+			Assert.True(validator.CheckCertificate(fixture.EcCert1));
+			Assert.True(validator.CheckCertificate(fixture.EcCert2));
+			Assert.True(validator.CheckCertificate(fixture.EcCert3));
+			Assert.True(validator.CheckCertificate(fixture.EcCert4));
+
+			var certStore = new CertificateStore(loggerFactory.CreateLogger<CertificateStore>(), validator);
+			using var certsPemReader = new StreamReader(new MemoryStream(fixture.RsaCert1Pem.Concat(fixture.EcCert1Pem).Concat(fixture.EcCert2Pem).Concat(fixture.EcCert3Pem).Concat(fixture.EcCert4Pem).ToArray()));
+			certStore.LoadCertificatesFromReader(certsPemReader, "Recipients.pem");
+			Assert.Equal(5, certStore.ListKnownCertificates().Count());
+			var keyIdRsa = KeyId.CalculateId(fixture.RsaKeyPair1.Public);
+			var keyIdEc1 = KeyId.CalculateId(fixture.EcKeyPair1.Public);
+			var keyIdEc2 = KeyId.CalculateId(fixture.EcKeyPair2.Public);
+			var keyIdEc3 = KeyId.CalculateId(fixture.EcKeyPair3.Public);
+			var keyIdEc4 = KeyId.CalculateId(fixture.EcKeyPair4.Public);
+			Assert.Equal(fixture.RsaCert1, certStore.GetCertificateByKeyId(keyIdRsa));
+			Assert.Equal(fixture.EcCert1, certStore.GetCertificateByKeyId(keyIdEc1));
+			Assert.Equal(fixture.EcCert2, certStore.GetCertificateByKeyId(keyIdEc2));
+			Assert.Equal(fixture.EcCert3, certStore.GetCertificateByKeyId(keyIdEc3));
+			Assert.Equal(fixture.EcCert4, certStore.GetCertificateByKeyId(keyIdEc4));
+
+			var clearTextInput1 = GenerateTestContent(1 << 20);
+			using var encryptedContent1 = new MemoryStream();
+			EncryptionInfo metadata1;
+
+			var keyEncryptor = new KeyEncryptor(certStore.ListKnownKeyIdsAndPublicKeys().ToList(), fixture.Random, allowSharedSenderKeyPair: true);
+			metadata1 = await encrypt(clearTextInput1, encryptedContent1, keyEncryptor);
+			Assert.Equal(512, metadata1.DataKeys[keyIdRsa].EncryptedKey.Length);
+			Assert.Equal(KeyEncryptionMode.RSA_PKCS1, metadata1.DataKeys[keyIdRsa].Mode);
+			Assert.Null(metadata1.DataKeys[keyIdRsa].SenderPublicKey);
+
+			Assert.NotNull(metadata1.SenderPublicKey);
+			Assert.Null(metadata1.DataKeys[keyIdEc1].SenderPublicKey);
+			Assert.Null(metadata1.DataKeys[keyIdEc2].SenderPublicKey);
+			Assert.NotNull(metadata1.DataKeys[keyIdEc3].SenderPublicKey);
+			Assert.NotNull(metadata1.DataKeys[keyIdEc4].SenderPublicKey);
+			Assert.All(new[] { keyIdEc1, keyIdEc2, keyIdEc3, keyIdEc4 }, kId => Assert.Equal(KeyEncryptionMode.ECDH_KDF2_SHA256_AES_256_CCM, metadata1.DataKeys[kId].Mode));
+			Assert.NotEqual(metadata1.DataKeys[keyIdEc1].EncryptedKey, metadata1.DataKeys[keyIdEc2].EncryptedKey);
+
+			var keyStoreRsa = new PrivateKeyStore();
+			var keyStoreEc1 = new PrivateKeyStore();
+			var keyStoreEc2 = new PrivateKeyStore();
+			var keyStoreEc3 = new PrivateKeyStore();
+			var keyStoreEc4 = new PrivateKeyStore();
+			keyStoreRsa.LoadKeyPair(new StreamReader(new MemoryStream(fixture.RsaPriv1Pem)), fixture.PrivKeyPassword);
+			keyStoreEc1.LoadKeyPair(new StreamReader(new MemoryStream(fixture.EcPriv1Pem)), fixture.PrivKeyPassword);
+			keyStoreEc2.LoadKeyPair(new StreamReader(new MemoryStream(fixture.EcPriv2Pem)), fixture.PrivKeyPassword);
+			keyStoreEc3.LoadKeyPair(new StreamReader(new MemoryStream(fixture.EcPriv3Pem)), fixture.PrivKeyPassword);
+			keyStoreEc4.LoadKeyPair(new StreamReader(new MemoryStream(fixture.EcPriv4Pem)), fixture.PrivKeyPassword);
+
+			var keyDecryptorRsa = new KeyDecryptor(keyStoreRsa.KeyPair);
+			var keyDecryptorEc1 = new KeyDecryptor(keyStoreEc1.KeyPair);
+			var keyDecryptorEc2 = new KeyDecryptor(keyStoreEc2.KeyPair);
+			var keyDecryptorEc3 = new KeyDecryptor(keyStoreEc3.KeyPair);
+			var keyDecryptorEc4 = new KeyDecryptor(keyStoreEc4.KeyPair);
+
+			Assert.Equal(clearTextInput1, (await decrypt(encryptedContent1, metadata1, keyDecryptorRsa)).ToArray());
+			Assert.Equal(clearTextInput1, (await decrypt(encryptedContent1, metadata1, keyDecryptorEc1)).ToArray());
+			Assert.Equal(clearTextInput1, (await decrypt(encryptedContent1, metadata1, keyDecryptorEc2)).ToArray());
+			Assert.Equal(clearTextInput1, (await decrypt(encryptedContent1, metadata1, keyDecryptorEc3)).ToArray());
+			Assert.Equal(clearTextInput1, (await decrypt(encryptedContent1, metadata1, keyDecryptorEc4)).ToArray());
+		}
 	}
 }
