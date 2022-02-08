@@ -206,7 +206,7 @@ namespace SGL.Utilities.Crypto.Tests {
 			privKeyStore.LoadKeyPair(privKeyPemReader, fixture.PrivKeyPassword);
 			var keyDecryptor = new KeyDecryptor(privKeyStore.KeyPair);
 
-			Assert.Throws<InvalidCipherTextException>(() => keyDecryptor.DecryptKey(metadata1.DataKeys[impersonatedRecipient], metadata1.SenderPublicKey));
+			Assert.ThrowsAny<CryptoException>(() => keyDecryptor.DecryptKey(metadata1.DataKeys[impersonatedRecipient], metadata1.SenderPublicKey));
 		}
 
 		[Fact]
