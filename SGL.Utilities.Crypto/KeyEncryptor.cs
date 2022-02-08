@@ -48,7 +48,7 @@ namespace SGL.Utilities.Crypto {
 			byte[]? encodedSharedSenderPublicKey = null;
 			if (useSharedSenderKeyPair && ecSharedSenderKeyPairCurveName != null) {
 				sharedSenderKeyPair = GenerateECKeyPair(ecSharedSenderKeyPairCurveName);
-				encodedSharedSenderPublicKey = SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(sharedSenderKeyPair.Public).GetEncoded();
+				encodedSharedSenderPublicKey = EcdhKdfHelper.EncodeEcPublicKey((ECPublicKeyParameters)(sharedSenderKeyPair.Public));
 			}
 			return (trustedRecipients.ToDictionary(kv => kv.Key, kv => EncryptDataKey(kv.Value, dataKey, sharedSenderKeyPair, encodedSharedSenderPublicKey)), encodedSharedSenderPublicKey);
 		}
@@ -73,7 +73,7 @@ namespace SGL.Utilities.Crypto {
 			bool useSharedSenderKPHere = sharedSenderKeyPair != null && sharedSenderKeyPair.Private is ECPrivateKeyParameters sharedEC &&
 							sharedEC.PublicKeyParamSet != null && recipientKey.PublicKeyParamSet != null && sharedEC.PublicKeyParamSet.Id == recipientKey.PublicKeyParamSet.Id;
 			AsymmetricCipherKeyPair senderKeyPair = useSharedSenderKPHere ? sharedSenderKeyPair! : GenerateECKeyPair(recipientKey.PublicKeyParamSet, recipientKey.Parameters);
-			byte[] encodedSenderPublicKey = useSharedSenderKPHere ? encodedSharedSenderPublicKey! : SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(senderKeyPair.Public).GetEncoded();
+			byte[] encodedSenderPublicKey = useSharedSenderKPHere ? encodedSharedSenderPublicKey! : EcdhKdfHelper.EncodeEcPublicKey((ECPublicKeyParameters)(senderKeyPair.Public));
 			var ecdh = new ECDHBasicAgreement();
 			ecdh.Init(senderKeyPair.Private);
 			var agreement = ecdh.CalculateAgreement(recipientKey);

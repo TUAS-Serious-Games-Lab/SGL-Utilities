@@ -48,8 +48,7 @@ namespace SGL.Utilities.Crypto {
 			if (senderPublicKeyEncoded == null && senderPublicKeyEncoded == null) {
 				throw new ArgumentException("Recipient-specific and shared sender public key must not both be missing");
 			}
-			// Decoding / Encoding as described here: https://stackoverflow.com/a/19614887
-			ECPublicKeyParameters senderPublicKey = (ECPublicKeyParameters)PublicKeyFactory.CreateKey(senderPublicKeyEncoded);
+			ECPublicKeyParameters senderPublicKey = EcdhKdfHelper.DecodeEcPublicKey(senderPublicKeyEncoded);
 			var ecdh = new ECDHBasicAgreement();
 			ecdh.Init(keyPair.Private);
 			var agreement = ecdh.CalculateAgreement(senderPublicKey);
