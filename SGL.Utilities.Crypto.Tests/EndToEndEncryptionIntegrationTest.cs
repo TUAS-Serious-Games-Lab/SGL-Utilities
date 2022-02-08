@@ -300,6 +300,19 @@ namespace SGL.Utilities.Crypto.Tests {
 			Assert.False(validator.CheckCertificate(fixture.RsaCertAttacker));
 			Assert.False(validator.CheckCertificate(fixture.EcCertAttacker));
 
+			var certStore = new CertificateStore(loggerFactory.CreateLogger<CertificateStore>(), validator);
+			using var certsPemReader = new StreamReader(new MemoryStream(fixture.RsaCert1Pem.Concat(fixture.RsaCert2Pem).Concat(fixture.EcCert1Pem).Concat(fixture.EcCert2Pem).Concat(fixture.EcCert3Pem).Concat(fixture.EcCert4Pem).Concat(fixture.RsaCertAttackerPem).Concat(fixture.EcCertAttackerPem).ToArray()));
+			certStore.LoadCertificatesFromReader(certsPemReader, "Recipients.pem");
+			Assert.Equal(6, certStore.ListKnownCertificates().Count());
+			Assert.Equal(fixture.RsaCert1, certStore.GetCertificateByKeyId(KeyId.CalculateId(fixture.RsaKeyPair1.Public)));
+			Assert.Equal(fixture.RsaCert2, certStore.GetCertificateByKeyId(KeyId.CalculateId(fixture.RsaKeyPair2.Public)));
+			Assert.Equal(fixture.EcCert1, certStore.GetCertificateByKeyId(KeyId.CalculateId(fixture.EcKeyPair1.Public)));
+			Assert.Equal(fixture.EcCert2, certStore.GetCertificateByKeyId(KeyId.CalculateId(fixture.EcKeyPair2.Public)));
+			Assert.Equal(fixture.EcCert3, certStore.GetCertificateByKeyId(KeyId.CalculateId(fixture.EcKeyPair3.Public)));
+			Assert.Equal(fixture.EcCert4, certStore.GetCertificateByKeyId(KeyId.CalculateId(fixture.EcKeyPair4.Public)));
+			Assert.Equal(fixture.EcCert4, certStore.GetCertificateBySubjectKeyIdentifier(new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(fixture.EcKeyPair4.Public))));
+			Assert.Null(certStore.GetCertificateByKeyId(KeyId.CalculateId(fixture.RsaKeyPairAttacker.Public)));
+			Assert.Null(certStore.GetCertificateByKeyId(KeyId.CalculateId(fixture.EcKeyPairAttacker.Public)));
 		}
 	}
 }
