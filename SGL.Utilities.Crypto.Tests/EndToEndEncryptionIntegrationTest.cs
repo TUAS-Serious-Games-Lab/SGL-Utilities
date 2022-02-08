@@ -286,5 +286,20 @@ namespace SGL.Utilities.Crypto.Tests {
 			Assert.Equal(clearTextInput1, (await decrypt(encryptedContent1, metadata1, keyDecryptorEc3)).ToArray());
 			Assert.Equal(clearTextInput1, (await decrypt(encryptedContent1, metadata1, keyDecryptorEc4)).ToArray());
 		}
+
+		[Fact]
+		public async Task SignerBasedValidationAcceptsProperlySignedCertificatesAndRejectsInvalidOnes() {
+			using var signerCertPemReader = new StreamReader(new MemoryStream(fixture.SignerCertPem));
+			CACertTrustValidator validator = new CACertTrustValidator(signerCertPemReader, "Signers.pem", ignoreValidityPeriod: false, loggerFactory.CreateLogger<CACertTrustValidator>(), loggerFactory.CreateLogger<CertificateStore>());
+			Assert.True(validator.CheckCertificate(fixture.RsaCert1));
+			Assert.True(validator.CheckCertificate(fixture.RsaCert2));
+			Assert.True(validator.CheckCertificate(fixture.EcCert1));
+			Assert.True(validator.CheckCertificate(fixture.EcCert2));
+			Assert.True(validator.CheckCertificate(fixture.EcCert3));
+			Assert.True(validator.CheckCertificate(fixture.EcCert4));
+			Assert.False(validator.CheckCertificate(fixture.RsaCertAttacker));
+			Assert.False(validator.CheckCertificate(fixture.EcCertAttacker));
+
+		}
 	}
 }
