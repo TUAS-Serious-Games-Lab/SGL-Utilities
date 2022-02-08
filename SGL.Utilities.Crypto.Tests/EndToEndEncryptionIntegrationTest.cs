@@ -35,6 +35,31 @@ namespace SGL.Utilities.Crypto.Tests {
 			return content;
 		}
 
+		private async Task<EncryptionInfo> encrypt(byte[] clearTextInput, Stream encryptedContentStream, KeyEncryptor keyEncryptor) {
+			var dataEncryptor = new DataEncryptor(fixture.Random);
+			using var clearInputStream = new MemoryStream(clearTextInput);
+			using var encStream = dataEncryptor.OpenEncryptionWriteStream(encryptedContentStream);
+			await clearInputStream.CopyToAsync(encStream);
+			return dataEncryptor.GenerateEncryptionInfo(keyEncryptor);
+		}
+
+		private async Task<MemoryStream> decrypt(MemoryStream encryptedContent, EncryptionInfo metadata, KeyDecryptor keyDecryptor) {
+			var clearOutputStream = new MemoryStream();
+			using var encryptedContentReadStream = new MemoryStream(encryptedContent.ToArray());
+			var dataDecryptor = DataDecryptor.FromEncryptionInfo(metadata, keyDecryptor);
+			Assert.NotNull(dataDecryptor);
+			if (dataDecryptor == null) throw new Exception("No matching encrypted data key found.");
+			using var decStream = dataDecryptor.OpenDecryptionReadStream(encryptedContentReadStream);
+			await decStream.CopyToAsync(clearOutputStream);
+			return clearOutputStream;
+		}
+
+		private static void assertMetadata(EncryptionInfo metadata1, int expectedDataKeyCount) {
+			Assert.Equal(DataEncryptionMode.AES_256_CCM, metadata1.DataMode);
+			Assert.Equal(expectedDataKeyCount, metadata1.DataKeys.Values.Count);
+			Assert.All(metadata1.DataKeys.Values, dki => Assert.InRange(dki.EncryptedKey.Length, 32, 1024));
+		}
+
 		private async Task TestE2EELoadingAndCorrectRoundTrip(byte[] recipientPrivateKeyPem, bool expectMissingDataKey) {
 			KeyOnlyTrustValidator validator = new KeyOnlyTrustValidator(loggerFactory.CreateLogger<KeyOnlyTrustValidator>());
 			using var signerPemReader = new StreamReader(new MemoryStream(fixture.SignerPubPem));
@@ -56,32 +81,16 @@ namespace SGL.Utilities.Crypto.Tests {
 			EncryptionInfo metadata1;
 
 			var keyEncryptor = new KeyEncryptor(certStore.ListKnownKeyIdsAndPublicKeys().ToList(), fixture.Random);
-			{
-				var dataEncryptor = new DataEncryptor(fixture.Random);
-				using var clearInputStream1 = new MemoryStream(clearTextInput1);
-				using var encStream = dataEncryptor.OpenEncryptionWriteStream(encryptedContent1);
-				await clearInputStream1.CopyToAsync(encStream);
-				metadata1 = dataEncryptor.GenerateEncryptionInfo(keyEncryptor);
-			}
+			metadata1 = await encrypt(clearTextInput1, encryptedContent1, keyEncryptor);
 
-			Assert.Equal(DataEncryptionMode.AES_256_CCM, metadata1.DataMode);
-			Assert.Equal(2, metadata1.DataKeys.Values.Count);
-			Assert.All(metadata1.DataKeys.Values, dki => Assert.InRange(dki.EncryptedKey.Length, 32, 1024));
+			assertMetadata(metadata1, 2);
 
 			var privKeyStore = new PrivateKeyStore();
 			using var privKeyPemReader = new StreamReader(new MemoryStream(recipientPrivateKeyPem));
 			privKeyStore.LoadKeyPair(privKeyPemReader, fixture.PrivKeyPassword);
-			using var clearOutputStream1 = new MemoryStream();
 			var keyDecryptor = new KeyDecryptor(privKeyStore.KeyPair);
 			if (!expectMissingDataKey) {
-				{
-					using var encryptedContentReadStream1 = new MemoryStream(encryptedContent1.ToArray());
-					var dataDecryptor = DataDecryptor.FromEncryptionInfo(metadata1, keyDecryptor);
-					Assert.NotNull(dataDecryptor);
-					if (dataDecryptor == null) throw new Exception("No matching encrypted data key found.");
-					using var decStream = dataDecryptor.OpenDecryptionReadStream(encryptedContentReadStream1);
-					await decStream.CopyToAsync(clearOutputStream1);
-				}
+				using var clearOutputStream1 = await decrypt(encryptedContent1, metadata1, keyDecryptor);
 
 				Assert.Equal(clearTextInput1, clearOutputStream1.ToArray());
 			}
@@ -129,22 +138,13 @@ namespace SGL.Utilities.Crypto.Tests {
 			EncryptionInfo metadata1;
 
 			var keyEncryptor = new KeyEncryptor(certStore.ListKnownKeyIdsAndPublicKeys().ToList(), fixture.Random);
-			{
-				var dataEncryptor = new DataEncryptor(fixture.Random);
-				using var clearInputStream1 = new MemoryStream(clearTextInput1);
-				using var encStream = dataEncryptor.OpenEncryptionWriteStream(encryptedContent1);
-				await clearInputStream1.CopyToAsync(encStream);
-				metadata1 = dataEncryptor.GenerateEncryptionInfo(keyEncryptor);
-			}
+			metadata1 = await encrypt(clearTextInput1, encryptedContent1, keyEncryptor);
 
-			Assert.Equal(DataEncryptionMode.AES_256_CCM, metadata1.DataMode);
-			Assert.Equal(2, metadata1.DataKeys.Values.Count);
-			Assert.All(metadata1.DataKeys.Values, dki => Assert.InRange(dki.EncryptedKey.Length, 32, 1024));
+			assertMetadata(metadata1, 2);
 
 			var privKeyStore = new PrivateKeyStore();
 			using var privKeyPemReader = new StreamReader(new MemoryStream(attackerPrivateKeyPem));
 			privKeyStore.LoadKeyPair(privKeyPemReader, fixture.PrivKeyPassword);
-			using var clearOutputStream1 = new MemoryStream();
 			var keyDecryptor = new KeyDecryptor(privKeyStore.KeyPair);
 
 			var dataDecryptor = DataDecryptor.FromEncryptionInfo(metadata1, keyDecryptor);
@@ -182,22 +182,13 @@ namespace SGL.Utilities.Crypto.Tests {
 			EncryptionInfo metadata1;
 
 			var keyEncryptor = new KeyEncryptor(certStore.ListKnownKeyIdsAndPublicKeys().ToList(), fixture.Random);
-			{
-				var dataEncryptor = new DataEncryptor(fixture.Random);
-				using var clearInputStream1 = new MemoryStream(clearTextInput1);
-				using var encStream = dataEncryptor.OpenEncryptionWriteStream(encryptedContent1);
-				await clearInputStream1.CopyToAsync(encStream);
-				metadata1 = dataEncryptor.GenerateEncryptionInfo(keyEncryptor);
-			}
+			metadata1 = await encrypt(clearTextInput1, encryptedContent1, keyEncryptor);
 
-			Assert.Equal(DataEncryptionMode.AES_256_CCM, metadata1.DataMode);
-			Assert.Equal(2, metadata1.DataKeys.Values.Count);
-			Assert.All(metadata1.DataKeys.Values, dki => Assert.InRange(dki.EncryptedKey.Length, 32, 1024));
+			assertMetadata(metadata1, 2);
 
 			var privKeyStore = new PrivateKeyStore();
 			using var privKeyPemReader = new StreamReader(new MemoryStream(attackerPrivateKeyPem));
 			privKeyStore.LoadKeyPair(privKeyPemReader, fixture.PrivKeyPassword);
-			using var clearOutputStream1 = new MemoryStream();
 			var keyDecryptor = new KeyDecryptor(privKeyStore.KeyPair);
 
 			Assert.Throws<InvalidCipherTextException>(() => keyDecryptor.DecryptKey(metadata1.DataKeys[impersonatedRecipient], metadata1.SenderPublicKey));
