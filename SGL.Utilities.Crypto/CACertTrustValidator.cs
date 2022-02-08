@@ -5,6 +5,7 @@ using Org.BouncyCastle.Security.Certificates;
 using Org.BouncyCastle.X509;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -41,6 +42,11 @@ namespace SGL.Utilities.Crypto {
 			}
 		}
 
+		public CACertTrustValidator(TextReader pemContent, string sourceName, bool ignoreValidityPeriod, ILogger<CACertTrustValidator> logger, ILogger<CertificateStore> caCertStoreLogger) {
+			this.logger = logger;
+			caCerts = new CertificateStore(caCertStoreLogger, new TrustedValidator(logger, ignoreValidityPeriod));
+			caCerts.LoadCertificatesFromReader(pemContent, sourceName);
+		}
 		public CACertTrustValidator(string pemContent, bool ignoreValidityPeriod, ILogger<CACertTrustValidator> logger, ILogger<CertificateStore> caCertStoreLogger) {
 			this.logger = logger;
 			caCerts = new CertificateStore(caCertStoreLogger, new TrustedValidator(logger, ignoreValidityPeriod));
