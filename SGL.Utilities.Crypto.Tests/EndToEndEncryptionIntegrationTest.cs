@@ -77,13 +77,23 @@ namespace SGL.Utilities.Crypto.Tests {
 			Assert.Equal(fixture.EcCert1, certStore.GetCertificateByKeyId(KeyId.CalculateId(fixture.EcKeyPair1.Public)));
 
 			var clearTextInput1 = GenerateTestContent(1 << 20);
+			var clearTextInput2 = GenerateTestContent(1 << 20);
+			var clearTextInput3 = GenerateTestContent(1 << 20);
 			using var encryptedContent1 = new MemoryStream();
+			using var encryptedContent2 = new MemoryStream();
+			using var encryptedContent3 = new MemoryStream();
 			EncryptionInfo metadata1;
+			EncryptionInfo metadata2;
+			EncryptionInfo metadata3;
 
 			var keyEncryptor = new KeyEncryptor(certStore.ListKnownKeyIdsAndPublicKeys().ToList(), fixture.Random);
 			metadata1 = await encrypt(clearTextInput1, encryptedContent1, keyEncryptor);
+			metadata2 = await encrypt(clearTextInput2, encryptedContent2, keyEncryptor);
+			metadata3 = await encrypt(clearTextInput3, encryptedContent3, keyEncryptor);
 
 			assertMetadata(metadata1, 2);
+			assertMetadata(metadata2, 2);
+			assertMetadata(metadata3, 2);
 
 			var privKeyStore = new PrivateKeyStore();
 			using var privKeyPemReader = new StreamReader(new MemoryStream(recipientPrivateKeyPem));
@@ -91,12 +101,17 @@ namespace SGL.Utilities.Crypto.Tests {
 			var keyDecryptor = new KeyDecryptor(privKeyStore.KeyPair);
 			if (!expectMissingDataKey) {
 				using var clearOutputStream1 = await decrypt(encryptedContent1, metadata1, keyDecryptor);
+				using var clearOutputStream2 = await decrypt(encryptedContent2, metadata2, keyDecryptor);
+				using var clearOutputStream3 = await decrypt(encryptedContent3, metadata3, keyDecryptor);
 
 				Assert.Equal(clearTextInput1, clearOutputStream1.ToArray());
+				Assert.Equal(clearTextInput2, clearOutputStream2.ToArray());
+				Assert.Equal(clearTextInput3, clearOutputStream3.ToArray());
 			}
 			else {
-				var dataDecryptor = DataDecryptor.FromEncryptionInfo(metadata1, keyDecryptor);
-				Assert.Null(dataDecryptor);
+				Assert.Null(DataDecryptor.FromEncryptionInfo(metadata1, keyDecryptor));
+				Assert.Null(DataDecryptor.FromEncryptionInfo(metadata2, keyDecryptor));
+				Assert.Null(DataDecryptor.FromEncryptionInfo(metadata3, keyDecryptor));
 			}
 		}
 
