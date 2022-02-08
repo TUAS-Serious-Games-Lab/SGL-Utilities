@@ -50,15 +50,15 @@ namespace SGL.Utilities.Crypto {
 				sharedSenderKeyPair = GenerateECKeyPair(ecSharedSenderKeyPairCurveName);
 				encodedSharedSenderPublicKey = SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(sharedSenderKeyPair.Public).GetEncoded();
 			}
-			return (trustedRecipients.ToDictionary(kv => kv.Key, kv => EncryptDataKey(kv.Value, dataKey, sharedSenderKeyPair)), encodedSharedSenderPublicKey);
+			return (trustedRecipients.ToDictionary(kv => kv.Key, kv => EncryptDataKey(kv.Value, dataKey, sharedSenderKeyPair, encodedSharedSenderPublicKey)), encodedSharedSenderPublicKey);
 		}
 
-		private DataKeyInfo EncryptDataKey(AsymmetricKeyParameter recipientKey, byte[] dataKey, AsymmetricCipherKeyPair? sharedSenderKeyPair) {
+		private DataKeyInfo EncryptDataKey(AsymmetricKeyParameter recipientKey, byte[] dataKey, AsymmetricCipherKeyPair? sharedSenderKeyPair, byte[]? encodedSharedSenderPublicKey) {
 			switch (recipientKey) {
 				case RsaKeyParameters rsa when !rsa.IsPrivate:
 					return EncryptDataKeyRsa(rsa, dataKey);
 				case ECPublicKeyParameters ec:
-					return EncryptDataKeyEcdhAes(ec, dataKey, sharedSenderKeyPair);
+					return EncryptDataKeyEcdhAes(ec, dataKey, sharedSenderKeyPair, encodedSharedSenderPublicKey);
 				default:
 					throw new ArgumentException($"Unsupported recipient key type {recipientKey.GetType().FullName}.");
 			}
@@ -69,15 +69,14 @@ namespace SGL.Utilities.Crypto {
 			var encryptedDataKey = rsa.ProcessBlock(dataKey, 0, dataKey.Length);
 			return new DataKeyInfo() { Mode = KeyEncryptionMode.RSA_PKCS1, EncryptedKey = encryptedDataKey };
 		}
-		private DataKeyInfo EncryptDataKeyEcdhAes(ECPublicKeyParameters recipientKey, byte[] dataKey, AsymmetricCipherKeyPair? sharedSenderKeyPair) {
+		private DataKeyInfo EncryptDataKeyEcdhAes(ECPublicKeyParameters recipientKey, byte[] dataKey, AsymmetricCipherKeyPair? sharedSenderKeyPair, byte[]? encodedSharedSenderPublicKey) {
 			bool useSharedSenderKPHere = sharedSenderKeyPair != null && sharedSenderKeyPair.Private is ECPrivateKeyParameters sharedEC &&
 							sharedEC.PublicKeyParamSet != null && recipientKey.PublicKeyParamSet != null && sharedEC.PublicKeyParamSet.Id == recipientKey.PublicKeyParamSet.Id;
 			AsymmetricCipherKeyPair senderKeyPair = useSharedSenderKPHere ? sharedSenderKeyPair! : GenerateECKeyPair(recipientKey.PublicKeyParamSet, recipientKey.Parameters);
+			byte[] encodedSenderPublicKey = useSharedSenderKPHere ? encodedSharedSenderPublicKey! : SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(senderKeyPair.Public).GetEncoded();
 			var ecdh = new ECDHBasicAgreement();
 			ecdh.Init(senderKeyPair.Private);
 			var agreement = ecdh.CalculateAgreement(recipientKey);
-			// Decoding / Encoding as described here: https://stackoverflow.com/a/19614887
-			var encodedSenderPublicKey = SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(senderKeyPair.Public).GetEncoded();
 
 			var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
 			var keyParams = EcdhKdfHelper.DeriveKeyAndIV(agreement.ToByteArray(), encodedSenderPublicKey);
