@@ -24,16 +24,26 @@ namespace SGL.Utilities.Crypto.Tests {
 		private readonly AsymmetricCipherKeyPair ecKeyPair1;
 		private readonly AsymmetricCipherKeyPair ecKeyPair2;
 
+		private readonly AsymmetricCipherKeyPair rsaKeyPairAttacker;
+		private readonly AsymmetricCipherKeyPair ecKeyPairAttacker;
+
 		private readonly X509Certificate rsaCert1;
 		private readonly X509Certificate rsaCert2;
 		private readonly X509Certificate ecCert1;
 		private readonly X509Certificate ecCert2;
+
+		private readonly AsymmetricCipherKeyPair attackerSigningKeyPair;
+		private readonly X509Certificate rsaCertAttacker;
+		private readonly X509Certificate ecCertAttacker;
 
 		private readonly byte[] signerPubPem;
 		private readonly byte[] rsaPub1Pem;
 		private readonly byte[] rsaPub2Pem;
 		private readonly byte[] ecPub1Pem;
 		private readonly byte[] ecPub2Pem;
+
+		private readonly byte[] rsaPubAttackerPem;
+		private readonly byte[] ecPubAttackerPem;
 
 		private readonly char[] privKeyPassword;
 		private readonly byte[] signerPrivPem;
@@ -42,10 +52,16 @@ namespace SGL.Utilities.Crypto.Tests {
 		private readonly byte[] ecPriv1Pem;
 		private readonly byte[] ecPriv2Pem;
 
+		private readonly byte[] rsaPrivAttackerPem;
+		private readonly byte[] ecPrivAttackerPem;
+
 		private readonly byte[] rsaCert1Pem;
 		private readonly byte[] rsaCert2Pem;
 		private readonly byte[] ecCert1Pem;
 		private readonly byte[] ecCert2Pem;
+
+		private readonly byte[] rsaCertAttackerPem;
+		private readonly byte[] ecCertAttackerPem;
 
 		public E2ECryptoFixture() {
 			random = new SecureRandom();
@@ -56,12 +72,16 @@ namespace SGL.Utilities.Crypto.Tests {
 			rsaGen.Init(rsaKeyParams);
 			ecGen.Init(ecKeyParams);
 			signerKeyPair = rsaGen.GenerateKeyPair();
+			attackerSigningKeyPair = rsaGen.GenerateKeyPair();
 			rsaKeyPair1 = rsaGen.GenerateKeyPair();
 			rsaKeyPair2 = rsaGen.GenerateKeyPair();
+			rsaKeyPairAttacker = rsaGen.GenerateKeyPair();
 			ecKeyPair1 = ecGen.GenerateKeyPair();
 			ecKeyPair2 = ecGen.GenerateKeyPair();
+			ecKeyPairAttacker = ecGen.GenerateKeyPair();
 
 			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signerKeyPair.Private);
+			Asn1SignatureFactory attackerSignatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), attackerSigningKeyPair.Private);
 			X509V3CertificateGenerator certGen = new X509V3CertificateGenerator();
 			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Test Signer"));
 			certGen.SetNotBefore(DateTime.UtcNow);
@@ -85,6 +105,15 @@ namespace SGL.Utilities.Crypto.Tests {
 			certGen.SetSerialNumber(serialBase.Add(BigInteger.ValueOf(4)));
 			ecCert2 = certGen.Generate(signatureFactory);
 
+			certGen.SetPublicKey(rsaKeyPairAttacker.Public);
+			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Attacker 1"));
+			certGen.SetSerialNumber(serialBase.Add(BigInteger.ValueOf(5)));
+			rsaCertAttacker = certGen.Generate(attackerSignatureFactory);
+			certGen.SetPublicKey(ecKeyPairAttacker.Public);
+			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Attacker 2"));
+			certGen.SetSerialNumber(serialBase.Add(BigInteger.ValueOf(6)));
+			ecCertAttacker = certGen.Generate(attackerSignatureFactory);
+
 			privKeyPassword = SecretGenerator.Instance.GenerateSecret(16).ToCharArray();
 
 			signerPubPem = WritePem(signerKeyPair.Public);
@@ -105,6 +134,14 @@ namespace SGL.Utilities.Crypto.Tests {
 			ecPub2Pem = WritePem(ecKeyPair2.Public);
 			ecCert2Pem = WritePem(ecCert2);
 			ecPriv2Pem = WritePem(ecKeyPair2.Private, privKeyPassword);
+
+			rsaPubAttackerPem = WritePem(rsaKeyPairAttacker.Public);
+			rsaCertAttackerPem = WritePem(rsaCertAttacker);
+			rsaPrivAttackerPem = WritePem(rsaKeyPairAttacker.Private, privKeyPassword);
+
+			ecPubAttackerPem = WritePem(ecKeyPairAttacker.Public);
+			ecCertAttackerPem = WritePem(ecCertAttacker);
+			ecPrivAttackerPem = WritePem(ecKeyPairAttacker.Private, privKeyPassword);
 		}
 
 		private byte[] WritePem(object obj) {
@@ -174,5 +211,27 @@ namespace SGL.Utilities.Crypto.Tests {
 		public byte[] EcCert1Pem => ecCert1Pem;
 
 		public byte[] EcCert2Pem => ecCert2Pem;
+
+		public byte[] RsaPubAttackerPem => rsaPubAttackerPem;
+
+		public byte[] EcPubAttackerPem => ecPubAttackerPem;
+
+		public byte[] RsaPrivAttackerPem => rsaPrivAttackerPem;
+
+		public byte[] EcPrivAttackerPem => ecPrivAttackerPem;
+
+		public byte[] RsaCertAttackerPem => rsaCertAttackerPem;
+
+		public byte[] EcCertAttackerPem => ecCertAttackerPem;
+
+		public AsymmetricCipherKeyPair RsaKeyPairAttacker => rsaKeyPairAttacker;
+
+		public AsymmetricCipherKeyPair EcKeyPairAttacker => ecKeyPairAttacker;
+
+		public AsymmetricCipherKeyPair AttackerSigningKeyPair => attackerSigningKeyPair;
+
+		public X509Certificate RsaCertAttacker => rsaCertAttacker;
+
+		public X509Certificate EcCertAttacker => ecCertAttacker;
 	}
 }
