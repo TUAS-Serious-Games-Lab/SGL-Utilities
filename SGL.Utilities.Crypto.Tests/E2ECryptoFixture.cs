@@ -1,5 +1,4 @@
-﻿using Org.BouncyCastle.Asn1.Nist;
-using Org.BouncyCastle.Asn1.Pkcs;
+﻿using Org.BouncyCastle.Asn1.Pkcs;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Generators;
@@ -9,10 +8,8 @@ using Org.BouncyCastle.OpenSsl;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.X509;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SGL.Utilities.Crypto.Tests {
@@ -63,22 +60,43 @@ namespace SGL.Utilities.Crypto.Tests {
 		private readonly byte[] rsaCertAttackerPem;
 		private readonly byte[] ecCertAttackerPem;
 
+		private Task<AsymmetricCipherKeyPair> GenerateRsaKeyPairAsync(int length) {
+			var rnd = SecureRandom.GetInstance("SHA256PRNG", false);
+			rnd.SetSeed(random.GenerateSeed(1024));
+			return Task.Run(() => {
+				KeyGenerationParameters rsaKeyParams = new KeyGenerationParameters(random, length);
+				RsaKeyPairGenerator rsaGen = new RsaKeyPairGenerator();
+				rsaGen.Init(rsaKeyParams);
+				return rsaGen.GenerateKeyPair();
+			});
+		}
+		private Task<AsymmetricCipherKeyPair> GenerateEcKeyPairAsync(int length) {
+			var rnd = SecureRandom.GetInstance("SHA256PRNG", false);
+			rnd.SetSeed(random.GenerateSeed(1024));
+			return Task.Run(() => {
+				KeyGenerationParameters ecKeyParams = new KeyGenerationParameters(random, length);
+				ECKeyPairGenerator ecGen = new ECKeyPairGenerator();
+				ecGen.Init(ecKeyParams);
+				return ecGen.GenerateKeyPair();
+			});
+		}
+
 		public E2ECryptoFixture() {
 			random = new SecureRandom();
-			KeyGenerationParameters rsaKeyParams = new KeyGenerationParameters(random, 4096);
-			KeyGenerationParameters ecKeyParams = new KeyGenerationParameters(random, 521);
-			RsaKeyPairGenerator rsaGen = new RsaKeyPairGenerator();
-			ECKeyPairGenerator ecGen = new ECKeyPairGenerator();
-			rsaGen.Init(rsaKeyParams);
-			ecGen.Init(ecKeyParams);
-			signerKeyPair = rsaGen.GenerateKeyPair();
-			attackerSigningKeyPair = rsaGen.GenerateKeyPair();
-			rsaKeyPair1 = rsaGen.GenerateKeyPair();
-			rsaKeyPair2 = rsaGen.GenerateKeyPair();
-			rsaKeyPairAttacker = rsaGen.GenerateKeyPair();
-			ecKeyPair1 = ecGen.GenerateKeyPair();
-			ecKeyPair2 = ecGen.GenerateKeyPair();
-			ecKeyPairAttacker = ecGen.GenerateKeyPair();
+
+			var rsaGeneratorTasks = Enumerable.Range(0, 5).Select(_ => GenerateRsaKeyPairAsync(4096)).ToArray();
+			var ecGeneratorTasks = Enumerable.Range(0, 3).Select(_ => GenerateEcKeyPairAsync(521)).ToArray();
+
+			Task.WaitAll(rsaGeneratorTasks.Concat(ecGeneratorTasks).ToArray());
+
+			signerKeyPair = rsaGeneratorTasks.ElementAt(0).Result;
+			attackerSigningKeyPair = rsaGeneratorTasks.ElementAt(1).Result;
+			rsaKeyPair1 = rsaGeneratorTasks.ElementAt(2).Result;
+			rsaKeyPair2 = rsaGeneratorTasks.ElementAt(3).Result;
+			rsaKeyPairAttacker = rsaGeneratorTasks.ElementAt(4).Result;
+			ecKeyPair1 = ecGeneratorTasks.ElementAt(0).Result;
+			ecKeyPair2 = ecGeneratorTasks.ElementAt(1).Result;
+			ecKeyPairAttacker = ecGeneratorTasks.ElementAt(2).Result;
 
 			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signerKeyPair.Private);
 			Asn1SignatureFactory attackerSignatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), attackerSigningKeyPair.Private);
