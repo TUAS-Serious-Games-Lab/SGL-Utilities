@@ -23,6 +23,7 @@ namespace SGL.Utilities.Crypto {
 			this.trustedRecipients = trustedRecipients;
 			this.random = random;
 			if (allowSharedSenderKeyPair) {
+				// Determine named curve that has the most recipients using it, to handle all those recipients using a shared sender EC public key.
 				var ecRecipientKeyCurveNames = trustedRecipients.Select(tr => tr.Value)
 					.OfType<ECPublicKeyParameters>()
 					.Where(pk => pk.PublicKeyParamSet != null)
