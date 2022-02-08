@@ -20,7 +20,7 @@ namespace SGL.Utilities.Crypto {
 			random.NextBytes(dataKey);
 		}
 
-		public CipherStream OpenEncryptionWriter(Stream outputStream) {
+		public CipherStream OpenEncryptionWriteStream(Stream outputStream) {
 			var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
 			var keyParams = new ParametersWithIV(new KeyParameter(dataKey), iv);
 			cipher.Init(forEncryption: true, keyParams);

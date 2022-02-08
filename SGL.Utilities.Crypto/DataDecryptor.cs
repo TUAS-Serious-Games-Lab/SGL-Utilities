@@ -19,7 +19,7 @@ namespace SGL.Utilities.Crypto {
 			this.dataKey = dataKey;
 		}
 
-		public CipherStream OpenDecryptionReader(Stream inputStream) {
+		public CipherStream OpenDecryptionReadStream(Stream inputStream) {
 			var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
 			var keyParams = new ParametersWithIV(new KeyParameter(dataKey), iv);
 			cipher.Init(forEncryption: false, keyParams);
