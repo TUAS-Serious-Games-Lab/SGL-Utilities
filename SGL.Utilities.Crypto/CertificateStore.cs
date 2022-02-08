@@ -68,6 +68,9 @@ namespace SGL.Utilities.Crypto {
 		public IEnumerable<AsymmetricKeyParameter> ListKnownPublicKeys() {
 			return ListKnownCertificates().Select(cert => cert.GetPublicKey());
 		}
+		public IEnumerable<KeyValuePair<KeyId, AsymmetricKeyParameter>> ListKnownKeyIdsAndPublicKeys() {
+			return certificatesByKeyId.Select(keyIdCert => new KeyValuePair<KeyId, AsymmetricKeyParameter>(keyIdCert.Key, keyIdCert.Value.GetPublicKey()));
+		}
 
 		public void LoadCertificatesFromEmbeddedStringConstant(string pemContent) {
 			LoadCertificatesFromReader(new StringReader(pemContent), "[embedded data]");
