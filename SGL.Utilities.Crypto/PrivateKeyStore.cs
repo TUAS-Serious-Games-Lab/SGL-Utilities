@@ -45,7 +45,7 @@ namespace SGL.Utilities.Crypto {
 				// The public key is a point on the curve, determined by multiplying the generator point (which is part of the curve domain definition)
 				// by the integer that forms the private key.
 				var q = ecPriv.Parameters.G.Multiply(ecPriv.D);
-				keyPair = new AsymmetricCipherKeyPair(new ECPublicKeyParameters(q, ecPriv.Parameters), ecPriv);
+				keyPair = new AsymmetricCipherKeyPair(ecPriv.PublicKeyParamSet != null ? new ECPublicKeyParameters(q, ecPriv.PublicKeyParamSet) : new ECPublicKeyParameters(q, ecPriv.Parameters), ecPriv);
 			}
 			else {
 				throw new ArgumentException("PEM file did not contain a key pair or a supported private key.", nameof(reader));
