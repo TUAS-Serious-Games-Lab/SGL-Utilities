@@ -15,11 +15,13 @@ namespace SGL.Utilities.Crypto {
 		private readonly ILogger<KeyOnlyTrustValidator> logger;
 		private readonly List<AsymmetricKeyParameter> trustedPublicKeys = new List<AsymmetricKeyParameter>();
 
-		public KeyOnlyTrustValidator(ILogger<KeyOnlyTrustValidator> logger) {
+
+		public KeyOnlyTrustValidator(TextReader reader, string sourceName, ILogger<KeyOnlyTrustValidator> logger) {
 			this.logger = logger;
+			LoadPublicKeysFromReader(reader, sourceName);
 		}
 
-		public void LoadPublicKeysFromReader(TextReader reader, string sourceName) {
+		private void LoadPublicKeysFromReader(TextReader reader, string sourceName) {
 			PemReader pemReader = new PemReader(reader);
 			object content;
 			int loadedCount = 0;

@@ -61,9 +61,8 @@ namespace SGL.Utilities.Crypto.Tests {
 		}
 
 		private async Task TestE2EELoadingAndCorrectRoundTrip(byte[] recipientPrivateKeyPem, bool expectMissingDataKey) {
-			KeyOnlyTrustValidator validator = new KeyOnlyTrustValidator(loggerFactory.CreateLogger<KeyOnlyTrustValidator>());
 			using var signerPemReader = new StreamReader(new MemoryStream(fixture.SignerPubPem));
-			validator.LoadPublicKeysFromReader(signerPemReader, "TestSigner.pem");
+			KeyOnlyTrustValidator validator = new KeyOnlyTrustValidator(signerPemReader, "TestSigner.pem", loggerFactory.CreateLogger<KeyOnlyTrustValidator>());
 			Assert.True(validator.CheckCertificate(fixture.RsaCert1));
 			Assert.True(validator.CheckCertificate(fixture.RsaCert2));
 			Assert.True(validator.CheckCertificate(fixture.EcCert1));
@@ -133,9 +132,8 @@ namespace SGL.Utilities.Crypto.Tests {
 		}
 
 		private async Task ForgedCertificatesAreRejectedAndDontGetDataKey(byte[] attackerPrivateKeyPem) {
-			KeyOnlyTrustValidator validator = new KeyOnlyTrustValidator(loggerFactory.CreateLogger<KeyOnlyTrustValidator>());
 			using var signerPemReader = new StreamReader(new MemoryStream(fixture.SignerPubPem));
-			validator.LoadPublicKeysFromReader(signerPemReader, "TestSigner.pem");
+			KeyOnlyTrustValidator validator = new KeyOnlyTrustValidator(signerPemReader, "TestSigner.pem", loggerFactory.CreateLogger<KeyOnlyTrustValidator>());
 			Assert.False(validator.CheckCertificate(fixture.RsaCertAttacker));
 			Assert.False(validator.CheckCertificate(fixture.EcCertAttacker));
 
@@ -177,9 +175,8 @@ namespace SGL.Utilities.Crypto.Tests {
 		}
 
 		private async Task DataKeyCantBeDecryptedByOtherKeyPairs(KeyId impersonatedRecipient, byte[] attackerPrivateKeyPem) {
-			KeyOnlyTrustValidator validator = new KeyOnlyTrustValidator(loggerFactory.CreateLogger<KeyOnlyTrustValidator>());
 			using var signerPemReader = new StreamReader(new MemoryStream(fixture.SignerPubPem));
-			validator.LoadPublicKeysFromReader(signerPemReader, "TestSigner.pem");
+			KeyOnlyTrustValidator validator = new KeyOnlyTrustValidator(signerPemReader, "TestSigner.pem", loggerFactory.CreateLogger<KeyOnlyTrustValidator>());
 			Assert.False(validator.CheckCertificate(fixture.RsaCertAttacker));
 			Assert.False(validator.CheckCertificate(fixture.EcCertAttacker));
 
@@ -221,9 +218,8 @@ namespace SGL.Utilities.Crypto.Tests {
 
 		[Fact]
 		public async Task EcSharedSenderKeyModeCorrectlyEncryptsForAllRecipients() {
-			KeyOnlyTrustValidator validator = new KeyOnlyTrustValidator(loggerFactory.CreateLogger<KeyOnlyTrustValidator>());
 			using var signerPemReader = new StreamReader(new MemoryStream(fixture.SignerPubPem));
-			validator.LoadPublicKeysFromReader(signerPemReader, "TestSigner.pem");
+			KeyOnlyTrustValidator validator = new KeyOnlyTrustValidator(signerPemReader, "TestSigner.pem", loggerFactory.CreateLogger<KeyOnlyTrustValidator>());
 			Assert.True(validator.CheckCertificate(fixture.RsaCert1));
 			Assert.True(validator.CheckCertificate(fixture.EcCert1));
 			Assert.True(validator.CheckCertificate(fixture.EcCert2));
