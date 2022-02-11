@@ -32,7 +32,6 @@ namespace SGL.Utilities.Crypto {
 		public void LoadKeyPair(TextReader reader, char[] password) {
 			PemReader pemReader = new PemReader(reader, new PasswordFinder(password));
 			var pemContent = pemReader.ReadObject();
-			if (pemContent == null) throw new Exception("Got null from loading PEM file.");
 			if (pemContent is AsymmetricCipherKeyPair kp) {
 				keyPair = kp;
 			}
@@ -49,7 +48,7 @@ namespace SGL.Utilities.Crypto {
 				keyPair = new AsymmetricCipherKeyPair(new ECPublicKeyParameters(q, ecPriv.Parameters), ecPriv);
 			}
 			else {
-				throw new Exception("PEM file did not contain a key pair");
+				throw new ArgumentException("PEM file did not contain a key pair or a supported private key.", nameof(reader));
 			}
 		}
 	}
