@@ -11,6 +11,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SGL.Utilities.Crypto {
+	/// <summary>
+	/// Implementes certificate validation according to a list of trusted certifiacte authority (CA) certificates, where a valid certifiacte must be signed by any of the CA certificates.
+	/// </summary>
 	public class CACertTrustValidator : ICertificateValidator {
 		private readonly CertificateStore caCerts;
 		private readonly ILogger<CACertTrustValidator> logger;
@@ -42,17 +45,40 @@ namespace SGL.Utilities.Crypto {
 			}
 		}
 
+		/// <summary>
+		/// Creates a <see cref="CACertTrustValidator"/> that trusts the CA certificates that are loaded from the given <see cref="TextReader"/> <paramref name="pemContent"/> in PEM format.
+		/// </summary>
+		/// <param name="pemContent">A <see cref="TextReader"/> that contains the certifiactes as PEM data.</param>
+		/// <param name="sourceName">A name for the source behind <paramref name="pemContent"/> to use for error message. This can, e.g. be a filename or an URL.</param>
+		/// <param name="ignoreValidityPeriod">Specified whether validity periods of the CA certificates are ignored. This can be used to avoid expiration of the certifiactes when they are baked into shipped software, that may no be updated in time to replace expired CA certificates.</param>
+		/// <param name="logger">A logger to use for the operations of the <see cref="CACertTrustValidator"/> itself.</param>
+		/// <param name="caCertStoreLogger">A logger to use for the internal <see cref="CertificateStore"/> that stores the CA certifiactes.</param>
 		public CACertTrustValidator(TextReader pemContent, string sourceName, bool ignoreValidityPeriod, ILogger<CACertTrustValidator> logger, ILogger<CertificateStore> caCertStoreLogger) {
 			this.logger = logger;
 			caCerts = new CertificateStore(caCertStoreLogger, new TrustedValidator(logger, ignoreValidityPeriod));
 			caCerts.LoadCertificatesFromReader(pemContent, sourceName);
 		}
+		/// <summary>
+		/// Creates a <see cref="CACertTrustValidator"/> that trusts the CA certificates that are loaded from the given string <paramref name="pemContent"/> in PEM format.
+		/// This overload is intended for loading embedded certificates from a string constant and thus uses <see cref="CertificateStore.LoadCertificatesFromEmbeddedStringConstant(string)"/>.
+		/// </summary>
+		/// <param name="pemContent">A string containing the CA certificates as PEM format text.</param>
+		/// <param name="ignoreValidityPeriod">Specified whether validity periods of the CA certificates are ignored. This can be used to avoid expiration of the certifiactes when they are baked into shipped software, that may no be updated in time to replace expired CA certificates.</param>
+		/// <param name="logger">A logger to use for the operations of the <see cref="CACertTrustValidator"/> itself.</param>
+		/// <param name="caCertStoreLogger">A logger to use for the internal <see cref="CertificateStore"/> that stores the CA certifiactes.</param>
 		public CACertTrustValidator(string pemContent, bool ignoreValidityPeriod, ILogger<CACertTrustValidator> logger, ILogger<CertificateStore> caCertStoreLogger) {
 			this.logger = logger;
 			caCerts = new CertificateStore(caCertStoreLogger, new TrustedValidator(logger, ignoreValidityPeriod));
 			caCerts.LoadCertificatesFromEmbeddedStringConstant(pemContent);
 		}
 
+		/// <summary>
+		/// Checks if the given certifiacte is within its validity period, is signed by a one of the CA certifiactes trusted by this validator, and the siganture can be successfully verified.
+		/// The signing certifiacte can be looked up either by finding a CA certificate with a SubjectKeyIdentifier matching the AuthorityKeyIdentifier of the checked certificate, or if no AuthorityKeyIdentifier is present,
+		/// by finding a CA certificate with a SubjectDistinguishedName matching the IssueDistinguishedName of the checked certificate.
+		/// </summary>
+		/// <param name="cert">The certificate to validate.</param>
+		/// <returns>True if the certifiacte passed all checks and was successfully validated, False otherwise.</returns>
 		public bool CheckCertificate(X509Certificate cert) {
 			X509Certificate? caCert = null;
 			var akidEnc = cert.GetExtensionValue(X509Extensions.AuthorityKeyIdentifier);
