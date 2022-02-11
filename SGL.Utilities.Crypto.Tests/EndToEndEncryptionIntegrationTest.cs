@@ -284,7 +284,7 @@ namespace SGL.Utilities.Crypto.Tests {
 		}
 
 		[Fact]
-		public async Task SignerBasedValidationAcceptsProperlySignedCertificatesAndRejectsInvalidOnes() {
+		public void SignerBasedValidationAcceptsProperlySignedCertificatesAndRejectsInvalidOnes() {
 			using var signerCertPemReader = new StreamReader(new MemoryStream(fixture.SignerCertPem));
 			CACertTrustValidator validator = new CACertTrustValidator(signerCertPemReader, "Signers.pem", ignoreValidityPeriod: false, loggerFactory.CreateLogger<CACertTrustValidator>(), loggerFactory.CreateLogger<CertificateStore>());
 			Assert.True(validator.CheckCertificate(fixture.RsaCert1));
