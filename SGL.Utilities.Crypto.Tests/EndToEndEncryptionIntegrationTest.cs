@@ -68,7 +68,7 @@ namespace SGL.Utilities.Crypto.Tests {
 			Assert.True(validator.CheckCertificate(fixture.EcCert1));
 			Assert.True(validator.CheckCertificate(fixture.EcCert2));
 
-			var certStore = new CertificateStore(loggerFactory.CreateLogger<CertificateStore>(), validator);
+			var certStore = new CertificateStore(validator, loggerFactory.CreateLogger<CertificateStore>());
 			using var certsPemReader = new StreamReader(new MemoryStream(fixture.RsaCert1Pem.Concat(fixture.EcCert1Pem).ToArray()));
 			certStore.LoadCertificatesFromReader(certsPemReader, "Recipients.pem");
 			Assert.Equal(2, certStore.ListKnownCertificates().Count());
@@ -137,7 +137,7 @@ namespace SGL.Utilities.Crypto.Tests {
 			Assert.False(validator.CheckCertificate(fixture.RsaCertAttacker));
 			Assert.False(validator.CheckCertificate(fixture.EcCertAttacker));
 
-			var certStore = new CertificateStore(loggerFactory.CreateLogger<CertificateStore>(), validator);
+			var certStore = new CertificateStore(validator, loggerFactory.CreateLogger<CertificateStore>());
 			using var certsPemReader = new StreamReader(new MemoryStream(fixture.RsaCert1Pem.Concat(fixture.EcCert1Pem).Concat(fixture.RsaCertAttackerPem).Concat(fixture.EcCertAttackerPem).ToArray()));
 			certStore.LoadCertificatesFromReader(certsPemReader, "Recipients.pem");
 			Assert.Equal(2, certStore.ListKnownCertificates().Count());
@@ -180,7 +180,7 @@ namespace SGL.Utilities.Crypto.Tests {
 			Assert.False(validator.CheckCertificate(fixture.RsaCertAttacker));
 			Assert.False(validator.CheckCertificate(fixture.EcCertAttacker));
 
-			var certStore = new CertificateStore(loggerFactory.CreateLogger<CertificateStore>(), validator);
+			var certStore = new CertificateStore(validator, loggerFactory.CreateLogger<CertificateStore>());
 			using var certsPemReader = new StreamReader(new MemoryStream(fixture.RsaCert1Pem.Concat(fixture.EcCert1Pem).Concat(fixture.RsaCertAttackerPem).Concat(fixture.EcCertAttackerPem).ToArray()));
 			certStore.LoadCertificatesFromReader(certsPemReader, "Recipients.pem");
 			Assert.Equal(2, certStore.ListKnownCertificates().Count());
@@ -226,7 +226,7 @@ namespace SGL.Utilities.Crypto.Tests {
 			Assert.True(validator.CheckCertificate(fixture.EcCert3));
 			Assert.True(validator.CheckCertificate(fixture.EcCert4));
 
-			var certStore = new CertificateStore(loggerFactory.CreateLogger<CertificateStore>(), validator);
+			var certStore = new CertificateStore(validator, loggerFactory.CreateLogger<CertificateStore>());
 			using var certsPemReader = new StreamReader(new MemoryStream(fixture.RsaCert1Pem.Concat(fixture.EcCert1Pem).Concat(fixture.EcCert2Pem).Concat(fixture.EcCert3Pem).Concat(fixture.EcCert4Pem).ToArray()));
 			certStore.LoadCertificatesFromReader(certsPemReader, "Recipients.pem");
 			Assert.Equal(5, certStore.ListKnownCertificates().Count());
@@ -296,7 +296,7 @@ namespace SGL.Utilities.Crypto.Tests {
 			Assert.False(validator.CheckCertificate(fixture.RsaCertAttacker));
 			Assert.False(validator.CheckCertificate(fixture.EcCertAttacker));
 
-			var certStore = new CertificateStore(loggerFactory.CreateLogger<CertificateStore>(), validator);
+			var certStore = new CertificateStore(validator, loggerFactory.CreateLogger<CertificateStore>());
 			using var certsPemReader = new StreamReader(new MemoryStream(fixture.RsaCert1Pem.Concat(fixture.RsaCert2Pem).Concat(fixture.EcCert1Pem).Concat(fixture.EcCert2Pem).Concat(fixture.EcCert3Pem).Concat(fixture.EcCert4Pem).Concat(fixture.RsaCertAttackerPem).Concat(fixture.EcCertAttackerPem).ToArray()));
 			certStore.LoadCertificatesFromReader(certsPemReader, "Recipients.pem");
 			Assert.Equal(6, certStore.ListKnownCertificates().Count());

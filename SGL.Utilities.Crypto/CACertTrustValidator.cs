@@ -55,7 +55,7 @@ namespace SGL.Utilities.Crypto {
 		/// <param name="caCertStoreLogger">A logger to use for the internal <see cref="CertificateStore"/> that stores the CA certifiactes.</param>
 		public CACertTrustValidator(TextReader pemContent, string sourceName, bool ignoreValidityPeriod, ILogger<CACertTrustValidator> logger, ILogger<CertificateStore> caCertStoreLogger) {
 			this.logger = logger;
-			caCerts = new CertificateStore(caCertStoreLogger, new TrustedValidator(logger, ignoreValidityPeriod));
+			caCerts = new CertificateStore(new TrustedValidator(logger, ignoreValidityPeriod), caCertStoreLogger);
 			caCerts.LoadCertificatesFromReader(pemContent, sourceName);
 		}
 		/// <summary>
@@ -68,7 +68,7 @@ namespace SGL.Utilities.Crypto {
 		/// <param name="caCertStoreLogger">A logger to use for the internal <see cref="CertificateStore"/> that stores the CA certifiactes.</param>
 		public CACertTrustValidator(string pemContent, bool ignoreValidityPeriod, ILogger<CACertTrustValidator> logger, ILogger<CertificateStore> caCertStoreLogger) {
 			this.logger = logger;
-			caCerts = new CertificateStore(caCertStoreLogger, new TrustedValidator(logger, ignoreValidityPeriod));
+			caCerts = new CertificateStore(new TrustedValidator(logger, ignoreValidityPeriod), caCertStoreLogger);
 			caCerts.LoadCertificatesFromEmbeddedStringConstant(pemContent);
 		}
 
