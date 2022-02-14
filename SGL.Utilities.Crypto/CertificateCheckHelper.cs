@@ -3,10 +3,6 @@ using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Security.Certificates;
 using Org.BouncyCastle.X509;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SGL.Utilities.Crypto {
 	internal class CertificateCheckHelper {
@@ -19,6 +15,9 @@ namespace SGL.Utilities.Crypto {
 				certificate.CheckValidity();
 			}
 			catch (CertificateExpiredException) {
+				return Outcome.OutOfValidityPeriod;
+			}
+			catch (CertificateNotYetValidException) {
 				return Outcome.OutOfValidityPeriod;
 			}
 			try {
