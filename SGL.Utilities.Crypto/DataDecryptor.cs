@@ -8,20 +8,20 @@ using System.IO;
 
 namespace SGL.Utilities.Crypto {
 	public class DataDecryptor {
-		private byte[] iv;
+		private List<byte[]> ivs;
 		private byte[] dataKey;
 
-		public DataDecryptor(DataEncryptionMode dataMode, byte[] iv, byte[] dataKey) {
+		public DataDecryptor(DataEncryptionMode dataMode, List<byte[]> ivs, byte[] dataKey) {
 			if (dataMode != DataEncryptionMode.AES_256_CCM) {
 				throw new ArgumentException("Unsupported data encryption mode.");
 			}
-			this.iv = iv;
+			this.ivs = ivs;
 			this.dataKey = dataKey;
 		}
 
-		public CipherStream OpenDecryptionReadStream(Stream inputStream) {
+		public CipherStream OpenDecryptionReadStream(Stream inputStream, int streamIndex) {
 			var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
-			var keyParams = new ParametersWithIV(new KeyParameter(dataKey), iv);
+			var keyParams = new ParametersWithIV(new KeyParameter(dataKey), ivs[streamIndex]);
 			cipher.Init(forEncryption: false, keyParams);
 			return new CipherStream(inputStream, cipher, null);
 		}
@@ -29,7 +29,7 @@ namespace SGL.Utilities.Crypto {
 		public static DataDecryptor? FromEncryptionInfo(EncryptionInfo encryptionInfo, KeyDecryptor keyDecryptor) {
 			var dataKey = keyDecryptor.DecryptKey(encryptionInfo);
 			if (dataKey != null) {
-				return new DataDecryptor(encryptionInfo.DataMode, encryptionInfo.IV, dataKey);
+				return new DataDecryptor(encryptionInfo.DataMode, encryptionInfo.IVs, dataKey);
 			}
 			else {
 				return null;

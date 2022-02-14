@@ -58,9 +58,9 @@ namespace SGL.Utilities.Crypto {
 		/// </summary>
 		public DataEncryptionMode DataMode { get; set; }
 		/// <summary>
-		/// Represents the initialization vector (IV) used for the encryption of the data.
+		/// Represents the initialization vectors (IV) used for the encryption of the data, one for each stream in the data object.
 		/// </summary>
-		public byte[] IV { get; set; } = new byte[0];
+		public List<byte[]> IVs { get; set; } = new();
 
 		/// <summary>
 		/// Contains the encrypted data keys for the recipients, indexed by the key id of the recipients.

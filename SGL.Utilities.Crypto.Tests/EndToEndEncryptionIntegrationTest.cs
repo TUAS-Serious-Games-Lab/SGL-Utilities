@@ -38,7 +38,7 @@ namespace SGL.Utilities.Crypto.Tests {
 		private async Task<EncryptionInfo> encrypt(byte[] clearTextInput, Stream encryptedContentStream, KeyEncryptor keyEncryptor) {
 			var dataEncryptor = new DataEncryptor(fixture.Random);
 			using var clearInputStream = new MemoryStream(clearTextInput);
-			using var encStream = dataEncryptor.OpenEncryptionWriteStream(encryptedContentStream);
+			using var encStream = dataEncryptor.OpenEncryptionWriteStream(encryptedContentStream, 0);
 			await clearInputStream.CopyToAsync(encStream);
 			return dataEncryptor.GenerateEncryptionInfo(keyEncryptor);
 		}
@@ -49,7 +49,7 @@ namespace SGL.Utilities.Crypto.Tests {
 			var dataDecryptor = DataDecryptor.FromEncryptionInfo(metadata, keyDecryptor);
 			Assert.NotNull(dataDecryptor);
 			if (dataDecryptor == null) throw new Exception("No matching encrypted data key found.");
-			using var decStream = dataDecryptor.OpenDecryptionReadStream(encryptedContentReadStream);
+			using var decStream = dataDecryptor.OpenDecryptionReadStream(encryptedContentReadStream, 0);
 			await decStream.CopyToAsync(clearOutputStream);
 			return clearOutputStream;
 		}
