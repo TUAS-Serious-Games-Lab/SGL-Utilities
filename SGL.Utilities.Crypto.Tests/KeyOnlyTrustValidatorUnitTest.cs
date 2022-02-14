@@ -87,6 +87,60 @@ vWysCnOHiuPGxQT/gzVx0R5flbYYstaX949K1w6qUw2uf0kqafCBvgMJ7AJJ9bUC
 SdN+wff7Ucl57eoPYavxw+wdq1JoriajNuhpzVPjFdYy
 -----END ENCRYPTED PRIVATE KEY-----
 ";
+
+		private const string UnknownSignerPrivateKeyPem = @"-----BEGIN ENCRYPTED PRIVATE KEY-----
+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
 -----END ENCRYPTED PRIVATE KEY-----
 ";
 
@@ -99,6 +153,7 @@ g30Pr6mO6JjUxgDch8E=
 ";
 
 		private readonly AsymmetricCipherKeyPair signer1KeyPair;
+		private readonly RsaPrivateCrtKeyParameters UnknownSignerPrivateKey;
 		private readonly ECPublicKeyParameters recipientPublicKey;
 		private readonly SecureRandom random = new SecureRandom();
 
@@ -107,6 +162,7 @@ g30Pr6mO6JjUxgDch8E=
 				return new char[] { 't', 'e', 's', 't', 'p', 'w' };
 			}
 		}
+
 		public KeyOnlyTrustValidatorUnitTest(ITestOutputHelper output) {
 			loggerFactory = LoggerFactory.Create(c => c.AddXUnit(output).SetMinimumLevel(LogLevel.Trace));
 			validator = new KeyOnlyTrustValidator(Signer1PublicKeyPem, loggerFactory.CreateLogger<KeyOnlyTrustValidator>());
@@ -114,6 +170,9 @@ g30Pr6mO6JjUxgDch8E=
 			PemReader pemRdrS1 = new PemReader(rdrS1, new PasswordFinder());
 			var privKeyS1 = (RsaKeyParameters)pemRdrS1.ReadObject();
 			signer1KeyPair = new AsymmetricCipherKeyPair(new RsaKeyParameters(false, privKeyS1.Modulus, privKeyS1.Exponent), privKeyS1);
+			using var rdrUS = new StringReader(UnknownSignerPrivateKeyPem);
+			PemReader pemRdrUS = new PemReader(rdrUS, new PasswordFinder());
+			UnknownSignerPrivateKey = (RsaPrivateCrtKeyParameters)pemRdrUS.ReadObject();
 			using var rdrR1 = new StringReader(RecipientPublicKeyPem);
 			PemReader pemRdrR1 = new PemReader(rdrR1);
 			recipientPublicKey = (ECPublicKeyParameters)pemRdrR1.ReadObject();
@@ -159,6 +218,20 @@ g30Pr6mO6JjUxgDch8E=
 			certGen.SetNotAfter(DateTime.UtcNow.AddHours(-1)); // NotAfter in the past
 			certGen.SetPublicKey(recipientPublicKey);
 			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signer1KeyPair.Private);
+			var cert = certGen.Generate(signatureFactory);
+
+			Assert.False(validator.CheckCertificate(cert));
+		}
+		[Fact]
+		public void CertificateFromUnknownSignerIsRejected() {
+			var certGen = new X509V3CertificateGenerator();
+			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Some Signer"));
+			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Expired Test Cert"));
+			certGen.SetSerialNumber(new BigInteger(128, random));
+			certGen.SetNotBefore(DateTime.UtcNow.AddMinutes(-5));
+			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
+			certGen.SetPublicKey(recipientPublicKey);
+			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), UnknownSignerPrivateKey);
 			var cert = certGen.Generate(signatureFactory);
 
 			Assert.False(validator.CheckCertificate(cert));
