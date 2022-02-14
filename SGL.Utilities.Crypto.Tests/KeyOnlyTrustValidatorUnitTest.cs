@@ -111,5 +111,20 @@ g30Pr6mO6JjUxgDch8E=
 			PemReader pemRdrR1 = new PemReader(rdrR1);
 			recipientPublicKey = (ECPublicKeyParameters)pemRdrR1.ReadObject();
 		}
+
+		[Fact]
+		public void ValidCertificateIsAccpted() {
+			var certGen = new X509V3CertificateGenerator();
+			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer 1"));
+			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Valid Test Cert"));
+			certGen.SetSerialNumber(new BigInteger(128, random));
+			certGen.SetNotBefore(DateTime.UtcNow.AddMinutes(-5));
+			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
+			certGen.SetPublicKey(recipientPublicKey);
+			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signer1KeyPair.Private);
+			var cert = certGen.Generate(signatureFactory);
+
+			Assert.True(validator.CheckCertificate(cert));
+		}
 	}
 }
