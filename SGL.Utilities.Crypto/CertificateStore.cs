@@ -88,7 +88,7 @@ namespace SGL.Utilities.Crypto {
 		}
 
 		public void LoadCertificatesFromDirectory(string directoryPath, string fileNamePattern = "*.pem") {
-			var files = Directory.EnumerateFiles(directoryPath, fileNamePattern);
+			var files = Directory.EnumerateFiles(directoryPath, fileNamePattern, SearchOption.AllDirectories);
 			foreach (var file in files) {
 				using var fileReader = File.OpenText(file);
 				LoadCertificatesFromReader(fileReader, file);
