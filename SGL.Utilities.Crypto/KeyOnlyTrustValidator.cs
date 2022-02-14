@@ -22,7 +22,7 @@ namespace SGL.Utilities.Crypto {
 		/// Creates a <see cref="KeyOnlyTrustValidator"/> that trusts the signer public keys that are loaded from the given <paramref name="reader"/> in PEM format.
 		/// </summary>
 		/// <param name="reader">A <see cref="TextReader"/> that contains the signer public keys as PEM data.</param>
-		/// <param name="sourceName">A name for the source behind <paramref name="reader"/> to use for error message. This can, e.g. be a filename or an URL.</param>
+		/// <param name="sourceName">A name for the source behind <paramref name="reader"/> to use for log messages. This can, e.g. be a filename or an URL.</param>
 		/// <param name="logger">A logger to use for the operations of the validator.</param>
 		public KeyOnlyTrustValidator(TextReader reader, string sourceName, ILogger<KeyOnlyTrustValidator> logger) {
 			this.logger = logger;

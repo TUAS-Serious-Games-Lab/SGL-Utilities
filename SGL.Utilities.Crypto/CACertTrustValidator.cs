@@ -49,7 +49,7 @@ namespace SGL.Utilities.Crypto {
 		/// Creates a <see cref="CACertTrustValidator"/> that trusts the CA certificates that are loaded from the given <see cref="TextReader"/> <paramref name="pemContent"/> in PEM format.
 		/// </summary>
 		/// <param name="pemContent">A <see cref="TextReader"/> that contains the certifiactes as PEM data.</param>
-		/// <param name="sourceName">A name for the source behind <paramref name="pemContent"/> to use for error message. This can, e.g. be a filename or an URL.</param>
+		/// <param name="sourceName">A name for the source behind <paramref name="pemContent"/> to use for log messages. This can, e.g. be a filename or an URL.</param>
 		/// <param name="ignoreValidityPeriod">Specified whether validity periods of the CA certificates are ignored. This can be used to avoid expiration of the certifiactes when they are baked into shipped software, that may no be updated in time to replace expired CA certificates.</param>
 		/// <param name="logger">A logger to use for the operations of the <see cref="CACertTrustValidator"/> itself.</param>
 		/// <param name="caCertStoreLogger">A logger to use for the internal <see cref="CertificateStore"/> that stores the CA certifiactes.</param>
