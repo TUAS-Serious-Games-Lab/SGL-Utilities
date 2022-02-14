@@ -155,7 +155,7 @@ g30Pr6mO6JjUxgDch8E=
 ";
 
 		private readonly AsymmetricCipherKeyPair signer1KeyPair;
-		private readonly RsaPrivateCrtKeyParameters UnknownSignerPrivateKey;
+		private readonly RsaPrivateCrtKeyParameters unknownSignerPrivateKey;
 		private readonly ECPublicKeyParameters recipientPublicKey;
 		private readonly SecureRandom random = new SecureRandom();
 
@@ -174,7 +174,7 @@ g30Pr6mO6JjUxgDch8E=
 			signer1KeyPair = new AsymmetricCipherKeyPair(new RsaKeyParameters(false, privKeyS1.Modulus, privKeyS1.Exponent), privKeyS1);
 			using var rdrUS = new StringReader(UnknownSignerPrivateKeyPem);
 			PemReader pemRdrUS = new PemReader(rdrUS, new PasswordFinder());
-			UnknownSignerPrivateKey = (RsaPrivateCrtKeyParameters)pemRdrUS.ReadObject();
+			unknownSignerPrivateKey = (RsaPrivateCrtKeyParameters)pemRdrUS.ReadObject();
 			using var rdrR1 = new StringReader(RecipientPublicKeyPem);
 			PemReader pemRdrR1 = new PemReader(rdrR1);
 			recipientPublicKey = (ECPublicKeyParameters)pemRdrR1.ReadObject();
@@ -233,7 +233,7 @@ g30Pr6mO6JjUxgDch8E=
 			certGen.SetNotBefore(DateTime.UtcNow.AddMinutes(-5));
 			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
 			certGen.SetPublicKey(recipientPublicKey);
-			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), UnknownSignerPrivateKey);
+			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), unknownSignerPrivateKey);
 			var cert = certGen.Generate(signatureFactory);
 
 			Assert.False(validator.CheckCertificate(cert));
