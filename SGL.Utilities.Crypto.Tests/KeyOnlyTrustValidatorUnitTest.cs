@@ -226,7 +226,7 @@ g30Pr6mO6JjUxgDch8E=
 		public void CertificateFromUnknownSignerIsRejected() {
 			var certGen = new X509V3CertificateGenerator();
 			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Some Signer"));
-			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Expired Test Cert"));
+			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Cert From Unknown Signer"));
 			certGen.SetSerialNumber(new BigInteger(128, random));
 			certGen.SetNotBefore(DateTime.UtcNow.AddMinutes(-5));
 			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
