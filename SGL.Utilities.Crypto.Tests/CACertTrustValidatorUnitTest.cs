@@ -331,11 +331,71 @@ g30Pr6mO6JjUxgDch8E=
 		}
 
 		[Fact]
-		public void CertificateWithInvalidSignatureDueToChangedContentIsRejected() {
+		public void CertificateWithInvalidRSASignatureDueToChangedContentIsRejected() {
+			var certGen = new X509V3CertificateGenerator();
+			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer 1"));
+			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Corrupted Cert 1"));
+			certGen.SetSerialNumber(new BigInteger(128, random));
+			certGen.SetNotBefore(DateTime.UtcNow.AddMinutes(-5));
+			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
+			certGen.SetPublicKey(recipientPublicKey);
+			var signatureFactory = new CorruptingSignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signer1KeyPair.Private, random);
+			signatureFactory.CorruptPreSignature = true;
+			var cert = certGen.Generate(signatureFactory);
+
+			Assert.False(validator.CheckCertificate(cert));
 		}
 
 		[Fact]
-		public void CertificateWithInvalidSignatureDueToCorruptedSignatureIsRejected() {
+		public void CertificateWithInvalidRSASignatureDueToCorruptedSignatureIsRejected() {
+			var certGen = new X509V3CertificateGenerator();
+			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer 1"));
+			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Corrupted Cert 2"));
+			certGen.SetSerialNumber(new BigInteger(128, random));
+			certGen.SetNotBefore(DateTime.UtcNow.AddMinutes(-5));
+			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
+			certGen.SetPublicKey(recipientPublicKey);
+			var signatureFactory = new CorruptingSignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signer1KeyPair.Private, random);
+			signatureFactory.CorruptPostSignature = true;
+			var cert = certGen.Generate(signatureFactory);
+
+			Assert.False(validator.CheckCertificate(cert));
+		}
+
+		[Fact]
+		public void CertificateWithInvalidECSignatureDueToChangedContentIsRejected() {
+			var certGen = new X509V3CertificateGenerator();
+			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer 2"));
+			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Corrupted Cert 3"));
+			certGen.SetSerialNumber(new BigInteger(128, random));
+			certGen.SetNotBefore(DateTime.UtcNow.AddMinutes(-5));
+			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
+			certGen.SetPublicKey(recipientPublicKey);
+			certGen.AddExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(signer2KeyPair.Public)));
+			certGen.AddExtension(X509Extensions.SubjectKeyIdentifier, false, new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(recipientPublicKey)));
+			var signatureFactory = new CorruptingSignatureFactory("SHA256WITHECDSA", signer2KeyPair.Private, random);
+			signatureFactory.CorruptPreSignature = true;
+			var cert = certGen.Generate(signatureFactory);
+
+			Assert.False(validator.CheckCertificate(cert));
+		}
+
+		[Fact]
+		public void CertificateWithInvalidECSignatureDueToCorruptedSignatureIsRejected() {
+			var certGen = new X509V3CertificateGenerator();
+			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer 2"));
+			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Corrupted Cert 3"));
+			certGen.SetSerialNumber(new BigInteger(128, random));
+			certGen.SetNotBefore(DateTime.UtcNow.AddMinutes(-5));
+			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
+			certGen.SetPublicKey(recipientPublicKey);
+			certGen.AddExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(signer2KeyPair.Public)));
+			certGen.AddExtension(X509Extensions.SubjectKeyIdentifier, false, new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(recipientPublicKey)));
+			var signatureFactory = new CorruptingSignatureFactory("SHA256WITHECDSA", signer2KeyPair.Private, random);
+			signatureFactory.CorruptPostSignature = true;
+			var cert = certGen.Generate(signatureFactory);
+
+			Assert.False(validator.CheckCertificate(cert));
 		}
 	}
 }
