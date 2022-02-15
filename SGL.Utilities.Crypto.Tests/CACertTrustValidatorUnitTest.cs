@@ -267,10 +267,34 @@ g30Pr6mO6JjUxgDch8E=
 
 		[Fact]
 		public void NotYetValidCertificateIsRejected() {
+			var certGen = new X509V3CertificateGenerator();
+			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer 2"));
+			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Not Yet Valid Test Cert"));
+			certGen.SetSerialNumber(new BigInteger(128, random));
+			certGen.SetNotBefore(DateTime.UtcNow.AddHours(1));
+			certGen.SetNotAfter(DateTime.UtcNow.AddHours(2));
+			certGen.SetPublicKey(recipientPublicKey);
+			certGen.AddExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(signer2KeyPair.Public)));
+			certGen.AddExtension(X509Extensions.SubjectKeyIdentifier, false, new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(recipientPublicKey)));
+			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory("SHA256WITHECDSA", signer2KeyPair.Private);
+			var cert = certGen.Generate(signatureFactory);
+
+			Assert.False(validator.CheckCertificate(cert));
 		}
 
 		[Fact]
 		public void ExpiredCertificateIsRejected() {
+			var certGen = new X509V3CertificateGenerator();
+			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer 1"));
+			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Expired Test Cert"));
+			certGen.SetSerialNumber(new BigInteger(128, random));
+			certGen.SetNotBefore(DateTime.UtcNow.AddHours(-2));
+			certGen.SetNotAfter(DateTime.UtcNow.AddHours(-1));
+			certGen.SetPublicKey(recipientPublicKey);
+			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signer1KeyPair.Private);
+			var cert = certGen.Generate(signatureFactory);
+
+			Assert.False(validator.CheckCertificate(cert));
 		}
 
 		[Fact]
