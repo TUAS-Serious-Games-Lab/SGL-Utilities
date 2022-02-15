@@ -20,6 +20,11 @@ namespace SGL.Utilities.Crypto {
 		private byte[] dataKey;
 
 		/// <summary>
+		/// Returns the number of streams in the data object that this DataDecryptor decrypts.
+		/// </summary>
+		public int StreamCount => ivs.Count;
+
+		/// <summary>
 		/// Constructs a DataDecryptor that uses the given data key, per-stream initialization vectors and encryption mode.
 		/// </summary>
 		/// <param name="dataMode">The encryption mode to use for the decryption. Currently, only <see cref="DataEncryptionMode.AES_256_CCM"/> is supported.</param>
