@@ -218,6 +218,9 @@ b7qZIq+EKADZHDgbuQ0ZvK2dZswsQwRMNDnWgmGOci0MdLcMpQxrOalkYr47ZvaL
 
 		private static List<AsymmetricCipherKeyPair> allValidKeyPairs;
 		public static IEnumerable<object[]> allValidRecipientKeyPairsSharedAndUnshared;
+		private static List<AsymmetricCipherKeyPair> subsetValidKeyPairs;
+		private static List<AsymmetricCipherKeyPair> subsetInvalidKeyPairs;
+		public static IEnumerable<object[]> subsetInvalidRecipientKeyPairsSharedAndUnshared;
 
 		private static AsymmetricCipherKeyPair LoadKeyPair(string privateKeyPem, string publicKeyPem) {
 			using var privStrRdr = new StringReader(privateKeyPem);
@@ -235,7 +238,10 @@ b7qZIq+EKADZHDgbuQ0ZvK2dZswsQwRMNDnWgmGOci0MdLcMpQxrOalkYr47ZvaL
 			ecRecipient3KeyPair = LoadKeyPair(ecRecipient3PrivateKeyPem, ecRecipient3PublicKeyPem);
 
 			allValidKeyPairs = new List<AsymmetricCipherKeyPair>() { rsaRecipient1KeyPair, rsaRecipient2KeyPair, ecRecipient1KeyPair, ecRecipient2KeyPair, ecRecipient3KeyPair };
+			subsetValidKeyPairs = new List<AsymmetricCipherKeyPair>() { rsaRecipient1KeyPair, ecRecipient1KeyPair, ecRecipient2KeyPair };
+			subsetInvalidKeyPairs = new List<AsymmetricCipherKeyPair>() { rsaRecipient2KeyPair, ecRecipient3KeyPair };
 			allValidRecipientKeyPairsSharedAndUnshared = Enumerable.Range(0, 7).SelectMany(dks => allValidKeyPairs.Select(kp => new object[] { kp, true, 1 << dks }).Concat(allValidKeyPairs.Select(kp => new object[] { kp, false, 1 << dks }))).ToList();
+			subsetInvalidRecipientKeyPairsSharedAndUnshared = Enumerable.Range(0, 7).SelectMany(dks => subsetInvalidKeyPairs.Select(kp => new object[] { kp, true, 1 << dks }).Concat(subsetInvalidKeyPairs.Select(kp => new object[] { kp, false, 1 << dks }))).ToList();
 		}
 
 		[Theory]
@@ -252,6 +258,23 @@ b7qZIq+EKADZHDgbuQ0ZvK2dZswsQwRMNDnWgmGOci0MdLcMpQxrOalkYr47ZvaL
 			var decryptor = new KeyDecryptor(recipient);
 			var outputDataKey = decryptor.DecryptKey(encryptedKeys[KeyId.CalculateId(recipient.Public)], sharedSenderKey);
 			Assert.Equal(inputDataKey, outputDataKey);
+		}
+
+		[Theory]
+		[MemberData(nameof(subsetInvalidRecipientKeyPairsSharedAndUnshared))]
+		public void DecryptingAsUnauthorizedRecipientReturnsNull(AsymmetricCipherKeyPair recipient, bool shared, int dataKeySize) {
+			byte[] inputDataKey = new byte[dataKeySize];
+			random.NextBytes(inputDataKey);
+
+			var encryptor = new KeyEncryptor(subsetValidKeyPairs.Select(kp => new KeyValuePair<KeyId, AsymmetricKeyParameter>(KeyId.CalculateId(kp.Public), kp.Public)).ToList(), random, shared);
+			var (encryptedKeys, sharedSenderKey) = encryptor.EncryptDataKey(inputDataKey);
+			Assert.All(encryptedKeys.Values, k => Assert.NotEqual(inputDataKey, k.EncryptedKey));
+			Assert.Equal(shared, sharedSenderKey != null);
+			var encInfo = new EncryptionInfo() { IVs = new List<byte[]> { }, DataMode = DataEncryptionMode.AES_256_CCM, DataKeys = encryptedKeys, SenderPublicKey = sharedSenderKey };
+
+			var decryptor = new KeyDecryptor(recipient);
+			var outputDataKey = decryptor.DecryptKey(encInfo);
+			Assert.Null(outputDataKey);
 		}
 	}
 }
