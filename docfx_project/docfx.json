@@ -9,6 +9,7 @@
             "SGL.Utilities.Backend.AspNetCore/bin/Debug/*/SGL.Utilities.Backend.AspNetCore.dll",
             "SGL.Utilities.Backend.Security/bin/Debug/*/SGL.Utilities.Backend.Security.dll",
             "SGL.Utilities.Backend.TestUtilities/bin/Debug/*/SGL.Utilities.Backend.TestUtilities.dll",
+            "SGL.Utilities.Crypto/bin/Debug/*/SGL.Utilities.Crypto.dll",
             "SGL.Utilities.Logging/bin/Debug/*/SGL.Utilities.Logging.dll",
             "SGL.Utilities.PrometheusNet/bin/Debug/*/SGL.Utilities.PrometheusNet.dll",
             "SGL.Utilities.TestUtilities.XUnit/bin/Debug/*/SGL.Utilities.TestUtilities.XUnit.dll"

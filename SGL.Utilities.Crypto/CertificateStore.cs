@@ -1,0 +1,220 @@
+﻿using Microsoft.Extensions.Logging;
+using Org.BouncyCastle.Asn1;
+using Org.BouncyCastle.Asn1.X509;
+using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.OpenSsl;
+using Org.BouncyCastle.X509;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace SGL.Utilities.Crypto {
+
+	/// <summary>
+	/// Loads, holds and indexes certificates to provide access to them.
+	/// Upon loading, the certifiactes are validated using a <see cref="ICertificateValidator"/> given at construction.
+	/// </summary>
+	public class CertificateStore {
+		private readonly ILogger<CertificateStore> logger;
+		private readonly ICertificateValidator validator;
+		private Dictionary<KeyId, X509Certificate> certificatesByKeyId = new Dictionary<KeyId, X509Certificate>();
+		private Dictionary<X509Name, X509Certificate> certificatesBySubjectDN = new Dictionary<X509Name, X509Certificate>();
+		private Dictionary<SubjectKeyIdentifier, X509Certificate> certificatesBySKID = new Dictionary<SubjectKeyIdentifier, X509Certificate>();
+
+		/// <summary>
+		/// Creates a certifiacte store that uses the given <see cref="ICertificateValidator"/> to validate loaded certificates and the given logger to log information about its operations.
+		/// </summary>
+		/// <param name="validator">The <see cref="ICertificateValidator"/> to use to validate certificates when they are loaded into the certificate store.</param>
+		/// <param name="logger">The logger to use for logging the operations of the certificate store.</param>
+		public CertificateStore(ICertificateValidator validator, ILogger<CertificateStore> logger) {
+			this.validator = validator;
+			this.logger = logger;
+		}
+
+		/// <summary>
+		/// Looks up a certificate using the <see cref="KeyId"/> of its public key.
+		/// </summary>
+		/// <param name="id">The id of the public key of the certificate to find.</param>
+		/// <returns>The certificate object, or <see langword="null"/> if no matching certifiacte was found.</returns>
+		public X509Certificate? GetCertificateByKeyId(KeyId id) {
+			if (certificatesByKeyId.TryGetValue(id, out var cert)) {
+				return cert;
+			}
+			else {
+				return null;
+			}
+		}
+
+		/// <summary>
+		/// Looks up a certificate using its SubjectDistinguishedName.
+		/// </summary>
+		/// <param name="subjectDN">The SubjectDistinguishedName of the certificate to find.</param>
+		/// <returns>The certificate object, or <see langword="null"/> if no matching certifiacte was found.</returns>
+		public X509Certificate? GetCertificateBySubjectDN(X509Name subjectDN) {
+			if (certificatesBySubjectDN.TryGetValue(subjectDN, out var cert)) {
+				return cert;
+			}
+			else {
+				return null;
+			}
+		}
+
+		/// <summary>
+		/// Looks up a certificate using its value of the SubjectKeyIdentifier extension.
+		/// </summary>
+		/// <param name="skid">The id to lookup the certificate by using its SubjectKeyIdentifier.</param>
+		/// <returns>The certificate object, or <see langword="null"/> if no matching certifiacte was found.</returns>
+		public X509Certificate? GetCertificateBySubjectKeyIdentifier(SubjectKeyIdentifier skid) {
+			if (certificatesBySKID.TryGetValue(skid, out var cert)) {
+				return cert;
+			}
+			else {
+				return null;
+			}
+		}
+
+		/// <summary>
+		/// Lists the <see cref="KeyId"/> of all certificates contained in the certificate store.
+		/// </summary>
+		/// <returns>An enumerable over all <see cref="KeyId"/>s.</returns>
+		public IEnumerable<KeyId> ListKnownKeyIds() {
+			return certificatesByKeyId.Keys;
+		}
+		/// <summary>
+		/// Lists the SubjectDistinguishedNames of all certificates contained in the certificate store.
+		/// </summary>
+		/// <returns>An enumerable over all SubjectDistinguishedNames as <see cref="X509Name"/>s.</returns>
+		public IEnumerable<X509Name> ListKnownSubjectDNs() {
+			return certificatesBySubjectDN.Keys;
+		}
+		/// <summary>
+		/// Lists the SubjectKeyIdentifier values of all certificates contained in the certificate store that have that extension.
+		/// </summary>
+		/// <returns>An enumerable over all <see cref="SubjectKeyIdentifier"/>s.</returns>
+		public IEnumerable<SubjectKeyIdentifier> ListKnownSubjectKeyIdentifiers() {
+			return certificatesBySKID.Keys;
+		}
+
+		/// <summary>
+		/// Lists all certificates contained in the certificate store.
+		/// </summary>
+		/// <returns>An enumerable over all <see cref="X509Certificate"/>s.</returns>
+		public IEnumerable<X509Certificate> ListKnownCertificates() {
+			return certificatesByKeyId.Values;
+		}
+		/// <summary>
+		/// Lists the public keys of all certificates in the certificate store.
+		/// </summary>
+		/// <returns>An enumerable over all public keys as <see cref="AsymmetricKeyParameter"/>s.</returns>
+		public IEnumerable<AsymmetricKeyParameter> ListKnownPublicKeys() {
+			return ListKnownCertificates().Select(cert => cert.GetPublicKey());
+		}
+		/// <summary>
+		/// Lists all certificates contained in the certificate store as <see cref="KeyValuePair{KeyId, AsymmetricKeyParameter}"/>s of the id of their public key paired with the actual certificate object.
+		/// </summary>
+		/// <returns>An enumerable over all public key ids paired with the certificate, as <see cref="KeyValuePair{KeyId, AsymmetricKeyParameter}"/>.</returns>
+		public IEnumerable<KeyValuePair<KeyId, AsymmetricKeyParameter>> ListKnownKeyIdsAndPublicKeys() {
+			return certificatesByKeyId.Select(keyIdCert => new KeyValuePair<KeyId, AsymmetricKeyParameter>(keyIdCert.Key, keyIdCert.Value.GetPublicKey()));
+		}
+		/// <summary>
+		/// Loads and verifies certificates from the given string in PEM format.
+		/// The certificates are validated using the <see cref="ICertificateValidator"/> given at construction.
+		/// Only certificates that pass the validation checks are added to the store.
+		/// </summary>
+		/// <param name="pemContent">A string containing the certificates in PEM format.</param>
+		public void LoadCertificatesFromEmbeddedStringConstant(string pemContent) {
+			LoadCertificatesFromReader(new StringReader(pemContent), "[embedded data]");
+		}
+
+		/// <summary>
+		/// Asynchronously downloads, loads, and verifies certificates from the given HTTP(S) URI in PEM format.
+		/// The certificates are validated using the <see cref="ICertificateValidator"/> given at construction.
+		/// Only certificates that pass the validation checks are added to the store.
+		/// </summary>
+		/// <param name="source">A URI to download the certificates from using <see cref="HttpClient"/>.</param>
+		/// <param name="ct">A cancellation token to allow cancelling of the asynchronous download operation.</param>
+		/// <returns>A task representing the asynchronous operation.</returns>
+		public Task LoadCertificatesFromHttpAsync(Uri source, CancellationToken ct = default) {
+			HttpClient httpClient = new();
+			return LoadCertificatesFromHttpAsync(httpClient, source, ct);
+		}
+
+		/// <summary>
+		/// Asynchronously downloads, loads, and verifies certificates from the given HTTP(S) URI in PEM format.
+		/// The certificates are validated using the <see cref="ICertificateValidator"/> given at construction.
+		/// Only certificates that pass the validation checks are added to the store.
+		/// </summary>
+		/// <param name="httpClient">The <see cref="HttpClient"/> object to use for downloading.</param>
+		/// <param name="source">A URI to download the certificates from using <paramref name="httpClient"/>.</param>
+		/// <param name="ct">A cancellation token to allow cancelling of the asynchronous download operation.</param>
+		/// <returns>A task representing the asynchronous operation.</returns>
+		public async Task LoadCertificatesFromHttpAsync(HttpClient httpClient, Uri source, CancellationToken ct = default) {
+			using var reader = new StreamReader(await httpClient.GetStreamAsync(source, ct), Encoding.UTF8);
+			LoadCertificatesFromReader(reader, source.AbsoluteUri);
+		}
+
+		/// <summary>
+		/// Loads and verifies certificates from all PEM files in the given directory and its subdirectory.
+		/// The certificates are validated using the <see cref="ICertificateValidator"/> given at construction.
+		/// Only certificates that pass the validation checks are added to the store.
+		/// </summary>
+		/// <param name="directoryPath">The path of the directory to enumerate for PEM files.</param>
+		/// <param name="fileNamePattern">The name pattern to search for files. By default the pattern <c>*.pem</c> is used.</param>
+		public void LoadCertificatesFromDirectory(string directoryPath, string fileNamePattern = "*.pem") {
+			var files = Directory.EnumerateFiles(directoryPath, fileNamePattern, SearchOption.AllDirectories);
+			foreach (var file in files) {
+				using var fileReader = File.OpenText(file);
+				LoadCertificatesFromReader(fileReader, file);
+			}
+		}
+
+		/// <summary>
+		/// Loads and verifies certificates from the given <see cref="TextReader"/> in PEM format.
+		/// The certificates are validated using the <see cref="ICertificateValidator"/> given at construction.
+		/// Only certificates that pass the validation checks are added to the store.
+		/// </summary>
+		/// <param name="reader">A reader containing the certificates in PEM text format.</param>
+		/// <param name="sourceName">A name for the source behind <paramref name="reader"/> to use for log messages. This can, e.g. be a filename or an URL.</param>
+		public void LoadCertificatesFromReader(TextReader reader, string sourceName) {
+			var certs = loadCertificates(reader, sourceName);
+			foreach (var cert in certs) {
+				var keyid = KeyId.CalculateId(cert.GetPublicKey());
+				if (validator.CheckCertificate(cert)) {
+					certificatesByKeyId[keyid] = cert;
+					certificatesBySubjectDN[cert.SubjectDN] = cert;
+					var skid = cert.GetExtensionValue(X509Extensions.SubjectKeyIdentifier);
+					if (skid != null) {
+						certificatesBySKID[SubjectKeyIdentifier.GetInstance(Asn1Object.FromByteArray(skid.GetOctets()))] = cert;
+					}
+				}
+				else {
+					logger.LogWarning("The certificate with subject {subject} and key ID {keyid} from {source} failed validation. It will not be added to the certificate store.", cert.SubjectDN, keyid, sourceName);
+				}
+			}
+		}
+
+		private List<X509Certificate> loadCertificates(TextReader reader, string sourceName) {
+			PemReader pemReader = new PemReader(reader);
+			List<X509Certificate> certs = new List<X509Certificate>();
+			object content;
+			while ((content = pemReader.ReadObject()) != null) {
+				if (content is X509Certificate cert) {
+					certs.Add(cert);
+				}
+				else {
+					logger.LogWarning("Source {src} contained an object of type {type}, expecting X509Certificate objects, ignoring this object.", sourceName, content.GetType().FullName);
+				}
+			}
+			if (certs.Count == 0) {
+				logger.LogWarning("Source {src} contained no valid certificates.", sourceName);
+			}
+			return certs;
+		}
+	}
+}
