@@ -2,13 +2,11 @@
 using Org.BouncyCastle.Asn1.Pkcs;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.IO;
 using Org.BouncyCastle.Crypto.Operators;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.OpenSsl;
 using Org.BouncyCastle.Security;
-using Org.BouncyCastle.Utilities.IO;
 using Org.BouncyCastle.X509;
 using SGL.Utilities.TestUtilities.XUnit;
 using System;
@@ -239,84 +237,6 @@ g30Pr6mO6JjUxgDch8E=
 			Assert.False(validator.CheckCertificate(cert));
 		}
 
-		private class CorruptingSignatureStream : BaseOutputStream {
-			private readonly SignerSink sink;
-			private bool firstByte = true;
-
-			public CorruptingSignatureStream(SignerSink sink) {
-				this.sink = sink;
-			}
-
-			public override void Write(byte[] buffer, int offset, int count) {
-				if (firstByte) buffer[offset] ^= 0x02; // Corrupt first byte
-				firstByte = false;
-				sink.Write(buffer, offset, count);
-			}
-			public override void WriteByte(byte b) {
-				sink.WriteByte(firstByte ? ((byte)(b ^ 0x02)) : b);
-				firstByte = false;
-			}
-		}
-
-		private class CorruptingSignatureResult : IBlockResult {
-			private readonly ISigner signer;
-
-			public CorruptingSignatureResult(ISigner signer) {
-				this.signer = signer;
-			}
-
-			public byte[] Collect() {
-				var sig = signer.GenerateSignature();
-				sig[0] ^= 0x02;
-				return sig;
-			}
-
-			public int Collect(byte[] destination, int offset) {
-				byte[] sig = Collect();
-				sig.CopyTo(destination, offset);
-				return sig.Length;
-			}
-		}
-
-		private class CorruptingSignatureCalculator : IStreamCalculator {
-			private readonly SignerSink sink;
-			private readonly CorruptingSignatureFactory factory;
-
-			public CorruptingSignatureCalculator(ISigner signer, CorruptingSignatureFactory factory) {
-				sink = new SignerSink(signer);
-				this.factory = factory;
-			}
-
-			public Stream Stream => factory.CorruptPreSignature ? new CorruptingSignatureStream(sink) : sink;
-
-			public object GetResult() {
-				return factory.CorruptPostSignature ? new CorruptingSignatureResult(sink.Signer) : new DefaultSignatureResult(sink.Signer);
-			}
-		}
-
-		private class CorruptingSignatureFactory : ISignatureFactory {
-
-			private readonly Asn1SignatureFactory inner;
-			private readonly AsymmetricKeyParameter privateKey;
-			private readonly SecureRandom random;
-			private readonly string algorithm;
-
-			public bool CorruptPreSignature { get; set; } = false;
-			public bool CorruptPostSignature { get; set; } = false;
-
-			public CorruptingSignatureFactory(string algorithm, AsymmetricKeyParameter privateKey, SecureRandom random) {
-				inner = new Asn1SignatureFactory(algorithm, privateKey);
-				this.algorithm = algorithm;
-				this.privateKey = privateKey;
-				this.random = random;
-			}
-
-			public object AlgorithmDetails => inner.AlgorithmDetails;
-
-			public IStreamCalculator CreateCalculator() {
-				return new CorruptingSignatureCalculator(SignerUtilities.InitSigner(algorithm, forSigning: true, privateKey, random), this);
-			}
-		}
 		[Fact]
 		public void CertificateWithInvalidSignatureDueToChangedContentIsRejected() {
 			var certGen = new X509V3CertificateGenerator();
