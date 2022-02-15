@@ -11,7 +11,7 @@ namespace SGL.Utilities.Crypto {
 	/// Provides the functionality to decrypt data keys of data objects for a specific recipient that must be in the list of recipients of the data object.
 	/// The encrypted data key is taken from the data object's metadata and decrypted using an authorized private key that must be supplied to the KeyDecyrptor.
 	/// </summary>
-	public class KeyDecryptor {
+	public class KeyDecryptor : IKeyDecryptor {
 		private AsymmetricCipherKeyPair keyPair;
 		private KeyId keyId;
 

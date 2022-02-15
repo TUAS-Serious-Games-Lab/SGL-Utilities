@@ -54,7 +54,7 @@ namespace SGL.Utilities.Crypto {
 		/// </summary>
 		/// <param name="keyEncryptor">The <see cref="KeyEncryptor"/> to encrypt the data key with.</param>
 		/// <returns>The key material an metadata for the data object.</returns>
-		public EncryptionInfo GenerateEncryptionInfo(KeyEncryptor keyEncryptor) {
+		public EncryptionInfo GenerateEncryptionInfo(IKeyEncryptor keyEncryptor) {
 			EncryptionInfo result = new EncryptionInfo();
 			result.DataMode = DataEncryptionMode.AES_256_CCM;
 			result.IVs = ivs;

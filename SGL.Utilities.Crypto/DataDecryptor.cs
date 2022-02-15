@@ -54,7 +54,7 @@ namespace SGL.Utilities.Crypto {
 		/// <param name="encryptionInfo">The encryption metadata, including encrypted data keys for a data object, for which a DataDecryptor should be returned.</param>
 		/// <param name="keyDecryptor">A <see cref="KeyDecryptor"/> to use for decrypting the data key in <paramref name="encryptionInfo"/>.</param>
 		/// <returns>A DataDecryptor for the data object associated with <paramref name="encryptionInfo"/>, or <see langword="null"/> if the data key could not be decrypted using <paramref name="keyDecryptor"/>.</returns>
-		public static DataDecryptor? FromEncryptionInfo(EncryptionInfo encryptionInfo, KeyDecryptor keyDecryptor) {
+		public static DataDecryptor? FromEncryptionInfo(EncryptionInfo encryptionInfo, IKeyDecryptor keyDecryptor) {
 			var dataKey = keyDecryptor.DecryptKey(encryptionInfo);
 			if (dataKey != null) {
 				return new DataDecryptor(encryptionInfo.DataMode, encryptionInfo.IVs, dataKey);

@@ -7,7 +7,6 @@ using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
-using Org.BouncyCastle.X509;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +15,7 @@ namespace SGL.Utilities.Crypto {
 	/// <summary>
 	/// Provides the functionality to encrypt data keys of data objects for a list of recipients and to generate the metadata associating recipient key ids with the recipient's encrypted copy of the data key.
 	/// </summary>
-	public class KeyEncryptor {
+	public class KeyEncryptor : IKeyEncryptor {
 		private readonly List<KeyValuePair<KeyId, AsymmetricKeyParameter>> trustedRecipients;
 		private readonly SecureRandom random;
 		private readonly bool useSharedSenderKeyPair;
