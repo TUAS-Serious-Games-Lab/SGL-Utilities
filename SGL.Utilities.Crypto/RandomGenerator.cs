@@ -12,17 +12,13 @@ namespace SGL.Utilities.Crypto {
 			wrapped = new SecureRandom();
 		}
 
-		public void NextBytes(byte[] buffer) {
-			wrapped.NextBytes(buffer);
-		}
+		public void NextBytes(byte[] buffer) => wrapped.NextBytes(buffer);
 
 		public RandomGenerator DeriveGenerator(int seedSize, string algorithm) {
 			var rnd = SecureRandom.GetInstance(algorithm, false);
 			rnd.SetSeed(wrapped.GenerateSeed(seedSize));
 			return new RandomGenerator(wrapped);
 		}
-		public RandomGenerator DeriveGenerator(int seedSize) {
-			return DeriveGenerator(seedSize, "SHA256PRNG");
-		}
+		public RandomGenerator DeriveGenerator(int seedSize) => DeriveGenerator(seedSize, "SHA256PRNG");
 	}
 }
