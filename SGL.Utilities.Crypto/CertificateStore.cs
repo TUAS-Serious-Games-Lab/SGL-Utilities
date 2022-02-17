@@ -1,12 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
-using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.OpenSsl;
 using Org.BouncyCastle.X509;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -23,9 +21,9 @@ namespace SGL.Utilities.Crypto {
 	public class CertificateStore {
 		private readonly ILogger<CertificateStore> logger;
 		private readonly ICertificateValidator validator;
-		private Dictionary<KeyId, X509Certificate> certificatesByKeyId = new Dictionary<KeyId, X509Certificate>();
-		private Dictionary<X509Name, X509Certificate> certificatesBySubjectDN = new Dictionary<X509Name, X509Certificate>();
-		private Dictionary<SubjectKeyIdentifier, X509Certificate> certificatesBySKID = new Dictionary<SubjectKeyIdentifier, X509Certificate>();
+		private Dictionary<KeyId, Certificate> certificatesByKeyId = new Dictionary<KeyId, Certificate>();
+		private Dictionary<DistinguishedName, Certificate> certificatesBySubjectDN = new Dictionary<DistinguishedName, Certificate>();
+		private Dictionary<KeyIdentifier, Certificate> certificatesBySKID = new Dictionary<KeyIdentifier, Certificate>();
 
 		/// <summary>
 		/// Creates a certifiacte store that uses the given <see cref="ICertificateValidator"/> to validate loaded certificates and the given logger to log information about its operations.
@@ -42,7 +40,7 @@ namespace SGL.Utilities.Crypto {
 		/// </summary>
 		/// <param name="id">The id of the public key of the certificate to find.</param>
 		/// <returns>The certificate object, or <see langword="null"/> if no matching certifiacte was found.</returns>
-		public X509Certificate? GetCertificateByKeyId(KeyId id) {
+		public Certificate? GetCertificateByKeyId(KeyId id) {
 			if (certificatesByKeyId.TryGetValue(id, out var cert)) {
 				return cert;
 			}
@@ -56,7 +54,7 @@ namespace SGL.Utilities.Crypto {
 		/// </summary>
 		/// <param name="subjectDN">The SubjectDistinguishedName of the certificate to find.</param>
 		/// <returns>The certificate object, or <see langword="null"/> if no matching certifiacte was found.</returns>
-		public X509Certificate? GetCertificateBySubjectDN(X509Name subjectDN) {
+		public Certificate? GetCertificateBySubjectDN(DistinguishedName subjectDN) {
 			if (certificatesBySubjectDN.TryGetValue(subjectDN, out var cert)) {
 				return cert;
 			}
@@ -70,7 +68,7 @@ namespace SGL.Utilities.Crypto {
 		/// </summary>
 		/// <param name="skid">The id to lookup the certificate by using its SubjectKeyIdentifier.</param>
 		/// <returns>The certificate object, or <see langword="null"/> if no matching certifiacte was found.</returns>
-		public X509Certificate? GetCertificateBySubjectKeyIdentifier(SubjectKeyIdentifier skid) {
+		public Certificate? GetCertificateBySubjectKeyIdentifier(KeyIdentifier skid) {
 			if (certificatesBySKID.TryGetValue(skid, out var cert)) {
 				return cert;
 			}
@@ -90,37 +88,37 @@ namespace SGL.Utilities.Crypto {
 		/// Lists the SubjectDistinguishedNames of all certificates contained in the certificate store.
 		/// </summary>
 		/// <returns>An enumerable over all SubjectDistinguishedNames as <see cref="X509Name"/>s.</returns>
-		public IEnumerable<X509Name> ListKnownSubjectDNs() {
+		public IEnumerable<DistinguishedName> ListKnownSubjectDNs() {
 			return certificatesBySubjectDN.Keys;
 		}
 		/// <summary>
 		/// Lists the SubjectKeyIdentifier values of all certificates contained in the certificate store that have that extension.
 		/// </summary>
 		/// <returns>An enumerable over all <see cref="SubjectKeyIdentifier"/>s.</returns>
-		public IEnumerable<SubjectKeyIdentifier> ListKnownSubjectKeyIdentifiers() {
+		public IEnumerable<KeyIdentifier> ListKnownSubjectKeyIdentifiers() {
 			return certificatesBySKID.Keys;
 		}
 
 		/// <summary>
 		/// Lists all certificates contained in the certificate store.
 		/// </summary>
-		/// <returns>An enumerable over all <see cref="X509Certificate"/>s.</returns>
-		public IEnumerable<X509Certificate> ListKnownCertificates() {
+		/// <returns>An enumerable over all <see cref="Certificate"/>s.</returns>
+		public IEnumerable<Certificate> ListKnownCertificates() {
 			return certificatesByKeyId.Values;
 		}
 		/// <summary>
 		/// Lists the public keys of all certificates in the certificate store.
 		/// </summary>
 		/// <returns>An enumerable over all public keys as <see cref="AsymmetricKeyParameter"/>s.</returns>
-		public IEnumerable<AsymmetricKeyParameter> ListKnownPublicKeys() {
-			return ListKnownCertificates().Select(cert => cert.GetPublicKey());
+		public IEnumerable<PublicKey> ListKnownPublicKeys() {
+			return ListKnownCertificates().Select(cert => cert.PublicKey);
 		}
 		/// <summary>
 		/// Lists all certificates contained in the certificate store as <see cref="KeyValuePair{KeyId, AsymmetricKeyParameter}"/>s of the id of their public key paired with the actual certificate object.
 		/// </summary>
 		/// <returns>An enumerable over all public key ids paired with the certificate, as <see cref="KeyValuePair{KeyId, AsymmetricKeyParameter}"/>.</returns>
-		public IEnumerable<KeyValuePair<KeyId, AsymmetricKeyParameter>> ListKnownKeyIdsAndPublicKeys() {
-			return certificatesByKeyId.Select(keyIdCert => new KeyValuePair<KeyId, AsymmetricKeyParameter>(keyIdCert.Key, keyIdCert.Value.GetPublicKey()));
+		public IEnumerable<KeyValuePair<KeyId, PublicKey>> ListKnownKeyIdsAndPublicKeys() {
+			return certificatesByKeyId.Select(keyIdCert => new KeyValuePair<KeyId, PublicKey>(keyIdCert.Key, keyIdCert.Value.PublicKey));
 		}
 		/// <summary>
 		/// Loads and verifies certificates from the given string in PEM format.
@@ -184,13 +182,13 @@ namespace SGL.Utilities.Crypto {
 		public void LoadCertificatesFromReader(TextReader reader, string sourceName) {
 			var certs = loadCertificates(reader, sourceName);
 			foreach (var cert in certs) {
-				var keyid = KeyId.CalculateId(cert.GetPublicKey());
+				var keyid = KeyId.CalculateId(cert.PublicKey);
 				if (validator.CheckCertificate(cert)) {
 					certificatesByKeyId[keyid] = cert;
 					certificatesBySubjectDN[cert.SubjectDN] = cert;
-					var skid = cert.GetExtensionValue(X509Extensions.SubjectKeyIdentifier);
+					var skid = cert.SubjectKeyIdentifier;
 					if (skid != null) {
-						certificatesBySKID[SubjectKeyIdentifier.GetInstance(Asn1Object.FromByteArray(skid.GetOctets()))] = cert;
+						certificatesBySKID[skid] = cert;
 					}
 				}
 				else {
@@ -199,13 +197,13 @@ namespace SGL.Utilities.Crypto {
 			}
 		}
 
-		private List<X509Certificate> loadCertificates(TextReader reader, string sourceName) {
+		private List<Certificate> loadCertificates(TextReader reader, string sourceName) {
 			PemReader pemReader = new PemReader(reader);
-			List<X509Certificate> certs = new List<X509Certificate>();
+			List<Certificate> certs = new List<Certificate>();
 			object content;
 			while ((content = pemReader.ReadObject()) != null) {
 				if (content is X509Certificate cert) {
-					certs.Add(cert);
+					certs.Add(new Certificate(cert));
 				}
 				else {
 					logger.LogWarning("Source {src} contained an object of type {type}, expecting X509Certificate objects, ignoring this object.", sourceName, content.GetType().FullName);

@@ -1,7 +1,6 @@
 ﻿using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Security.Certificates;
-using Org.BouncyCastle.X509;
 using System;
 
 namespace SGL.Utilities.Crypto {
@@ -10,7 +9,8 @@ namespace SGL.Utilities.Crypto {
 			Valid, OutOfValidityPeriod, InvalidSignature, OtherError
 		}
 
-		public static Outcome CheckCertificate(X509Certificate certificate, AsymmetricKeyParameter trustedPublicKey) {
+		public static Outcome CheckCertificate(Certificate cert, AsymmetricKeyParameter trustedPublicKey) {
+			var certificate = cert.wrapped;
 			try {
 				certificate.CheckValidity();
 			}

@@ -3,7 +3,6 @@ using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.IO;
 using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Security;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -25,7 +24,7 @@ namespace SGL.Utilities.Crypto {
 		/// </summary>
 		/// <param name="random">The random generator to use for generating the data key and the initialization vector.</param>
 		/// <param name="numberOfStreams">The number of streams, the data object consists of. This determines the number of initialization vectors that will be generated.</param>
-		public DataEncryptor(SecureRandom random, int numberOfStreams = 1) {
+		public DataEncryptor(RandomGenerator random, int numberOfStreams = 1) {
 			dataKey = new byte[32];
 			random.NextBytes(dataKey);
 			ivs = Enumerable.Range(0, numberOfStreams).Select(_ => {

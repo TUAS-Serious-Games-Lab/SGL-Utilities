@@ -25,14 +25,14 @@ namespace SGL.Utilities.Crypto.Tests {
 			var keyGen = (IAsymmetricCipherKeyPairGenerator)(keyGenType.GetConstructor(new Type[] { })?.Invoke(new object[] { }) ?? throw new Exception("Couldn't create key pair generator."));
 			keyGen.Init(new KeyGenerationParameters(random, keySize));
 			var keyPair = keyGen.GenerateKeyPair();
-			var keyId1 = KeyId.CalculateId(keyPair.Public);
+			var keyId1 = KeyId.CalculateId(new PublicKey(keyPair.Public));
 			using var strWriter = new StringWriter();
 			var pemWriter = new PemWriter(strWriter);
 			pemWriter.WriteObject(keyPair.Public);
 			using var strReader = new StringReader(strWriter.ToString());
 			var pemReader = new PemReader(strReader);
 			var loadedPubKey = (AsymmetricKeyParameter)pemReader.ReadObject();
-			var keyId2 = KeyId.CalculateId(loadedPubKey);
+			var keyId2 = KeyId.CalculateId(new PublicKey(loadedPubKey));
 			Assert.Equal(keyId1, keyId2);
 		}
 
@@ -47,11 +47,11 @@ namespace SGL.Utilities.Crypto.Tests {
 			var keyGen = (IAsymmetricCipherKeyPairGenerator)(keyGenType.GetConstructor(new Type[] { })?.Invoke(new object[] { }) ?? throw new Exception("Couldn't create key pair generator."));
 			keyGen.Init(new KeyGenerationParameters(random, keySize));
 			var keyPair = keyGen.GenerateKeyPair();
-			var keyId1 = KeyId.CalculateId(keyPair.Public);
+			var keyId1 = KeyId.CalculateId(new PublicKey(keyPair.Public));
 			var privKey = ((ECPrivateKeyParameters)keyPair.Private);
 			var q = privKey.Parameters.G.Multiply(privKey.D);
 			var derivedPubKey = new ECPublicKeyParameters(privKey.AlgorithmName, q, privKey.PublicKeyParamSet);
-			var keyId2 = KeyId.CalculateId(derivedPubKey);
+			var keyId2 = KeyId.CalculateId(new PublicKey(derivedPubKey));
 			Assert.Equal(keyId1, keyId2);
 		}
 
@@ -66,7 +66,7 @@ namespace SGL.Utilities.Crypto.Tests {
 			var keyGen = (IAsymmetricCipherKeyPairGenerator)(keyGenType.GetConstructor(new Type[] { })?.Invoke(new object[] { }) ?? throw new Exception("Couldn't create key pair generator."));
 			keyGen.Init(new KeyGenerationParameters(random, keySize));
 			var keyPair = keyGen.GenerateKeyPair();
-			var keyId1 = KeyId.CalculateId(keyPair.Public);
+			var keyId1 = KeyId.CalculateId(new PublicKey(keyPair.Public));
 			var privKey = ((ECPrivateKeyParameters)keyPair.Private);
 			var q = privKey.Parameters.G.Multiply(privKey.D);
 			var derivedPubKey = new ECPublicKeyParameters(privKey.AlgorithmName, q, privKey.PublicKeyParamSet);
@@ -76,7 +76,7 @@ namespace SGL.Utilities.Crypto.Tests {
 			using var strReader = new StringReader(strWriter.ToString());
 			var pemReader = new PemReader(strReader);
 			var loadedPubKey = (AsymmetricKeyParameter)pemReader.ReadObject();
-			var keyId2 = KeyId.CalculateId(loadedPubKey);
+			var keyId2 = KeyId.CalculateId(new PublicKey(loadedPubKey));
 			Assert.Equal(keyId1, keyId2);
 		}
 	}

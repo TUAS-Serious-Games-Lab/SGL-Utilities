@@ -188,7 +188,7 @@ g30Pr6mO6JjUxgDch8E=
 			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
 			certGen.SetPublicKey(recipientPublicKey);
 			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signer1KeyPair.Private);
-			var cert = certGen.Generate(signatureFactory);
+			var cert = new Certificate(certGen.Generate(signatureFactory));
 
 			Assert.True(validator.CheckCertificate(cert));
 		}
@@ -203,7 +203,7 @@ g30Pr6mO6JjUxgDch8E=
 			certGen.SetNotAfter(DateTime.UtcNow.AddHours(2));
 			certGen.SetPublicKey(recipientPublicKey);
 			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signer1KeyPair.Private);
-			var cert = certGen.Generate(signatureFactory);
+			var cert = new Certificate(certGen.Generate(signatureFactory));
 
 			Assert.False(validator.CheckCertificate(cert));
 		}
@@ -218,7 +218,7 @@ g30Pr6mO6JjUxgDch8E=
 			certGen.SetNotAfter(DateTime.UtcNow.AddHours(-1)); // NotAfter in the past
 			certGen.SetPublicKey(recipientPublicKey);
 			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signer1KeyPair.Private);
-			var cert = certGen.Generate(signatureFactory);
+			var cert = new Certificate(certGen.Generate(signatureFactory));
 
 			Assert.False(validator.CheckCertificate(cert));
 		}
@@ -232,7 +232,7 @@ g30Pr6mO6JjUxgDch8E=
 			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
 			certGen.SetPublicKey(recipientPublicKey);
 			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), unknownSignerPrivateKey);
-			var cert = certGen.Generate(signatureFactory);
+			var cert = new Certificate(certGen.Generate(signatureFactory));
 
 			Assert.False(validator.CheckCertificate(cert));
 		}
@@ -248,7 +248,7 @@ g30Pr6mO6JjUxgDch8E=
 			certGen.SetPublicKey(recipientPublicKey);
 			var signatureFactory = new CorruptingSignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signer1KeyPair.Private, random);
 			signatureFactory.CorruptPreSignature = true;
-			var cert = certGen.Generate(signatureFactory);
+			var cert = new Certificate(certGen.Generate(signatureFactory));
 
 			Assert.False(validator.CheckCertificate(cert));
 		}
@@ -263,7 +263,7 @@ g30Pr6mO6JjUxgDch8E=
 			certGen.SetPublicKey(recipientPublicKey);
 			var signatureFactory = new CorruptingSignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signer1KeyPair.Private, random);
 			signatureFactory.CorruptPostSignature = true;
-			var cert = certGen.Generate(signatureFactory);
+			var cert = new Certificate(certGen.Generate(signatureFactory));
 
 			Assert.False(validator.CheckCertificate(cert));
 		}

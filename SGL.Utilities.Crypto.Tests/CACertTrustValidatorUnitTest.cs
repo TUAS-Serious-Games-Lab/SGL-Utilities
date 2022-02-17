@@ -246,7 +246,7 @@ g30Pr6mO6JjUxgDch8E=
 			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signer1KeyPair.Private);
 			var cert = certGen.Generate(signatureFactory);
 
-			Assert.True(validator.CheckCertificate(cert));
+			Assert.True(validator.CheckCertificate(new Certificate(cert)));
 		}
 
 		[Fact]
@@ -263,7 +263,7 @@ g30Pr6mO6JjUxgDch8E=
 			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory("SHA256WITHECDSA", signer2KeyPair.Private);
 			var cert = certGen.Generate(signatureFactory);
 
-			Assert.True(validator.CheckCertificate(cert));
+			Assert.True(validator.CheckCertificate(new Certificate(cert)));
 		}
 
 		[Fact]
@@ -280,7 +280,7 @@ g30Pr6mO6JjUxgDch8E=
 			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory("SHA256WITHECDSA", signer2KeyPair.Private);
 			var cert = certGen.Generate(signatureFactory);
 
-			Assert.False(validator.CheckCertificate(cert));
+			Assert.False(validator.CheckCertificate(new Certificate(cert)));
 		}
 
 		[Fact]
@@ -295,7 +295,7 @@ g30Pr6mO6JjUxgDch8E=
 			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signer1KeyPair.Private);
 			var cert = certGen.Generate(signatureFactory);
 
-			Assert.False(validator.CheckCertificate(cert));
+			Assert.False(validator.CheckCertificate(new Certificate(cert)));
 		}
 
 		[Fact]
@@ -310,7 +310,7 @@ g30Pr6mO6JjUxgDch8E=
 			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), unknownSignerKeyPair.Private);
 			var cert = certGen.Generate(signatureFactory);
 
-			Assert.False(validator.CheckCertificate(cert));
+			Assert.False(validator.CheckCertificate(new Certificate(cert)));
 		}
 
 		[Fact]
@@ -327,7 +327,7 @@ g30Pr6mO6JjUxgDch8E=
 			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory("SHA256WITHRSA", unknownSignerKeyPair.Private);
 			var cert = certGen.Generate(signatureFactory);
 
-			Assert.False(validator.CheckCertificate(cert));
+			Assert.False(validator.CheckCertificate(new Certificate(cert)));
 		}
 
 		[Fact]
@@ -343,7 +343,7 @@ g30Pr6mO6JjUxgDch8E=
 			signatureFactory.CorruptPreSignature = true;
 			var cert = certGen.Generate(signatureFactory);
 
-			Assert.False(validator.CheckCertificate(cert));
+			Assert.False(validator.CheckCertificate(new Certificate(cert)));
 		}
 
 		[Fact]
@@ -359,7 +359,7 @@ g30Pr6mO6JjUxgDch8E=
 			signatureFactory.CorruptPostSignature = true;
 			var cert = certGen.Generate(signatureFactory);
 
-			Assert.False(validator.CheckCertificate(cert));
+			Assert.False(validator.CheckCertificate(new Certificate(cert)));
 		}
 
 		[Fact]
@@ -377,7 +377,7 @@ g30Pr6mO6JjUxgDch8E=
 			signatureFactory.CorruptPreSignature = true;
 			var cert = certGen.Generate(signatureFactory);
 
-			Assert.False(validator.CheckCertificate(cert));
+			Assert.False(validator.CheckCertificate(new Certificate(cert)));
 		}
 
 		[Fact]
@@ -395,7 +395,7 @@ g30Pr6mO6JjUxgDch8E=
 			signatureFactory.CorruptPostSignature = true;
 			var cert = certGen.Generate(signatureFactory);
 
-			Assert.False(validator.CheckCertificate(cert));
+			Assert.False(validator.CheckCertificate(new Certificate(cert)));
 		}
 	}
 }

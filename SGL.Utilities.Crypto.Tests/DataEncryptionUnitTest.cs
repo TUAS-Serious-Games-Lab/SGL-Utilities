@@ -1,5 +1,4 @@
 ﻿using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Security;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -25,7 +24,7 @@ namespace SGL.Utilities.Crypto.Tests {
 			}
 		}
 
-		private readonly SecureRandom random = new SecureRandom();
+		private readonly RandomGenerator random = new RandomGenerator();
 
 		[Fact]
 		public async Task DataEncryptorAndDecryptorCorrectlyRoundTripDataEncryptionForSingleStream() {

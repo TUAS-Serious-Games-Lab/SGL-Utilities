@@ -6,7 +6,6 @@ using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Security;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,8 +15,8 @@ namespace SGL.Utilities.Crypto {
 	/// Provides the functionality to encrypt data keys of data objects for a list of recipients and to generate the metadata associating recipient key ids with the recipient's encrypted copy of the data key.
 	/// </summary>
 	public class KeyEncryptor : IKeyEncryptor {
-		private readonly List<KeyValuePair<KeyId, AsymmetricKeyParameter>> trustedRecipients;
-		private readonly SecureRandom random;
+		private readonly List<KeyValuePair<KeyId, PublicKey>> trustedRecipients;
+		private readonly RandomGenerator random;
 		private readonly bool useSharedSenderKeyPair;
 		private readonly DerObjectIdentifier? ecSharedSenderKeyPairCurveName = null;
 
@@ -32,12 +31,12 @@ namespace SGL.Utilities.Crypto {
 		/// The other Elliptic-Curve-using recipients will still use a specific sender key pair.
 		/// If this is set to false, all Elliptic-Curve-using recipients will get their own specific sender key pair.
 		/// </param>
-		public KeyEncryptor(List<KeyValuePair<KeyId, AsymmetricKeyParameter>> trustedRecipients, SecureRandom random, bool allowSharedSenderKeyPair = false) {
+		public KeyEncryptor(List<KeyValuePair<KeyId, PublicKey>> trustedRecipients, RandomGenerator random, bool allowSharedSenderKeyPair = false) {
 			this.trustedRecipients = trustedRecipients;
 			this.random = random;
 			if (allowSharedSenderKeyPair) {
 				// Determine named curve that has the most recipients using it, to handle all those recipients using a shared sender EC public key.
-				var ecRecipientKeyCurveNames = trustedRecipients.Select(tr => tr.Value)
+				var ecRecipientKeyCurveNames = trustedRecipients.Select(tr => tr.Value.wrapped)
 					.OfType<ECPublicKeyParameters>()
 					.Where(pk => pk.PublicKeyParamSet != null)
 					.GroupBy(pk => pk.PublicKeyParamSet.Id)
@@ -57,12 +56,12 @@ namespace SGL.Utilities.Crypto {
 		}
 
 		/// <summary>
-		/// Encrypts the given data key for each of the recipients specified by their public key in <see cref="KeyEncryptor(List{KeyValuePair{KeyId, AsymmetricKeyParameter}}, SecureRandom, bool)"/>.
+		/// Encrypts the given data key for each of the recipients specified by their public key in <see cref="KeyEncryptor(List{KeyValuePair{KeyId, PublicKey}}, RandomGenerator, bool)"/>.
 		/// </summary>
 		/// <param name="dataKey">The plain data key.</param>
 		/// <returns>
 		/// A <see cref="Dictionary{KeyId, DataKeyInfo}"/> containing the encrypted data keys, encryption modes, and where needed a sender public key, for each recipient, indexed by the recipient's public key <see cref="KeyId"/>.
-		/// Additionally, a shared sender public key in encoded form is returned if <c>allowSharedSenderKeyPair=true</c> was specified in <see cref="KeyEncryptor(List{KeyValuePair{KeyId, AsymmetricKeyParameter}}, SecureRandom, bool)"/>
+		/// Additionally, a shared sender public key in encoded form is returned if <c>allowSharedSenderKeyPair=true</c> was specified in <see cref="KeyEncryptor(List{KeyValuePair{KeyId, PublicKey}}, RandomGenerator, bool)"/>
 		/// and at least one recipient uses an Elliptic Curve key pair with a named curve. This key needs to be stored together with the encrypted data keys in the metadata of the data object that is encrypted using <paramref name="dataKey"/>.
 		/// </returns>
 		public (Dictionary<KeyId, DataKeyInfo> dataKeys, byte[]? senderPubKey) EncryptDataKey(byte[] dataKey) {
@@ -72,7 +71,7 @@ namespace SGL.Utilities.Crypto {
 				sharedSenderKeyPair = GenerateECKeyPair(ecSharedSenderKeyPairCurveName);
 				encodedSharedSenderPublicKey = EcdhKdfHelper.EncodeEcPublicKey((ECPublicKeyParameters)(sharedSenderKeyPair.Public));
 			}
-			return (trustedRecipients.ToDictionary(kv => kv.Key, kv => EncryptDataKey(kv.Value, dataKey, sharedSenderKeyPair, encodedSharedSenderPublicKey)), encodedSharedSenderPublicKey);
+			return (trustedRecipients.ToDictionary(kv => kv.Key, kv => EncryptDataKey(kv.Value.wrapped, dataKey, sharedSenderKeyPair, encodedSharedSenderPublicKey)), encodedSharedSenderPublicKey);
 		}
 
 		private DataKeyInfo EncryptDataKey(AsymmetricKeyParameter recipientKey, byte[] dataKey, AsymmetricCipherKeyPair? sharedSenderKeyPair, byte[]? encodedSharedSenderPublicKey) {
@@ -117,8 +116,8 @@ namespace SGL.Utilities.Crypto {
 				throw new ArgumentNullException(nameof(curveName) + " and " + nameof(domainParams));
 			}
 			var ecKeyGenParams = curveName != null ?
-							new ECKeyGenerationParameters(curveName, random) :
-							new ECKeyGenerationParameters(domainParams, random);
+							new ECKeyGenerationParameters(curveName, random.wrapped) :
+							new ECKeyGenerationParameters(domainParams, random.wrapped);
 			var ecKeyGen = new ECKeyPairGenerator();
 			ecKeyGen.Init(ecKeyGenParams);
 			return ecKeyGen.GenerateKeyPair();

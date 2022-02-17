@@ -15,13 +15,13 @@ namespace SGL.Utilities.Crypto {
 	/// </list>
 	/// </summary>
 	public class PrivateKeyStore {
-		private AsymmetricCipherKeyPair? keyPair = null;
+		private KeyPair? keyPair = null;
 
 		/// <summary>
 		/// Provides access to the loaded key pair.
 		/// </summary>
 		/// <exception cref="InvalidOperationException">When this getter is called before a key pair has been sucessfully loaded.</exception>
-		public AsymmetricCipherKeyPair KeyPair {
+		public KeyPair KeyPair {
 			get {
 				if (keyPair == null) throw new InvalidOperationException("Key pair has not been loaded yet.");
 				return keyPair;
@@ -62,19 +62,19 @@ namespace SGL.Utilities.Crypto {
 			PemReader pemReader = new PemReader(reader, new PasswordFinder(password));
 			var pemContent = pemReader.ReadObject();
 			if (pemContent is AsymmetricCipherKeyPair kp) {
-				keyPair = kp;
+				keyPair = new KeyPair(kp);
 			}
 			else if (pemContent is RsaPrivateCrtKeyParameters rsa) {
 				// The PEM file contains only the RSA private key, extract the public key from the private key.
 				// The public key consists only of two components, that are also present in the private key: The modulus and the public exponent.
-				keyPair = new AsymmetricCipherKeyPair(new RsaKeyParameters(false, rsa.Modulus, rsa.PublicExponent), rsa);
+				keyPair = new KeyPair(new AsymmetricCipherKeyPair(new RsaKeyParameters(false, rsa.Modulus, rsa.PublicExponent), rsa));
 			}
 			else if (pemContent is ECPrivateKeyParameters ecPriv) {
 				// The PEM file contains only the Elliptic Curves private key, derive the public key from the given private key.
 				// The public key is a point on the curve, determined by multiplying the generator point (which is part of the curve domain definition)
 				// by the integer that forms the private key.
 				var q = ecPriv.Parameters.G.Multiply(ecPriv.D);
-				keyPair = new AsymmetricCipherKeyPair(ecPriv.PublicKeyParamSet != null ? new ECPublicKeyParameters(ecPriv.AlgorithmName, q, ecPriv.PublicKeyParamSet) : new ECPublicKeyParameters(q, ecPriv.Parameters), ecPriv);
+				keyPair = new KeyPair(new AsymmetricCipherKeyPair(ecPriv.PublicKeyParamSet != null ? new ECPublicKeyParameters(ecPriv.AlgorithmName, q, ecPriv.PublicKeyParamSet) : new ECPublicKeyParameters(q, ecPriv.Parameters), ecPriv));
 			}
 			else {
 				throw new ArgumentException("PEM file did not contain a key pair or a supported private key.", nameof(reader));

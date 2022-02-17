@@ -1,14 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.OpenSsl;
-using Org.BouncyCastle.X509;
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SGL.Utilities.Crypto {
 	/// <summary>
@@ -70,20 +64,20 @@ namespace SGL.Utilities.Crypto {
 		/// As the public keys are not associated with the certificate through metadata, the trusted keys are tried one after another to verify the signature until ony succeeds.
 		/// If none of them can verify the signature, the certifiacte is rejected.
 		/// </remarks>
-		/// <param name="cert">The certificate to validate.</param>
+		/// <param name="certificate">The certificate to validate.</param>
 		/// <returns>True if the certifiacte passed all checks and was successfully validated, False otherwise.</returns>
-		public bool CheckCertificate(X509Certificate cert) {
+		public bool CheckCertificate(Certificate certificate) {
 			foreach (var trustedKey in trustedPublicKeys) {
-				var outcome = CertificateCheckHelper.CheckCertificate(cert, trustedKey);
+				var outcome = CertificateCheckHelper.CheckCertificate(certificate, trustedKey);
 				if (outcome == CertificateCheckHelper.Outcome.OutOfValidityPeriod) {
-					logger.LogError("The certificate {subjDN} is out of it's validity period (expired or not yet valid).", cert.SubjectDN);
+					logger.LogError("The certificate {subjDN} is out of it's validity period (expired or not yet valid).", certificate.SubjectDN);
 					return false;
 				}
 				if (outcome == CertificateCheckHelper.Outcome.Valid) {
 					return true;
 				}
 			}
-			logger.LogError("The certificate {subjDN} could not be validated with any of the trusted public keys.", cert.SubjectDN);
+			logger.LogError("The certificate {subjDN} could not be validated with any of the trusted public keys.", certificate.SubjectDN);
 			return false;
 		}
 	}

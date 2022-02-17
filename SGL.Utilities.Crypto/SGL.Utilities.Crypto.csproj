@@ -26,4 +26,9 @@
 		<PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<InternalsVisibleTo Include="SGL.Utilities.Crypto.Tests" />
+	</ItemGroup>
+
+
 </Project>

@@ -2,13 +2,11 @@
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Asn1.X9;
 using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.EC;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Operators;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.OpenSsl;
-using Org.BouncyCastle.Security;
 using Org.BouncyCastle.X509;
 using System;
 using System.IO;
@@ -17,29 +15,29 @@ using System.Threading.Tasks;
 
 namespace SGL.Utilities.Crypto.Tests {
 	public class E2ECryptoFixture {
-		private readonly SecureRandom random;
-		private readonly AsymmetricCipherKeyPair signerKeyPair;
-		private readonly AsymmetricCipherKeyPair rsaKeyPair1;
-		private readonly AsymmetricCipherKeyPair rsaKeyPair2;
-		private readonly AsymmetricCipherKeyPair ecKeyPair1;
-		private readonly AsymmetricCipherKeyPair ecKeyPair2;
-		private readonly AsymmetricCipherKeyPair ecKeyPair3;
-		private readonly AsymmetricCipherKeyPair ecKeyPair4;
+		private readonly RandomGenerator random;
+		private readonly KeyPair signerKeyPair;
+		private readonly KeyPair rsaKeyPair1;
+		private readonly KeyPair rsaKeyPair2;
+		private readonly KeyPair ecKeyPair1;
+		private readonly KeyPair ecKeyPair2;
+		private readonly KeyPair ecKeyPair3;
+		private readonly KeyPair ecKeyPair4;
 
-		private readonly AsymmetricCipherKeyPair rsaKeyPairAttacker;
-		private readonly AsymmetricCipherKeyPair ecKeyPairAttacker;
+		private readonly KeyPair rsaKeyPairAttacker;
+		private readonly KeyPair ecKeyPairAttacker;
 
-		private readonly X509Certificate signerCert;
-		private readonly X509Certificate rsaCert1;
-		private readonly X509Certificate rsaCert2;
-		private readonly X509Certificate ecCert1;
-		private readonly X509Certificate ecCert2;
-		private readonly X509Certificate ecCert3;
-		private readonly X509Certificate ecCert4;
+		private readonly Certificate signerCert;
+		private readonly Certificate rsaCert1;
+		private readonly Certificate rsaCert2;
+		private readonly Certificate ecCert1;
+		private readonly Certificate ecCert2;
+		private readonly Certificate ecCert3;
+		private readonly Certificate ecCert4;
 
-		private readonly AsymmetricCipherKeyPair attackerSigningKeyPair;
-		private readonly X509Certificate rsaCertAttacker;
-		private readonly X509Certificate ecCertAttacker;
+		private readonly KeyPair attackerSigningKeyPair;
+		private readonly Certificate rsaCertAttacker;
+		private readonly Certificate ecCertAttacker;
 
 		private readonly byte[] signerPubPem;
 		private readonly byte[] rsaPub1Pem;
@@ -75,38 +73,36 @@ namespace SGL.Utilities.Crypto.Tests {
 		private readonly byte[] rsaCertAttackerPem;
 		private readonly byte[] ecCertAttackerPem;
 
-		private Task<AsymmetricCipherKeyPair> GenerateRsaKeyPairAsync(int length) {
-			var rnd = SecureRandom.GetInstance("SHA256PRNG", false);
-			rnd.SetSeed(random.GenerateSeed(1024));
+		private Task<KeyPair> GenerateRsaKeyPairAsync(int length) {
+			var rnd = random.DeriveGenerator(1024);
 			return Task.Run(() => {
-				KeyGenerationParameters rsaKeyParams = new KeyGenerationParameters(random, length);
+				KeyGenerationParameters rsaKeyParams = new KeyGenerationParameters(rnd.wrapped, length);
 				RsaKeyPairGenerator rsaGen = new RsaKeyPairGenerator();
 				rsaGen.Init(rsaKeyParams);
-				return rsaGen.GenerateKeyPair();
+				return new KeyPair(rsaGen.GenerateKeyPair());
 			});
 		}
-		private Task<AsymmetricCipherKeyPair> GenerateEcKeyPairAsync(int length) {
-			return GenerateEcKeyPairAsync(new KeyGenerationParameters(random, length));
+		private Task<KeyPair> GenerateEcKeyPairAsync(int length) {
+			var rnd = random.DeriveGenerator(1024);
+			return GenerateEcKeyPairAsync(new KeyGenerationParameters(rnd.wrapped, length));
 		}
-		private Task<AsymmetricCipherKeyPair> GenerateEcKeyPairAsync(KeyGenerationParameters ecKeyParams) {
-			var rnd = SecureRandom.GetInstance("SHA256PRNG", false);
-			rnd.SetSeed(random.GenerateSeed(1024));
+		private Task<KeyPair> GenerateEcKeyPairAsync(KeyGenerationParameters ecKeyParams) {
 			return Task.Run(() => {
 				ECKeyPairGenerator ecGen = new ECKeyPairGenerator();
 				ecGen.Init(ecKeyParams);
-				return ecGen.GenerateKeyPair();
+				return new KeyPair(ecGen.GenerateKeyPair());
 			});
 		}
 
 		public E2ECryptoFixture() {
-			random = new SecureRandom();
+			random = new RandomGenerator();
 
 			var rsaGeneratorTasks = Enumerable.Range(0, 5).Select(_ => GenerateRsaKeyPairAsync(4096)).ToArray();
 			var ecGeneratorTasks = Enumerable.Range(0, 3).Select(_ => GenerateEcKeyPairAsync(521))
 				// one key pair with a non-matching key length -> ineligible for shared sender key
 				.Append(GenerateEcKeyPairAsync(384))
 				// one key pair with a explicit parameters -> ineligible for shared sender key
-				.Append(GenerateEcKeyPairAsync(new ECKeyGenerationParameters(new ECDomainParameters(ECNamedCurveTable.GetByName("secp521r1")), random))).ToArray();
+				.Append(GenerateEcKeyPairAsync(new ECKeyGenerationParameters(new ECDomainParameters(ECNamedCurveTable.GetByName("secp521r1")), random.wrapped))).ToArray();
 
 			Task.WaitAll(rsaGeneratorTasks.Concat(ecGeneratorTasks).ToArray());
 
@@ -121,69 +117,69 @@ namespace SGL.Utilities.Crypto.Tests {
 			ecKeyPair3 = ecGeneratorTasks.ElementAt(3).Result;
 			ecKeyPair4 = ecGeneratorTasks.ElementAt(4).Result;
 
-			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signerKeyPair.Private);
-			Asn1SignatureFactory attackerSignatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), attackerSigningKeyPair.Private);
-			BigInteger serialBase = new BigInteger(128, random);
+			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signerKeyPair.Private.wrapped);
+			Asn1SignatureFactory attackerSignatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), attackerSigningKeyPair.Private.wrapped);
+			BigInteger serialBase = new BigInteger(128, random.wrapped);
 
 			X509V3CertificateGenerator caCertGen = new X509V3CertificateGenerator();
 			X509Name issuerDN = new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Test Signer");
 			caCertGen.SetIssuerDN(issuerDN);
 			caCertGen.SetNotBefore(DateTime.UtcNow);
 			caCertGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
-			caCertGen.SetPublicKey(signerKeyPair.Public);
+			caCertGen.SetPublicKey(signerKeyPair.Public.wrapped);
 			caCertGen.SetSubjectDN(issuerDN);
 			caCertGen.SetSerialNumber(serialBase);
-			var signerSpki = SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(signerKeyPair.Public);
+			var signerSpki = SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(signerKeyPair.Public.wrapped);
 			caCertGen.AddExtension(X509Extensions.SubjectKeyIdentifier, false, new SubjectKeyIdentifier(signerSpki));
-			signerCert = caCertGen.Generate(signatureFactory);
+			signerCert = new Certificate(caCertGen.Generate(signatureFactory));
 
 			X509V3CertificateGenerator certGen = new X509V3CertificateGenerator();
 			certGen.SetIssuerDN(issuerDN);
 			certGen.SetNotBefore(DateTime.UtcNow);
 			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
 
-			certGen.SetPublicKey(rsaKeyPair1.Public);
+			certGen.SetPublicKey(rsaKeyPair1.Public.wrapped);
 			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Test 1"));
 			certGen.SetSerialNumber(serialBase.Add(BigInteger.ValueOf(1)));
-			rsaCert1 = certGen.Generate(signatureFactory);
-			certGen.SetPublicKey(rsaKeyPair2.Public);
+			rsaCert1 = new Certificate(certGen.Generate(signatureFactory));
+			certGen.SetPublicKey(rsaKeyPair2.Public.wrapped);
 			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Test 2"));
 			certGen.SetSerialNumber(serialBase.Add(BigInteger.ValueOf(2)));
-			rsaCert2 = certGen.Generate(signatureFactory);
-			certGen.SetPublicKey(ecKeyPair1.Public);
+			rsaCert2 = new Certificate(certGen.Generate(signatureFactory));
+			certGen.SetPublicKey(ecKeyPair1.Public.wrapped);
 			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Test 3"));
 			certGen.SetSerialNumber(serialBase.Add(BigInteger.ValueOf(3)));
-			ecCert1 = certGen.Generate(signatureFactory);
-			certGen.SetPublicKey(ecKeyPair2.Public);
+			ecCert1 = new Certificate(certGen.Generate(signatureFactory));
+			certGen.SetPublicKey(ecKeyPair2.Public.wrapped);
 
 			certGen.AddExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifier(signerSpki));
 
 			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Test 4"));
 			certGen.SetSerialNumber(serialBase.Add(BigInteger.ValueOf(4)));
-			ecCert2 = certGen.Generate(signatureFactory);
-			certGen.SetPublicKey(ecKeyPair3.Public);
+			ecCert2 = new Certificate(certGen.Generate(signatureFactory));
+			certGen.SetPublicKey(ecKeyPair3.Public.wrapped);
 			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Test 5"));
 			certGen.SetSerialNumber(serialBase.Add(BigInteger.ValueOf(5)));
-			ecCert3 = certGen.Generate(signatureFactory);
-			certGen.SetPublicKey(ecKeyPair4.Public);
+			ecCert3 = new Certificate(certGen.Generate(signatureFactory));
+			certGen.SetPublicKey(ecKeyPair4.Public.wrapped);
 			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Test 6"));
 			certGen.SetSerialNumber(serialBase.Add(BigInteger.ValueOf(6)));
-			certGen.AddExtension(X509Extensions.SubjectKeyIdentifier, false, new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(ecKeyPair4.Public)));
-			ecCert4 = certGen.Generate(signatureFactory);
+			certGen.AddExtension(X509Extensions.SubjectKeyIdentifier, false, new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(ecKeyPair4.Public.wrapped)));
+			ecCert4 = new Certificate(certGen.Generate(signatureFactory));
 
 			certGen = new X509V3CertificateGenerator();
 			certGen.SetIssuerDN(issuerDN);
 			certGen.SetNotBefore(DateTime.UtcNow);
 			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
 
-			certGen.SetPublicKey(rsaKeyPairAttacker.Public);
+			certGen.SetPublicKey(rsaKeyPairAttacker.Public.wrapped);
 			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Attacker 1"));
 			certGen.SetSerialNumber(serialBase.Add(BigInteger.ValueOf(7)));
-			rsaCertAttacker = certGen.Generate(attackerSignatureFactory);
-			certGen.SetPublicKey(ecKeyPairAttacker.Public);
+			rsaCertAttacker = new Certificate(certGen.Generate(attackerSignatureFactory));
+			certGen.SetPublicKey(ecKeyPairAttacker.Public.wrapped);
 			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Attacker 2"));
 			certGen.SetSerialNumber(serialBase.Add(BigInteger.ValueOf(8)));
-			ecCertAttacker = certGen.Generate(attackerSignatureFactory);
+			ecCertAttacker = new Certificate(certGen.Generate(attackerSignatureFactory));
 
 			privKeyPassword = SecretGenerator.Instance.GenerateSecret(16).ToCharArray();
 
@@ -224,43 +220,51 @@ namespace SGL.Utilities.Crypto.Tests {
 			ecPrivAttackerPem = WritePem(ecKeyPairAttacker.Private, privKeyPassword);
 		}
 
-		private byte[] WritePem(object obj) {
+		private byte[] WritePem(Certificate cert) {
 			using MemoryStream ms = new MemoryStream();
 			using StreamWriter writer = new StreamWriter(ms);
 			PemWriter pemWriter = new PemWriter(writer);
-			pemWriter.WriteObject(obj);
+			pemWriter.WriteObject(cert.wrapped);
+			writer.Flush();
+			return ms.ToArray();
+		}
+		private byte[] WritePem(PublicKey pubKey) {
+			using MemoryStream ms = new MemoryStream();
+			using StreamWriter writer = new StreamWriter(ms);
+			PemWriter pemWriter = new PemWriter(writer);
+			pemWriter.WriteObject(pubKey.wrapped);
 			writer.Flush();
 			return ms.ToArray();
 		}
 
-		private byte[] WritePem(object obj, char[] password) {
+		private byte[] WritePem(PrivateKey privKey, char[] password) {
 			using MemoryStream ms = new MemoryStream();
 			using StreamWriter writer = new StreamWriter(ms);
 			PemWriter pemWriter = new PemWriter(writer);
-			pemWriter.WriteObject(obj, "AES-256-CBC", password, random);
+			pemWriter.WriteObject(privKey.wrapped, "AES-256-CBC", password, random.wrapped);
 			writer.Flush();
 			return ms.ToArray();
 		}
 
-		public SecureRandom Random => random;
+		public RandomGenerator Random => random;
 
-		public AsymmetricCipherKeyPair SignerKeyPair => signerKeyPair;
+		public KeyPair SignerKeyPair => signerKeyPair;
 
-		public AsymmetricCipherKeyPair RsaKeyPair1 => rsaKeyPair1;
+		public KeyPair RsaKeyPair1 => rsaKeyPair1;
 
-		public AsymmetricCipherKeyPair RsaKeyPair2 => rsaKeyPair2;
+		public KeyPair RsaKeyPair2 => rsaKeyPair2;
 
-		public AsymmetricCipherKeyPair EcKeyPair1 => ecKeyPair1;
+		public KeyPair EcKeyPair1 => ecKeyPair1;
 
-		public AsymmetricCipherKeyPair EcKeyPair2 => ecKeyPair2;
+		public KeyPair EcKeyPair2 => ecKeyPair2;
 
-		public X509Certificate RsaCert1 => rsaCert1;
+		public Certificate RsaCert1 => rsaCert1;
 
-		public X509Certificate RsaCert2 => rsaCert2;
+		public Certificate RsaCert2 => rsaCert2;
 
-		public X509Certificate EcCert1 => ecCert1;
+		public Certificate EcCert1 => ecCert1;
 
-		public X509Certificate EcCert2 => ecCert2;
+		public Certificate EcCert2 => ecCert2;
 
 		public byte[] SignerPubPem => signerPubPem;
 
@@ -304,19 +308,19 @@ namespace SGL.Utilities.Crypto.Tests {
 
 		public byte[] EcCertAttackerPem => ecCertAttackerPem;
 
-		public AsymmetricCipherKeyPair RsaKeyPairAttacker => rsaKeyPairAttacker;
+		public KeyPair RsaKeyPairAttacker => rsaKeyPairAttacker;
 
-		public AsymmetricCipherKeyPair EcKeyPairAttacker => ecKeyPairAttacker;
+		public KeyPair EcKeyPairAttacker => ecKeyPairAttacker;
 
-		public AsymmetricCipherKeyPair AttackerSigningKeyPair => attackerSigningKeyPair;
+		public KeyPair AttackerSigningKeyPair => attackerSigningKeyPair;
 
-		public X509Certificate RsaCertAttacker => rsaCertAttacker;
+		public Certificate RsaCertAttacker => rsaCertAttacker;
 
-		public X509Certificate EcCertAttacker => ecCertAttacker;
+		public Certificate EcCertAttacker => ecCertAttacker;
 
-		public X509Certificate EcCert3 => ecCert3;
+		public Certificate EcCert3 => ecCert3;
 
-		public X509Certificate EcCert4 => ecCert4;
+		public Certificate EcCert4 => ecCert4;
 
 		public byte[] EcPub3Pem => ecPub3Pem;
 
@@ -330,11 +334,11 @@ namespace SGL.Utilities.Crypto.Tests {
 
 		public byte[] EcCert4Pem => ecCert4Pem;
 
-		public AsymmetricCipherKeyPair EcKeyPair3 => ecKeyPair3;
+		public KeyPair EcKeyPair3 => ecKeyPair3;
 
-		public AsymmetricCipherKeyPair EcKeyPair4 => ecKeyPair4;
+		public KeyPair EcKeyPair4 => ecKeyPair4;
 
-		public X509Certificate SignerCert => signerCert;
+		public Certificate SignerCert => signerCert;
 
 		public byte[] SignerCertPem => signerCertPem;
 	}

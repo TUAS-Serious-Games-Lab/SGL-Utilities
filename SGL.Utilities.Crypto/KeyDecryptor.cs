@@ -12,14 +12,14 @@ namespace SGL.Utilities.Crypto {
 	/// The encrypted data key is taken from the data object's metadata and decrypted using an authorized private key that must be supplied to the KeyDecyrptor.
 	/// </summary>
 	public class KeyDecryptor : IKeyDecryptor {
-		private AsymmetricCipherKeyPair keyPair;
+		private KeyPair keyPair;
 		private KeyId keyId;
 
 		/// <summary>
 		/// Constructs a KeyDecryptor using the given recipient key pair.
 		/// </summary>
 		/// <param name="keyPair">The recipient key pair to use for decryption.</param>
-		public KeyDecryptor(AsymmetricCipherKeyPair keyPair) {
+		public KeyDecryptor(KeyPair keyPair) {
 			this.keyPair = keyPair;
 			keyId = KeyId.CalculateId(keyPair.Public);
 		}
@@ -64,7 +64,7 @@ namespace SGL.Utilities.Crypto {
 
 		private byte[] DecryptKeyRsa(DataKeyInfo dataKeyInfo) {
 			var engine = new Pkcs1Encoding(new RsaEngine());
-			engine.Init(forEncryption: false, keyPair.Private);
+			engine.Init(forEncryption: false, keyPair.Private.wrapped);
 			return engine.ProcessBlock(dataKeyInfo.EncryptedKey, 0, dataKeyInfo.EncryptedKey.Length);
 		}
 
@@ -75,7 +75,7 @@ namespace SGL.Utilities.Crypto {
 			}
 			ECPublicKeyParameters senderPublicKey = EcdhKdfHelper.DecodeEcPublicKey(senderPublicKeyEncoded);
 			var ecdh = new ECDHBasicAgreement();
-			ecdh.Init(keyPair.Private);
+			ecdh.Init(keyPair.Private.wrapped);
 			var agreement = ecdh.CalculateAgreement(senderPublicKey);
 			var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
 			var keyParams = EcdhKdfHelper.DeriveKeyAndIV(agreement.ToByteArray(), senderPublicKeyEncoded);
