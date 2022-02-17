@@ -11,6 +11,9 @@ namespace SGL.Utilities.Crypto {
 	public class KeyException : CryptographyException {
 		public KeyException(string? message, Exception? innerException = null) : base(message, innerException) { }
 	}
+	public class PemException : CryptographyException {
+		public PemException(string? message, Exception? innerException = null) : base(message, innerException) { }
+	}
 	public class CertififcateException : CryptographyException {
 		public CertififcateException(string? message, Exception? innerException = null) : base(message, innerException) { }
 	}

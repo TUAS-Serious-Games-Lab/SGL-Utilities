@@ -1,5 +1,6 @@
 ﻿using Org.BouncyCastle.Crypto;
 using System;
+using System.IO;
 
 namespace SGL.Utilities.Crypto {
 	public class KeyPair {
@@ -21,5 +22,6 @@ namespace SGL.Utilities.Crypto {
 		public override int GetHashCode() => HashCode.Combine(Public, Private);
 		public override string? ToString() => "KeyPair: Public: " + Public.ToString() + " Private:" + Private.ToString();
 
+		public static KeyPair LoadFromPem(TextReader reader, Func<char[]> passwordGetter) => PemHelper.LoadKeyPair(reader, new PemHelper.FuncPasswordFinder(passwordGetter));
 	}
 }
