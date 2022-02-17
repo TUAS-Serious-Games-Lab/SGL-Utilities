@@ -143,15 +143,11 @@ namespace SGL.Utilities.Crypto {
 #endif
 
 		/// <inheritdoc/>
-		public override void Write(Utf8JsonWriter writer, KeyId value, JsonSerializerOptions options) {
-			writer.WriteStringValue(value.ToString());
-		}
+		public override void Write(Utf8JsonWriter writer, KeyId value, JsonSerializerOptions options) => writer.WriteStringValue(value.ToString());
 
 #if NET6_0_OR_GREATER
 		/// <inheritdoc/>
-		public override void WriteAsPropertyName(Utf8JsonWriter writer, KeyId value, JsonSerializerOptions options) {
-			writer.WritePropertyName(value.ToString()!);
-		}
+		public override void WriteAsPropertyName(Utf8JsonWriter writer, KeyId value, JsonSerializerOptions options) => writer.WritePropertyName(value.ToString()!);
 #endif
 	}
 

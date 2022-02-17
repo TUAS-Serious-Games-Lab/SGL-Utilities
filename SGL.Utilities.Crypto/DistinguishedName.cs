@@ -14,16 +14,8 @@ namespace SGL.Utilities.Crypto {
 			wrapped = new X509Name(string.Join(',', values.Select(kvp => kvp.Key + "=" + kvp.Value)));
 		}
 
-		public override bool Equals(object? obj) {
-			return obj is DistinguishedName name && wrapped.Equals(name.wrapped);
-		}
-
-		public override int GetHashCode() {
-			return wrapped.GetHashCode();
-		}
-
-		public override string? ToString() {
-			return wrapped.ToString();
-		}
+		public override bool Equals(object? obj) => obj is DistinguishedName name && wrapped.Equals(name.wrapped);
+		public override int GetHashCode() => wrapped.GetHashCode();
+		public override string? ToString() => wrapped.ToString();
 	}
 }

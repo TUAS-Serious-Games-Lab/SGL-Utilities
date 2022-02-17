@@ -12,17 +12,10 @@ namespace SGL.Utilities.Crypto {
 			this.wrapped = wrapped;
 		}
 
-		public override bool Equals(object? obj) {
-			return obj is PublicKey publicKey && wrapped.Equals(publicKey.wrapped);
-		}
+		public override bool Equals(object? obj) => obj is PublicKey publicKey && wrapped.Equals(publicKey.wrapped);
+		public override int GetHashCode() => wrapped.GetHashCode();
+		public override string? ToString() => wrapped.ToString();
 
-		public override int GetHashCode() {
-			return wrapped.GetHashCode();
-		}
-
-		public override string? ToString() {
-			return wrapped.ToString();
-		}
 		public KeyType Type => wrapped switch { RsaKeyParameters rsa => KeyType.RSA, ECPublicKeyParameters => KeyType.EllipticCurves, _ => throw new KeyException("Unexpected key type") };
 	}
 }

@@ -35,9 +35,7 @@ namespace SGL.Utilities.Crypto {
 				this.password = password;
 			}
 
-			public char[] GetPassword() {
-				return password;
-			}
+			public char[] GetPassword() => password;
 		}
 
 		/// <summary>

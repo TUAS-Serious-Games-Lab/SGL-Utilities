@@ -81,54 +81,40 @@ namespace SGL.Utilities.Crypto {
 		/// Lists the <see cref="KeyId"/> of all certificates contained in the certificate store.
 		/// </summary>
 		/// <returns>An enumerable over all <see cref="KeyId"/>s.</returns>
-		public IEnumerable<KeyId> ListKnownKeyIds() {
-			return certificatesByKeyId.Keys;
-		}
+		public IEnumerable<KeyId> ListKnownKeyIds() => certificatesByKeyId.Keys;
 		/// <summary>
 		/// Lists the SubjectDistinguishedNames of all certificates contained in the certificate store.
 		/// </summary>
 		/// <returns>An enumerable over all SubjectDistinguishedNames as <see cref="X509Name"/>s.</returns>
-		public IEnumerable<DistinguishedName> ListKnownSubjectDNs() {
-			return certificatesBySubjectDN.Keys;
-		}
+		public IEnumerable<DistinguishedName> ListKnownSubjectDNs() => certificatesBySubjectDN.Keys;
 		/// <summary>
 		/// Lists the SubjectKeyIdentifier values of all certificates contained in the certificate store that have that extension.
 		/// </summary>
 		/// <returns>An enumerable over all <see cref="SubjectKeyIdentifier"/>s.</returns>
-		public IEnumerable<KeyIdentifier> ListKnownSubjectKeyIdentifiers() {
-			return certificatesBySKID.Keys;
-		}
+		public IEnumerable<KeyIdentifier> ListKnownSubjectKeyIdentifiers() => certificatesBySKID.Keys;
 
 		/// <summary>
 		/// Lists all certificates contained in the certificate store.
 		/// </summary>
 		/// <returns>An enumerable over all <see cref="Certificate"/>s.</returns>
-		public IEnumerable<Certificate> ListKnownCertificates() {
-			return certificatesByKeyId.Values;
-		}
+		public IEnumerable<Certificate> ListKnownCertificates() => certificatesByKeyId.Values;
 		/// <summary>
 		/// Lists the public keys of all certificates in the certificate store.
 		/// </summary>
 		/// <returns>An enumerable over all public keys as <see cref="AsymmetricKeyParameter"/>s.</returns>
-		public IEnumerable<PublicKey> ListKnownPublicKeys() {
-			return ListKnownCertificates().Select(cert => cert.PublicKey);
-		}
+		public IEnumerable<PublicKey> ListKnownPublicKeys() => ListKnownCertificates().Select(cert => cert.PublicKey);
 		/// <summary>
 		/// Lists all certificates contained in the certificate store as <see cref="KeyValuePair{KeyId, AsymmetricKeyParameter}"/>s of the id of their public key paired with the actual certificate object.
 		/// </summary>
 		/// <returns>An enumerable over all public key ids paired with the certificate, as <see cref="KeyValuePair{KeyId, AsymmetricKeyParameter}"/>.</returns>
-		public IEnumerable<KeyValuePair<KeyId, PublicKey>> ListKnownKeyIdsAndPublicKeys() {
-			return certificatesByKeyId.Select(keyIdCert => new KeyValuePair<KeyId, PublicKey>(keyIdCert.Key, keyIdCert.Value.PublicKey));
-		}
+		public IEnumerable<KeyValuePair<KeyId, PublicKey>> ListKnownKeyIdsAndPublicKeys() => certificatesByKeyId.Select(keyIdCert => new KeyValuePair<KeyId, PublicKey>(keyIdCert.Key, keyIdCert.Value.PublicKey));
 		/// <summary>
 		/// Loads and verifies certificates from the given string in PEM format.
 		/// The certificates are validated using the <see cref="ICertificateValidator"/> given at construction.
 		/// Only certificates that pass the validation checks are added to the store.
 		/// </summary>
 		/// <param name="pemContent">A string containing the certificates in PEM format.</param>
-		public void LoadCertificatesFromEmbeddedStringConstant(string pemContent) {
-			LoadCertificatesFromReader(new StringReader(pemContent), "[embedded data]");
-		}
+		public void LoadCertificatesFromEmbeddedStringConstant(string pemContent) => LoadCertificatesFromReader(new StringReader(pemContent), "[embedded data]");
 
 		/// <summary>
 		/// Asynchronously downloads, loads, and verifies certificates from the given HTTP(S) URI in PEM format.
@@ -138,10 +124,7 @@ namespace SGL.Utilities.Crypto {
 		/// <param name="source">A URI to download the certificates from using <see cref="HttpClient"/>.</param>
 		/// <param name="ct">A cancellation token to allow cancelling of the asynchronous download operation.</param>
 		/// <returns>A task representing the asynchronous operation.</returns>
-		public Task LoadCertificatesFromHttpAsync(Uri source, CancellationToken ct = default) {
-			HttpClient httpClient = new();
-			return LoadCertificatesFromHttpAsync(httpClient, source, ct);
-		}
+		public Task LoadCertificatesFromHttpAsync(Uri source, CancellationToken ct = default) => LoadCertificatesFromHttpAsync(new(), source, ct);
 
 		/// <summary>
 		/// Asynchronously downloads, loads, and verifies certificates from the given HTTP(S) URI in PEM format.

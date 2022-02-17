@@ -11,17 +11,9 @@ namespace SGL.Utilities.Crypto {
 			this.wrapped = wrapped;
 		}
 
-		public override bool Equals(object? obj) {
-			return obj is Certificate certificate && wrapped.Equals(certificate.wrapped);
-		}
-
-		public override int GetHashCode() {
-			return wrapped.GetHashCode();
-		}
-
-		public override string? ToString() {
-			return wrapped.ToString();
-		}
+		public override bool Equals(object? obj) => obj is Certificate certificate && wrapped.Equals(certificate.wrapped);
+		public override int GetHashCode() => wrapped.GetHashCode();
+		public override string? ToString() => wrapped.ToString();
 
 		public PublicKey PublicKey => new PublicKey(wrapped.GetPublicKey());
 		public DistinguishedName SubjectDN => new DistinguishedName(wrapped.SubjectDN);

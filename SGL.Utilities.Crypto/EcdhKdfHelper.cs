@@ -17,14 +17,12 @@ namespace SGL.Utilities.Crypto {
 			return new ParametersWithIV(new KeyParameter(keyAndIV.Take(keyLength).ToArray()), keyAndIV.Skip(keyLength).ToArray());
 		}
 
-		public static byte[] EncodeEcPublicKey(ECPublicKeyParameters pubKey) {
+		public static byte[] EncodeEcPublicKey(ECPublicKeyParameters pubKey) =>
 			// Encoding as described here: https://stackoverflow.com/a/19614887
-			return SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(pubKey).GetEncoded();
-		}
+			SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(pubKey).GetEncoded();
 
-		public static ECPublicKeyParameters DecodeEcPublicKey(byte[] pubKeyEncoded) {
+		public static ECPublicKeyParameters DecodeEcPublicKey(byte[] pubKeyEncoded) =>
 			// Decoding as described here: https://stackoverflow.com/a/19614887
-			return (ECPublicKeyParameters)PublicKeyFactory.CreateKey(pubKeyEncoded);
-		}
+			(ECPublicKeyParameters)PublicKeyFactory.CreateKey(pubKeyEncoded);
 	}
 }

@@ -1,6 +1,5 @@
 ﻿using Org.BouncyCastle.Crypto;
 using System;
-using System.Collections.Generic;
 
 namespace SGL.Utilities.Crypto {
 	public class KeyPair {
@@ -18,18 +17,9 @@ namespace SGL.Utilities.Crypto {
 			Private = new PrivateKey(keyPair.Private);
 		}
 
-		public override bool Equals(object? obj) {
-			return obj is KeyPair pair &&
-				   EqualityComparer<PublicKey>.Default.Equals(Public, pair.Public) &&
-				   EqualityComparer<PrivateKey>.Default.Equals(Private, pair.Private);
-		}
+		public override bool Equals(object? obj) => obj is KeyPair pair && Public.Equals(pair.Public) && Private.Equals(pair.Private);
+		public override int GetHashCode() => HashCode.Combine(Public, Private);
+		public override string? ToString() => "KeyPair: Public: " + Public.ToString() + " Private:" + Private.ToString();
 
-		public override int GetHashCode() {
-			return HashCode.Combine(Public, Private);
-		}
-
-		public override string? ToString() {
-			return "KeyPair: Public: " + Public.ToString() + " " + Private.ToString();
-		}
 	}
 }

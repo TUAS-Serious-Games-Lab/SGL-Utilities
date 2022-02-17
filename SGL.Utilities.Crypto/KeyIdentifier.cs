@@ -8,17 +8,8 @@ namespace SGL.Utilities.Crypto {
 			this.wrapped = wrapped;
 		}
 
-		public override bool Equals(object? obj) {
-			return obj is KeyIdentifier identifier &&
-				   wrapped.Equals(identifier.wrapped);
-		}
-
-		public override int GetHashCode() {
-			return wrapped.GetHashCode();
-		}
-
-		public override string? ToString() {
-			return wrapped.ToString();
-		}
+		public override bool Equals(object? obj) => obj is KeyIdentifier identifier && wrapped.Equals(identifier.wrapped);
+		public override int GetHashCode() => wrapped.GetHashCode();
+		public override string? ToString() => wrapped.ToString();
 	}
 }
