@@ -23,5 +23,23 @@ namespace SGL.Utilities.Crypto {
 		public override string? ToString() => wrapped.ToString();
 
 		public KeyType Type => TryGetKeyType(wrapped) ?? throw new KeyException("Unexpected key type");
+
+		public PublicKey DerivePublicKey() {
+			if (wrapped is RsaPrivateCrtKeyParameters rsa) {
+				// We have a RSA private key, extract the public key from the private key.
+				// The public key consists only of two components, that are also present in the private key: The modulus and the public exponent.
+				return new PublicKey(new RsaKeyParameters(false, rsa.Modulus, rsa.PublicExponent));
+			}
+			else if (wrapped is ECPrivateKeyParameters ecPriv) {
+				// We have an Elliptic Curves private key, derive the public key from the private key.
+				// The public key is a point on the curve, determined by multiplying the generator point (which is part of the curve domain definition)
+				// by the integer that forms the private key.
+				var q = ecPriv.Parameters.G.Multiply(ecPriv.D);
+				return new PublicKey(ecPriv.PublicKeyParamSet != null ? new ECPublicKeyParameters(ecPriv.AlgorithmName, q, ecPriv.PublicKeyParamSet) : new ECPublicKeyParameters(q, ecPriv.Parameters));
+			}
+			else {
+				throw new KeyException("This private key does not support deriving the public key (yet).");
+			}
+		}
 	}
 }
