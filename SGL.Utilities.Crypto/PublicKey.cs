@@ -1,4 +1,5 @@
 ﻿using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Parameters;
 using System;
 
 namespace SGL.Utilities.Crypto {
@@ -7,6 +8,7 @@ namespace SGL.Utilities.Crypto {
 
 		internal PublicKey(AsymmetricKeyParameter wrapped) {
 			if (wrapped.IsPrivate) throw new ArgumentException("Expecting a public key but got a private key", nameof(wrapped));
+			if (wrapped is not (RsaKeyParameters or ECPublicKeyParameters)) throw new KeyException("Unexpected key type");
 			this.wrapped = wrapped;
 		}
 
@@ -21,5 +23,6 @@ namespace SGL.Utilities.Crypto {
 		public override string? ToString() {
 			return wrapped.ToString();
 		}
+		public KeyType Type => wrapped switch { RsaKeyParameters rsa => KeyType.RSA, ECPublicKeyParameters => KeyType.EllipticCurves, _ => throw new KeyException("Unexpected key type") };
 	}
 }

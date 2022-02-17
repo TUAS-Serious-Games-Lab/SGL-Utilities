@@ -8,6 +8,7 @@ namespace SGL.Utilities.Crypto {
 		public PrivateKey Private { get; }
 
 		public KeyPair(PublicKey @public, PrivateKey @private) {
+			if (@public.Type != @private.Type) throw new KeyException("Given public and private keys don't match in type.");
 			Public = @public;
 			Private = @private;
 		}
