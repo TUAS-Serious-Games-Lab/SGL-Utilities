@@ -1,34 +1,28 @@
 ﻿using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Generators;
-using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.OpenSsl;
-using Org.BouncyCastle.Security;
-using System;
 using System.IO;
 using Xunit;
 
 namespace SGL.Utilities.Crypto.Tests {
 	public class KeyIdUnitTest {
-		private SecureRandom random = new SecureRandom();
+		private RandomGenerator random = new RandomGenerator();
 
 		[Theory]
-		[InlineData(typeof(RsaKeyPairGenerator), 1024)]
-		[InlineData(typeof(RsaKeyPairGenerator), 2048)]
-		[InlineData(typeof(RsaKeyPairGenerator), 4096)]
-		[InlineData(typeof(ECKeyPairGenerator), 192)]
-		[InlineData(typeof(ECKeyPairGenerator), 224)]
-		[InlineData(typeof(ECKeyPairGenerator), 239)]
-		[InlineData(typeof(ECKeyPairGenerator), 256)]
-		[InlineData(typeof(ECKeyPairGenerator), 384)]
-		[InlineData(typeof(ECKeyPairGenerator), 521)]
-		public void KeyIdStaysConsistentThroughPemSerialization(Type keyGenType, int keySize) {
-			var keyGen = (IAsymmetricCipherKeyPairGenerator)(keyGenType.GetConstructor(new Type[] { })?.Invoke(new object[] { }) ?? throw new Exception("Couldn't create key pair generator."));
-			keyGen.Init(new KeyGenerationParameters(random, keySize));
-			var keyPair = keyGen.GenerateKeyPair();
-			var keyId1 = KeyId.CalculateId(new PublicKey(keyPair.Public));
+		[InlineData(KeyType.RSA, 1024)]
+		[InlineData(KeyType.RSA, 2048)]
+		[InlineData(KeyType.RSA, 4096)]
+		[InlineData(KeyType.EllipticCurves, 192)]
+		[InlineData(KeyType.EllipticCurves, 224)]
+		[InlineData(KeyType.EllipticCurves, 239)]
+		[InlineData(KeyType.EllipticCurves, 256)]
+		[InlineData(KeyType.EllipticCurves, 384)]
+		[InlineData(KeyType.EllipticCurves, 521)]
+		public void KeyIdStaysConsistentThroughPemSerialization(KeyType keyGenType, int keySize) {
+			var keyPair = KeyPair.Generate(random, keyGenType, keySize);
+			var keyId1 = KeyId.CalculateId(keyPair.Public);
 			using var strWriter = new StringWriter();
 			var pemWriter = new PemWriter(strWriter);
-			pemWriter.WriteObject(keyPair.Public);
+			pemWriter.WriteObject(keyPair.Public.wrapped);
 			using var strReader = new StringReader(strWriter.ToString());
 			var pemReader = new PemReader(strReader);
 			var loadedPubKey = (AsymmetricKeyParameter)pemReader.ReadObject();
@@ -37,42 +31,34 @@ namespace SGL.Utilities.Crypto.Tests {
 		}
 
 		[Theory]
-		[InlineData(typeof(ECKeyPairGenerator), 192)]
-		[InlineData(typeof(ECKeyPairGenerator), 224)]
-		[InlineData(typeof(ECKeyPairGenerator), 239)]
-		[InlineData(typeof(ECKeyPairGenerator), 256)]
-		[InlineData(typeof(ECKeyPairGenerator), 384)]
-		[InlineData(typeof(ECKeyPairGenerator), 521)]
-		public void KeyIdStaysConsistentThroughECPrivateToPublicKeyDerivation(Type keyGenType, int keySize) {
-			var keyGen = (IAsymmetricCipherKeyPairGenerator)(keyGenType.GetConstructor(new Type[] { })?.Invoke(new object[] { }) ?? throw new Exception("Couldn't create key pair generator."));
-			keyGen.Init(new KeyGenerationParameters(random, keySize));
-			var keyPair = keyGen.GenerateKeyPair();
-			var keyId1 = KeyId.CalculateId(new PublicKey(keyPair.Public));
-			var privKey = ((ECPrivateKeyParameters)keyPair.Private);
-			var q = privKey.Parameters.G.Multiply(privKey.D);
-			var derivedPubKey = new ECPublicKeyParameters(privKey.AlgorithmName, q, privKey.PublicKeyParamSet);
-			var keyId2 = KeyId.CalculateId(new PublicKey(derivedPubKey));
+		[InlineData(192)]
+		[InlineData(224)]
+		[InlineData(239)]
+		[InlineData(256)]
+		[InlineData(384)]
+		[InlineData(521)]
+		public void KeyIdStaysConsistentThroughECPrivateToPublicKeyDerivation(int keySize) {
+			var keyPair = KeyPair.GenerateEllipticCurves(random, keySize);
+			var keyId1 = KeyId.CalculateId(keyPair.Public);
+			var derivedPubKey = keyPair.Private.DerivePublicKey();
+			var keyId2 = KeyId.CalculateId(derivedPubKey);
 			Assert.Equal(keyId1, keyId2);
 		}
 
 		[Theory]
-		[InlineData(typeof(ECKeyPairGenerator), 192)]
-		[InlineData(typeof(ECKeyPairGenerator), 224)]
-		[InlineData(typeof(ECKeyPairGenerator), 239)]
-		[InlineData(typeof(ECKeyPairGenerator), 256)]
-		[InlineData(typeof(ECKeyPairGenerator), 384)]
-		[InlineData(typeof(ECKeyPairGenerator), 521)]
-		public void KeyIdStaysConsistentThroughECPrivateToPublicKeyDerivationAndPemSerialization(Type keyGenType, int keySize) {
-			var keyGen = (IAsymmetricCipherKeyPairGenerator)(keyGenType.GetConstructor(new Type[] { })?.Invoke(new object[] { }) ?? throw new Exception("Couldn't create key pair generator."));
-			keyGen.Init(new KeyGenerationParameters(random, keySize));
-			var keyPair = keyGen.GenerateKeyPair();
-			var keyId1 = KeyId.CalculateId(new PublicKey(keyPair.Public));
-			var privKey = ((ECPrivateKeyParameters)keyPair.Private);
-			var q = privKey.Parameters.G.Multiply(privKey.D);
-			var derivedPubKey = new ECPublicKeyParameters(privKey.AlgorithmName, q, privKey.PublicKeyParamSet);
+		[InlineData(192)]
+		[InlineData(224)]
+		[InlineData(239)]
+		[InlineData(256)]
+		[InlineData(384)]
+		[InlineData(521)]
+		public void KeyIdStaysConsistentThroughECPrivateToPublicKeyDerivationAndPemSerialization(int keySize) {
+			var keyPair = KeyPair.GenerateEllipticCurves(random, keySize);
+			var keyId1 = KeyId.CalculateId(keyPair.Public);
+			var derivedPubKey = keyPair.Private.DerivePublicKey();
 			using var strWriter = new StringWriter();
 			var pemWriter = new PemWriter(strWriter);
-			pemWriter.WriteObject(derivedPubKey);
+			pemWriter.WriteObject(derivedPubKey.wrapped);
 			using var strReader = new StringReader(strWriter.ToString());
 			var pemReader = new PemReader(strReader);
 			var loadedPubKey = (AsymmetricKeyParameter)pemReader.ReadObject();

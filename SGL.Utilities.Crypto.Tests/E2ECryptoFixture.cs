@@ -75,16 +75,11 @@ namespace SGL.Utilities.Crypto.Tests {
 
 		private Task<KeyPair> GenerateRsaKeyPairAsync(int length) {
 			var rnd = random.DeriveGenerator(1024);
-			return Task.Run(() => {
-				KeyGenerationParameters rsaKeyParams = new KeyGenerationParameters(rnd.wrapped, length);
-				RsaKeyPairGenerator rsaGen = new RsaKeyPairGenerator();
-				rsaGen.Init(rsaKeyParams);
-				return new KeyPair(rsaGen.GenerateKeyPair());
-			});
+			return Task.Run(() => KeyPair.GenerateRSA(rnd, length));
 		}
 		private Task<KeyPair> GenerateEcKeyPairAsync(int length) {
 			var rnd = random.DeriveGenerator(1024);
-			return GenerateEcKeyPairAsync(new KeyGenerationParameters(rnd.wrapped, length));
+			return Task.Run(() => KeyPair.GenerateEllipticCurves(rnd, length));
 		}
 		private Task<KeyPair> GenerateEcKeyPairAsync(KeyGenerationParameters ecKeyParams) {
 			return Task.Run(() => {
@@ -102,7 +97,7 @@ namespace SGL.Utilities.Crypto.Tests {
 				// one key pair with a non-matching key length -> ineligible for shared sender key
 				.Append(GenerateEcKeyPairAsync(384))
 				// one key pair with a explicit parameters -> ineligible for shared sender key
-				.Append(GenerateEcKeyPairAsync(new ECKeyGenerationParameters(new ECDomainParameters(ECNamedCurveTable.GetByName("secp521r1")), random.wrapped))).ToArray();
+				.Append(GenerateEcKeyPairAsync(new ECKeyGenerationParameters(new ECDomainParameters(ECNamedCurveTable.GetByName("secp521r1")), random.DeriveGenerator(1024).wrapped))).ToArray();
 
 			Task.WaitAll(rsaGeneratorTasks.Concat(ecGeneratorTasks).ToArray());
 
