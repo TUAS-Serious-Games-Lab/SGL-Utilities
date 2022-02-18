@@ -1,4 +1,5 @@
-﻿using Org.BouncyCastle.Security;
+﻿using Org.BouncyCastle.Math;
+using Org.BouncyCastle.Security;
 
 namespace SGL.Utilities.Crypto {
 	public class RandomGenerator {
@@ -13,6 +14,7 @@ namespace SGL.Utilities.Crypto {
 		}
 
 		public void NextBytes(byte[] buffer) => wrapped.NextBytes(buffer);
+		internal BigInteger GetRandomBigInteger(int size) => new BigInteger(size, wrapped);
 
 		public RandomGenerator DeriveGenerator(int seedSize, string algorithm) {
 			var rnd = SecureRandom.GetInstance(algorithm, false);
