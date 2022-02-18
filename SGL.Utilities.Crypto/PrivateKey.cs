@@ -1,5 +1,8 @@
 ﻿using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
+using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace SGL.Utilities.Crypto {
 	public class PrivateKey {
@@ -24,6 +27,8 @@ namespace SGL.Utilities.Crypto {
 
 		public KeyType Type => TryGetKeyType(wrapped) ?? throw new KeyException("Unexpected key type");
 
+		public static PrivateKey LoadOneFromPem(TextReader reader, Func<char[]> passwordGetter) => PemHelper.LoadPrivateKey(reader, new PemHelper.FuncPasswordFinder(passwordGetter));
+		public static IEnumerable<PrivateKey> LoadAllFromPem(TextReader reader, Func<char[]> passwordGetter) => PemHelper.LoadPrivateKeys(reader, new PemHelper.FuncPasswordFinder(passwordGetter));
 		public PublicKey DerivePublicKey() {
 			if (wrapped is RsaPrivateCrtKeyParameters rsa) {
 				// We have a RSA private key, extract the public key from the private key.

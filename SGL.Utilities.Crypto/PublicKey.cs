@@ -1,5 +1,7 @@
 ﻿using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
+using System.Collections.Generic;
+using System.IO;
 
 namespace SGL.Utilities.Crypto {
 	public class PublicKey {
@@ -23,5 +25,7 @@ namespace SGL.Utilities.Crypto {
 		public override string? ToString() => wrapped.ToString();
 
 		public KeyType Type => TryGetKeyType(wrapped) ?? throw new KeyException("Unexpected key type");
+		public static PublicKey LoadOneFromPem(TextReader reader) => PemHelper.LoadPublicKey(reader);
+		public static IEnumerable<PublicKey> LoadAllFromPem(TextReader reader) => PemHelper.LoadPublicKeys(reader);
 	}
 }

@@ -2,6 +2,8 @@
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.X509;
 using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace SGL.Utilities.Crypto {
 	public class Certificate {
@@ -47,5 +49,8 @@ namespace SGL.Utilities.Crypto {
 				}
 			}
 		}
+
+		public static Certificate LoadOneFromPem(TextReader reader, Func<char[]> passwordGetter) => PemHelper.LoadCertificate(reader);
+		public static IEnumerable<Certificate> LoadAllFromPem(TextReader reader, Func<char[]> passwordGetter) => PemHelper.LoadCertificates(reader);
 	}
 }
