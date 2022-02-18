@@ -21,6 +21,7 @@ namespace SGL.Utilities.Crypto {
 			Public = new PublicKey(keyPair.Public);
 			Private = new PrivateKey(keyPair.Private);
 		}
+		internal AsymmetricCipherKeyPair ToWrappedPair() => new AsymmetricCipherKeyPair(Public.wrapped, Private.wrapped);
 
 		public override bool Equals(object? obj) => obj is KeyPair pair && Public.Equals(pair.Public) && Private.Equals(pair.Private);
 		public override int GetHashCode() => HashCode.Combine(Public, Private);
@@ -30,6 +31,7 @@ namespace SGL.Utilities.Crypto {
 
 		public static KeyPair LoadOneFromPem(TextReader reader, Func<char[]> passwordGetter) => PemHelper.LoadKeyPair(reader, new PemHelper.FuncPasswordFinder(passwordGetter));
 		public static IEnumerable<KeyPair> LoadAllFromPem(TextReader reader, Func<char[]> passwordGetter) => PemHelper.LoadKeyPairs(reader, new PemHelper.FuncPasswordFinder(passwordGetter));
+		public void StoreToPem(TextWriter writer, PemEncryptionMode encMode, char[] password, RandomGenerator random) => PemHelper.Write(writer, this, encMode, password, random);
 
 		public static KeyPair GenerateRSA(RandomGenerator random, int keyLength) => GeneratorHelper.GenerateRsaKeyPair(random, keyLength);
 		public static KeyPair GenerateEllipticCurves(RandomGenerator random, int keyLength, string? curveName = null) => GeneratorHelper.GenerateEcKeyPair(random, keyLength, curveName);

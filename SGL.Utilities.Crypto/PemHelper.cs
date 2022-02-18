@@ -139,5 +139,26 @@ namespace SGL.Utilities.Crypto {
 				throw new PemException("PEM did contain an object that is not a certificate.", pemContentType: pemContent.GetType());
 			}
 		}
+
+		public static void Write(TextWriter writer, PublicKey pubKey) {
+			var pemWriter = new PemWriter(writer);
+			pemWriter.WriteObject(pubKey.wrapped);
+		}
+		public static void Write(TextWriter writer, Certificate cert) {
+			var pemWriter = new PemWriter(writer);
+			pemWriter.WriteObject(cert.wrapped);
+		}
+		private static string GetEncryptionModeStr(PemEncryptionMode encMode) => encMode switch {
+			PemEncryptionMode.AES_256_CBC => "AES-256-CBC",
+			_ => throw new PemException($"Unsupported PEM encryption mode {encMode}")
+		};
+		public static void Write(TextWriter writer, PrivateKey privKey, PemEncryptionMode encMode, char[] password, RandomGenerator random) {
+			var pemWriter = new PemWriter(writer);
+			pemWriter.WriteObject(privKey.wrapped, GetEncryptionModeStr(encMode), password, random.wrapped);
+		}
+		public static void Write(TextWriter writer, KeyPair keyPair, PemEncryptionMode encMode, char[] password, RandomGenerator random) {
+			var pemWriter = new PemWriter(writer);
+			pemWriter.WriteObject(keyPair.ToWrappedPair(), GetEncryptionModeStr(encMode), password, random.wrapped);
+		}
 	}
 }

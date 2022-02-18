@@ -29,6 +29,7 @@ namespace SGL.Utilities.Crypto {
 
 		public static PrivateKey LoadOneFromPem(TextReader reader, Func<char[]> passwordGetter) => PemHelper.LoadPrivateKey(reader, new PemHelper.FuncPasswordFinder(passwordGetter));
 		public static IEnumerable<PrivateKey> LoadAllFromPem(TextReader reader, Func<char[]> passwordGetter) => PemHelper.LoadPrivateKeys(reader, new PemHelper.FuncPasswordFinder(passwordGetter));
+		public void StoreToPem(TextWriter writer, PemEncryptionMode encMode, char[] password, RandomGenerator random) => PemHelper.Write(writer, this, encMode, password, random);
 		public PublicKey DerivePublicKey() {
 			if (wrapped is RsaPrivateCrtKeyParameters rsa) {
 				// We have a RSA private key, extract the public key from the private key.

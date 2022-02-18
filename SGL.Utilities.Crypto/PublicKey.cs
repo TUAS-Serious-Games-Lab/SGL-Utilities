@@ -27,5 +27,6 @@ namespace SGL.Utilities.Crypto {
 		public KeyType Type => TryGetKeyType(wrapped) ?? throw new KeyException("Unexpected key type");
 		public static PublicKey LoadOneFromPem(TextReader reader) => PemHelper.LoadPublicKey(reader);
 		public static IEnumerable<PublicKey> LoadAllFromPem(TextReader reader) => PemHelper.LoadPublicKeys(reader);
+		public void StoreToPem(TextWriter writer) => PemHelper.Write(writer, this);
 	}
 }

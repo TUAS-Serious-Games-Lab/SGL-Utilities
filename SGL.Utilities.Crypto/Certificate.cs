@@ -60,5 +60,6 @@ namespace SGL.Utilities.Crypto {
 
 		public static Certificate LoadOneFromPem(TextReader reader, Func<char[]> passwordGetter) => PemHelper.LoadCertificate(reader);
 		public static IEnumerable<Certificate> LoadAllFromPem(TextReader reader, Func<char[]> passwordGetter) => PemHelper.LoadCertificates(reader);
+		public void StoreToPem(TextWriter writer) => PemHelper.Write(writer, this);
 	}
 }
