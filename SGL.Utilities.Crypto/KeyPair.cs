@@ -30,5 +30,10 @@ namespace SGL.Utilities.Crypto {
 
 		public static KeyPair LoadOneFromPem(TextReader reader, Func<char[]> passwordGetter) => PemHelper.LoadKeyPair(reader, new PemHelper.FuncPasswordFinder(passwordGetter));
 		public static IEnumerable<KeyPair> LoadAllFromPem(TextReader reader, Func<char[]> passwordGetter) => PemHelper.LoadKeyPairs(reader, new PemHelper.FuncPasswordFinder(passwordGetter));
+
+		public static KeyPair GenerateRSA(RandomGenerator random, int keyLength) => GeneratorHelper.GenerateRsaKeyPair(random, keyLength);
+		public static KeyPair GenerateEllipticCurves(RandomGenerator random, int keyLength, string? curveName = null) => GeneratorHelper.GenerateEcKeyPair(random, keyLength, curveName);
+		public static KeyPair Generate(RandomGenerator random, KeyType type, int keyLength, string? curveName = null) => GeneratorHelper.GenerateKeyPair(random, type, keyLength, curveName);
+
 	}
 }
