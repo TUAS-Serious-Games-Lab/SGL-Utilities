@@ -1,6 +1,4 @@
-﻿using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.OpenSsl;
-using System.IO;
+﻿using System.IO;
 using Xunit;
 
 namespace SGL.Utilities.Crypto.Tests {
@@ -23,9 +21,8 @@ namespace SGL.Utilities.Crypto.Tests {
 			using var strWriter = new StringWriter();
 			keyPair.Public.StoreToPem(strWriter);
 			using var strReader = new StringReader(strWriter.ToString());
-			var pemReader = new PemReader(strReader);
-			var loadedPubKey = (AsymmetricKeyParameter)pemReader.ReadObject();
-			var keyId2 = KeyId.CalculateId(new PublicKey(loadedPubKey));
+			var loadedPubKey = PublicKey.LoadOneFromPem(strReader);
+			var keyId2 = KeyId.CalculateId(loadedPubKey);
 			Assert.Equal(keyId1, keyId2);
 		}
 
@@ -58,9 +55,8 @@ namespace SGL.Utilities.Crypto.Tests {
 			using var strWriter = new StringWriter();
 			derivedPubKey.StoreToPem(strWriter);
 			using var strReader = new StringReader(strWriter.ToString());
-			var pemReader = new PemReader(strReader);
-			var loadedPubKey = (AsymmetricKeyParameter)pemReader.ReadObject();
-			var keyId2 = KeyId.CalculateId(new PublicKey(loadedPubKey));
+			var loadedPubKey = PublicKey.LoadOneFromPem(strReader);
+			var keyId2 = KeyId.CalculateId(loadedPubKey);
 			Assert.Equal(keyId1, keyId2);
 		}
 	}

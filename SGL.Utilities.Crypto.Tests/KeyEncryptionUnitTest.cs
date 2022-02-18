@@ -1,5 +1,4 @@
-﻿using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.OpenSsl;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -202,11 +201,7 @@ b7qZIq+EKADZHDgbuQ0ZvK2dZswsQwRMNDnWgmGOci0MdLcMpQxrOalkYr47ZvaL
 -----END PUBLIC KEY-----
 ";
 
-		private class PasswordFinder : IPasswordFinder {
-			public char[] GetPassword() {
-				return new char[] { 't', 'e', 's', 't', 'p', 'w' };
-			}
-		}
+		private static readonly Func<char[]> password = () => new char[] { 't', 'e', 's', 't', 'p', 'w' };
 
 		private static KeyPair rsaRecipient1KeyPair;
 		private static KeyPair rsaRecipient2KeyPair;
@@ -224,9 +219,7 @@ b7qZIq+EKADZHDgbuQ0ZvK2dZswsQwRMNDnWgmGOci0MdLcMpQxrOalkYr47ZvaL
 		private static KeyPair LoadKeyPair(string privateKeyPem, string publicKeyPem) {
 			using var privStrRdr = new StringReader(privateKeyPem);
 			using var pubStrRdr = new StringReader(publicKeyPem);
-			var privPemRdr = new PemReader(privStrRdr, new PasswordFinder());
-			var pubPemRdr = new PemReader(pubStrRdr);
-			return new KeyPair(new AsymmetricCipherKeyPair((AsymmetricKeyParameter)pubPemRdr.ReadObject(), (AsymmetricKeyParameter)privPemRdr.ReadObject()));
+			return new KeyPair(PublicKey.LoadOneFromPem(pubStrRdr), PrivateKey.LoadOneFromPem(privStrRdr, password));
 		}
 
 		static KeyEncryptionUnitTest() {
