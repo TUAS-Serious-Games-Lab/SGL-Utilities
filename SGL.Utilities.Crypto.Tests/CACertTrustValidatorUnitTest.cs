@@ -1,12 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using Org.BouncyCastle.Asn1.Pkcs;
 using Org.BouncyCastle.Asn1.X509;
-using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Operators;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Math;
 using Org.BouncyCastle.OpenSsl;
-using Org.BouncyCastle.Security;
 using Org.BouncyCastle.X509;
 using SGL.Utilities.TestUtilities.XUnit;
 using System;
@@ -169,61 +165,51 @@ g30Pr6mO6JjUxgDch8E=
 -----END PUBLIC KEY-----
 ";
 
-		private readonly AsymmetricCipherKeyPair signer1KeyPair;
-		private readonly AsymmetricCipherKeyPair signer2KeyPair;
-		private readonly AsymmetricCipherKeyPair unknownSignerKeyPair;
-		private readonly ECPublicKeyParameters recipientPublicKey;
-		private readonly SecureRandom random = new SecureRandom();
+		private readonly KeyPair signer1KeyPair;
+		private readonly KeyPair signer2KeyPair;
+		private readonly KeyPair unknownSignerKeyPair;
+		private readonly PublicKey recipientPublicKey;
+		private readonly RandomGenerator random = new RandomGenerator();
 
-		private class PasswordFinder : IPasswordFinder {
-			public char[] GetPassword() {
-				return new char[] { 't', 'e', 's', 't', 'p', 'w' };
-			}
-		}
+		Func<char[]> password = () => new char[] { 't', 'e', 's', 't', 'p', 'w' };
 
 		public CACertTrustValidatorUnitTest(ITestOutputHelper output) {
 			loggerFactory = LoggerFactory.Create(c => c.AddXUnit(output).SetMinimumLevel(LogLevel.Trace));
 			using var rdrS1Priv = new StringReader(Signer1PrivateKeyPem);
-			PemReader pemRdrS1Priv = new PemReader(rdrS1Priv, new PasswordFinder());
-			var privKeyS1 = (RsaKeyParameters)pemRdrS1Priv.ReadObject();
 			using var rdrS1Pub = new StringReader(Signer1PublicKeyPem);
-			PemReader pemRdrS1Pub = new PemReader(rdrS1Pub, new PasswordFinder());
-			var pubKeyS1 = (RsaKeyParameters)pemRdrS1Pub.ReadObject();
-			signer1KeyPair = new AsymmetricCipherKeyPair(pubKeyS1, privKeyS1);
+			var privKeyS1 = PrivateKey.LoadOneFromPem(rdrS1Priv, password);
+			var pubKeyS1 = PublicKey.LoadOneFromPem(rdrS1Pub);
+			signer1KeyPair = new KeyPair(pubKeyS1, privKeyS1);
 
 			using var rdrS2Priv = new StringReader(Signer2PrivateKeyPem);
-			PemReader pemRdrS2Priv = new PemReader(rdrS2Priv, new PasswordFinder());
-			var privKeyS2 = (ECPrivateKeyParameters)pemRdrS2Priv.ReadObject();
 			using var rdrS2Pub = new StringReader(Signer2PublicKeyPem);
-			PemReader pemRdrS2Pub = new PemReader(rdrS2Pub, new PasswordFinder());
-			var pubKeyS2 = (ECPublicKeyParameters)pemRdrS2Pub.ReadObject();
-			signer2KeyPair = new AsymmetricCipherKeyPair(pubKeyS2, privKeyS2);
+			var privKeyS2 = PrivateKey.LoadOneFromPem(rdrS2Priv, password);
+			var pubKeyS2 = PublicKey.LoadOneFromPem(rdrS2Pub);
+			signer2KeyPair = new KeyPair(pubKeyS2, privKeyS2);
 
 			using var rdrUS = new StringReader(UnknownSignerPrivateKeyPem);
-			PemReader pemRdrUS = new PemReader(rdrUS, new PasswordFinder());
-			var unknownSignerPrivateKey = (RsaPrivateCrtKeyParameters)pemRdrUS.ReadObject();
-			unknownSignerKeyPair = new AsymmetricCipherKeyPair(new RsaKeyParameters(false, unknownSignerPrivateKey.Modulus, unknownSignerPrivateKey.Exponent), unknownSignerPrivateKey);
+			var unknownSignerPrivateKey = PrivateKey.LoadOneFromPem(rdrUS, password);
+			unknownSignerKeyPair = unknownSignerPrivateKey.DeriveKeyPair();
 			using var rdrR1 = new StringReader(RecipientPublicKeyPem);
-			PemReader pemRdrR1 = new PemReader(rdrR1);
-			recipientPublicKey = (ECPublicKeyParameters)pemRdrR1.ReadObject();
+			recipientPublicKey = PublicKey.LoadOneFromPem(rdrR1);
 
 			var certGen = new X509V3CertificateGenerator();
 			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer 1"));
 			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer 1"));
-			certGen.SetSerialNumber(new BigInteger(128, random));
+			certGen.SetSerialNumber(random.GetRandomBigInteger(128));
 			certGen.SetNotBefore(DateTime.UtcNow.AddMinutes(-5));
 			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
-			certGen.SetPublicKey(signer1KeyPair.Public);
-			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signer1KeyPair.Private);
+			certGen.SetPublicKey(signer1KeyPair.Public.wrapped);
+			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signer1KeyPair.Private.wrapped);
 			var caCertSigner1 = certGen.Generate(signatureFactory);
 
 			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer 2"));
 			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer 2"));
-			certGen.SetSerialNumber(new BigInteger(128, random));
-			certGen.SetPublicKey(signer2KeyPair.Public);
-			certGen.AddExtension(X509Extensions.SubjectKeyIdentifier, false, new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(signer2KeyPair.Public)));
+			certGen.SetSerialNumber(random.GetRandomBigInteger(128));
+			certGen.SetPublicKey(signer2KeyPair.Public.wrapped);
+			certGen.AddExtension(X509Extensions.SubjectKeyIdentifier, false, new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(signer2KeyPair.Public.wrapped)));
 
-			signatureFactory = new Asn1SignatureFactory("SHA256WITHECDSA", signer2KeyPair.Private);
+			signatureFactory = new Asn1SignatureFactory("SHA256WITHECDSA", signer2KeyPair.Private.wrapped);
 			var caCertSigner2 = certGen.Generate(signatureFactory);
 
 			using var caCertStrWriter = new StringWriter();
@@ -239,11 +225,11 @@ g30Pr6mO6JjUxgDch8E=
 			var certGen = new X509V3CertificateGenerator();
 			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer 1"));
 			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Valid Test Cert 1"));
-			certGen.SetSerialNumber(new BigInteger(128, random));
+			certGen.SetSerialNumber(random.GetRandomBigInteger(128));
 			certGen.SetNotBefore(DateTime.UtcNow.AddMinutes(-5));
 			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
-			certGen.SetPublicKey(recipientPublicKey);
-			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signer1KeyPair.Private);
+			certGen.SetPublicKey(recipientPublicKey.wrapped);
+			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signer1KeyPair.Private.wrapped);
 			var cert = certGen.Generate(signatureFactory);
 
 			Assert.True(validator.CheckCertificate(new Certificate(cert)));
@@ -254,13 +240,13 @@ g30Pr6mO6JjUxgDch8E=
 			var certGen = new X509V3CertificateGenerator();
 			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer 2"));
 			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Valid Test Cert 2"));
-			certGen.SetSerialNumber(new BigInteger(128, random));
+			certGen.SetSerialNumber(random.GetRandomBigInteger(128));
 			certGen.SetNotBefore(DateTime.UtcNow.AddMinutes(-5));
 			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
-			certGen.SetPublicKey(recipientPublicKey);
-			certGen.AddExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(signer2KeyPair.Public)));
-			certGen.AddExtension(X509Extensions.SubjectKeyIdentifier, false, new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(recipientPublicKey)));
-			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory("SHA256WITHECDSA", signer2KeyPair.Private);
+			certGen.SetPublicKey(recipientPublicKey.wrapped);
+			certGen.AddExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(signer2KeyPair.Public.wrapped)));
+			certGen.AddExtension(X509Extensions.SubjectKeyIdentifier, false, new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(recipientPublicKey.wrapped)));
+			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory("SHA256WITHECDSA", signer2KeyPair.Private.wrapped);
 			var cert = certGen.Generate(signatureFactory);
 
 			Assert.True(validator.CheckCertificate(new Certificate(cert)));
@@ -271,13 +257,13 @@ g30Pr6mO6JjUxgDch8E=
 			var certGen = new X509V3CertificateGenerator();
 			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer 2"));
 			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Not Yet Valid Test Cert"));
-			certGen.SetSerialNumber(new BigInteger(128, random));
+			certGen.SetSerialNumber(random.GetRandomBigInteger(128));
 			certGen.SetNotBefore(DateTime.UtcNow.AddHours(1));
 			certGen.SetNotAfter(DateTime.UtcNow.AddHours(2));
-			certGen.SetPublicKey(recipientPublicKey);
-			certGen.AddExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(signer2KeyPair.Public)));
-			certGen.AddExtension(X509Extensions.SubjectKeyIdentifier, false, new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(recipientPublicKey)));
-			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory("SHA256WITHECDSA", signer2KeyPair.Private);
+			certGen.SetPublicKey(recipientPublicKey.wrapped);
+			certGen.AddExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(signer2KeyPair.Public.wrapped)));
+			certGen.AddExtension(X509Extensions.SubjectKeyIdentifier, false, new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(recipientPublicKey.wrapped)));
+			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory("SHA256WITHECDSA", signer2KeyPair.Private.wrapped);
 			var cert = certGen.Generate(signatureFactory);
 
 			Assert.False(validator.CheckCertificate(new Certificate(cert)));
@@ -288,11 +274,11 @@ g30Pr6mO6JjUxgDch8E=
 			var certGen = new X509V3CertificateGenerator();
 			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer 1"));
 			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Expired Test Cert"));
-			certGen.SetSerialNumber(new BigInteger(128, random));
+			certGen.SetSerialNumber(random.GetRandomBigInteger(128));
 			certGen.SetNotBefore(DateTime.UtcNow.AddHours(-2));
 			certGen.SetNotAfter(DateTime.UtcNow.AddHours(-1));
-			certGen.SetPublicKey(recipientPublicKey);
-			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signer1KeyPair.Private);
+			certGen.SetPublicKey(recipientPublicKey.wrapped);
+			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signer1KeyPair.Private.wrapped);
 			var cert = certGen.Generate(signatureFactory);
 
 			Assert.False(validator.CheckCertificate(new Certificate(cert)));
@@ -303,11 +289,11 @@ g30Pr6mO6JjUxgDch8E=
 			var certGen = new X509V3CertificateGenerator();
 			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer X"));
 			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Cert From Unknown Signer 1"));
-			certGen.SetSerialNumber(new BigInteger(128, random));
+			certGen.SetSerialNumber(random.GetRandomBigInteger(128));
 			certGen.SetNotBefore(DateTime.UtcNow.AddMinutes(-5));
 			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
-			certGen.SetPublicKey(recipientPublicKey);
-			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), unknownSignerKeyPair.Private);
+			certGen.SetPublicKey(recipientPublicKey.wrapped);
+			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), unknownSignerKeyPair.Private.wrapped);
 			var cert = certGen.Generate(signatureFactory);
 
 			Assert.False(validator.CheckCertificate(new Certificate(cert)));
@@ -318,13 +304,13 @@ g30Pr6mO6JjUxgDch8E=
 			var certGen = new X509V3CertificateGenerator();
 			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer X"));
 			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Cert From Unknown Signer 2"));
-			certGen.SetSerialNumber(new BigInteger(128, random));
+			certGen.SetSerialNumber(random.GetRandomBigInteger(128));
 			certGen.SetNotBefore(DateTime.UtcNow.AddMinutes(-5));
 			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
-			certGen.SetPublicKey(recipientPublicKey);
-			certGen.AddExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(unknownSignerKeyPair.Public)));
-			certGen.AddExtension(X509Extensions.SubjectKeyIdentifier, false, new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(recipientPublicKey)));
-			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory("SHA256WITHRSA", unknownSignerKeyPair.Private);
+			certGen.SetPublicKey(recipientPublicKey.wrapped);
+			certGen.AddExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(unknownSignerKeyPair.Public.wrapped)));
+			certGen.AddExtension(X509Extensions.SubjectKeyIdentifier, false, new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(recipientPublicKey.wrapped)));
+			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory("SHA256WITHRSA", unknownSignerKeyPair.Private.wrapped);
 			var cert = certGen.Generate(signatureFactory);
 
 			Assert.False(validator.CheckCertificate(new Certificate(cert)));
@@ -335,11 +321,11 @@ g30Pr6mO6JjUxgDch8E=
 			var certGen = new X509V3CertificateGenerator();
 			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer 1"));
 			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Corrupted Cert 1"));
-			certGen.SetSerialNumber(new BigInteger(128, random));
+			certGen.SetSerialNumber(random.GetRandomBigInteger(128));
 			certGen.SetNotBefore(DateTime.UtcNow.AddMinutes(-5));
 			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
-			certGen.SetPublicKey(recipientPublicKey);
-			var signatureFactory = new CorruptingSignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signer1KeyPair.Private, random);
+			certGen.SetPublicKey(recipientPublicKey.wrapped);
+			var signatureFactory = new CorruptingSignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signer1KeyPair.Private.wrapped, random.wrapped);
 			signatureFactory.CorruptPreSignature = true;
 			var cert = certGen.Generate(signatureFactory);
 
@@ -351,11 +337,11 @@ g30Pr6mO6JjUxgDch8E=
 			var certGen = new X509V3CertificateGenerator();
 			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer 1"));
 			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Corrupted Cert 2"));
-			certGen.SetSerialNumber(new BigInteger(128, random));
+			certGen.SetSerialNumber(random.GetRandomBigInteger(128));
 			certGen.SetNotBefore(DateTime.UtcNow.AddMinutes(-5));
 			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
-			certGen.SetPublicKey(recipientPublicKey);
-			var signatureFactory = new CorruptingSignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signer1KeyPair.Private, random);
+			certGen.SetPublicKey(recipientPublicKey.wrapped);
+			var signatureFactory = new CorruptingSignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signer1KeyPair.Private.wrapped, random.wrapped);
 			signatureFactory.CorruptPostSignature = true;
 			var cert = certGen.Generate(signatureFactory);
 
@@ -367,13 +353,13 @@ g30Pr6mO6JjUxgDch8E=
 			var certGen = new X509V3CertificateGenerator();
 			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer 2"));
 			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Corrupted Cert 3"));
-			certGen.SetSerialNumber(new BigInteger(128, random));
+			certGen.SetSerialNumber(random.GetRandomBigInteger(128));
 			certGen.SetNotBefore(DateTime.UtcNow.AddMinutes(-5));
 			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
-			certGen.SetPublicKey(recipientPublicKey);
-			certGen.AddExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(signer2KeyPair.Public)));
-			certGen.AddExtension(X509Extensions.SubjectKeyIdentifier, false, new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(recipientPublicKey)));
-			var signatureFactory = new CorruptingSignatureFactory("SHA256WITHECDSA", signer2KeyPair.Private, random);
+			certGen.SetPublicKey(recipientPublicKey.wrapped);
+			certGen.AddExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(signer2KeyPair.Public.wrapped)));
+			certGen.AddExtension(X509Extensions.SubjectKeyIdentifier, false, new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(recipientPublicKey.wrapped)));
+			var signatureFactory = new CorruptingSignatureFactory("SHA256WITHECDSA", signer2KeyPair.Private.wrapped, random.wrapped);
 			signatureFactory.CorruptPreSignature = true;
 			var cert = certGen.Generate(signatureFactory);
 
@@ -385,13 +371,13 @@ g30Pr6mO6JjUxgDch8E=
 			var certGen = new X509V3CertificateGenerator();
 			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer 2"));
 			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Corrupted Cert 3"));
-			certGen.SetSerialNumber(new BigInteger(128, random));
+			certGen.SetSerialNumber(random.GetRandomBigInteger(128));
 			certGen.SetNotBefore(DateTime.UtcNow.AddMinutes(-5));
 			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
-			certGen.SetPublicKey(recipientPublicKey);
-			certGen.AddExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(signer2KeyPair.Public)));
-			certGen.AddExtension(X509Extensions.SubjectKeyIdentifier, false, new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(recipientPublicKey)));
-			var signatureFactory = new CorruptingSignatureFactory("SHA256WITHECDSA", signer2KeyPair.Private, random);
+			certGen.SetPublicKey(recipientPublicKey.wrapped);
+			certGen.AddExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(signer2KeyPair.Public.wrapped)));
+			certGen.AddExtension(X509Extensions.SubjectKeyIdentifier, false, new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(recipientPublicKey.wrapped)));
+			var signatureFactory = new CorruptingSignatureFactory("SHA256WITHECDSA", signer2KeyPair.Private.wrapped, random.wrapped);
 			signatureFactory.CorruptPostSignature = true;
 			var cert = certGen.Generate(signatureFactory);
 
