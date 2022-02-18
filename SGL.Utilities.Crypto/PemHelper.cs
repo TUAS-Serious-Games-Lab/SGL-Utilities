@@ -1,6 +1,7 @@
 ﻿using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.OpenSsl;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace SGL.Utilities.Crypto {
@@ -16,7 +17,19 @@ namespace SGL.Utilities.Crypto {
 		}
 		public static KeyPair LoadKeyPair(TextReader reader, IPasswordFinder passwordFinder) {
 			PemReader pemReader = new PemReader(reader, passwordFinder);
+			return ReadKeyPair(pemReader) ?? throw new PemException("Input contained no PEM objects.");
+		}
+		public static IEnumerable<KeyPair> LoadKeyPairs(TextReader reader, IPasswordFinder passwordFinder) {
+			PemReader pemReader = new PemReader(reader, passwordFinder);
+			KeyPair? kp = null;
+			while ((kp = ReadKeyPair(pemReader)) != null) {
+				yield return kp;
+			}
+		}
+
+		public static KeyPair? ReadKeyPair(PemReader pemReader) {
 			var pemContent = pemReader.ReadObject();
+			if (pemContent == null) return null;
 			if (pemContent is AsymmetricCipherKeyPair kp) {
 				return new KeyPair(kp);
 			}
@@ -26,18 +39,31 @@ namespace SGL.Utilities.Crypto {
 				return new KeyPair(privKey.DerivePublicKey(), privKey);
 			}
 			else if (pemContent is AsymmetricKeyParameter pk && pk.IsPrivate) {
-				throw new PemException("PEM file did contain an unsupported type private key instead of the expected key pair.");
+				throw new PemException("PEM did contain an unsupported type private key instead of the expected key pair.");
 			}
 			else if (pemContent is AsymmetricKeyParameter) {
-				throw new PemException("PEM file did contain a public key instead of the expected key pair.");
+				throw new PemException("PEM did contain a public key instead of the expected key pair.");
 			}
 			else {
-				throw new PemException("PEM file did not contain a key pair or a supported private key.");
+				throw new PemException("PEM did contain an object that is neither a key pair nor a supported private key.", pemContentType: pemContent.GetType());
 			}
 		}
+
 		public static PrivateKey LoadPrivateKey(TextReader reader, IPasswordFinder passwordFinder) {
 			PemReader pemReader = new PemReader(reader, passwordFinder);
+			return ReadPrivateKey(pemReader) ?? throw new PemException("Input contained no PEM objects.");
+		}
+		public static IEnumerable<PrivateKey> LoadPrivateKeys(TextReader reader, IPasswordFinder passwordFinder) {
+			PemReader pemReader = new PemReader(reader, passwordFinder);
+			PrivateKey? pk = null;
+			while ((pk = ReadPrivateKey(pemReader)) != null) {
+				yield return pk;
+			}
+		}
+
+		public static PrivateKey? ReadPrivateKey(PemReader pemReader) {
 			var pemContent = pemReader.ReadObject();
+			if (pemContent == null) return null;
 			if (pemContent is AsymmetricKeyParameter key && key.IsPrivate && PrivateKey.IsValidWrappedType(key)) {
 				return new PrivateKey(key);
 			}
@@ -48,10 +74,11 @@ namespace SGL.Utilities.Crypto {
 				throw new KeyException("Expecting a private key but PEM contained a public key");
 			}
 			else if (pemContent is AsymmetricCipherKeyPair kp && PrivateKey.IsValidWrappedType(kp.Private)) {
+				// The PEM contains a full key pair and we want just a private key, simply return the private key from the pair.
 				return new PrivateKey(kp.Private);
 			}
 			else {
-				throw new PemException("PEM file did not contain a supported private key or key pair.");
+				throw new PemException("PEM did contain an object that is not a supported private key or key pair.", pemContentType: pemContent.GetType());
 			}
 		}
 

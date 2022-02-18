@@ -12,7 +12,10 @@ namespace SGL.Utilities.Crypto {
 		public KeyException(string? message, Exception? innerException = null) : base(message, innerException) { }
 	}
 	public class PemException : CryptographyException {
-		public PemException(string? message, Exception? innerException = null) : base(message, innerException) { }
+		public Type? PemContentType { get; }
+		public PemException(string? message, Type? pemContentType = null, Exception? innerException = null) : base(message, innerException) {
+			PemContentType = pemContentType;
+		}
 	}
 	public class CertififcateException : CryptographyException {
 		public CertififcateException(string? message, Exception? innerException = null) : base(message, innerException) { }
