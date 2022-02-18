@@ -21,8 +21,7 @@ namespace SGL.Utilities.Crypto.Tests {
 			var keyPair = KeyPair.Generate(random, keyGenType, keySize);
 			var keyId1 = KeyId.CalculateId(keyPair.Public);
 			using var strWriter = new StringWriter();
-			var pemWriter = new PemWriter(strWriter);
-			pemWriter.WriteObject(keyPair.Public.wrapped);
+			keyPair.Public.StoreToPem(strWriter);
 			using var strReader = new StringReader(strWriter.ToString());
 			var pemReader = new PemReader(strReader);
 			var loadedPubKey = (AsymmetricKeyParameter)pemReader.ReadObject();
@@ -57,8 +56,7 @@ namespace SGL.Utilities.Crypto.Tests {
 			var keyId1 = KeyId.CalculateId(keyPair.Public);
 			var derivedPubKey = keyPair.Private.DerivePublicKey();
 			using var strWriter = new StringWriter();
-			var pemWriter = new PemWriter(strWriter);
-			pemWriter.WriteObject(derivedPubKey.wrapped);
+			derivedPubKey.StoreToPem(strWriter);
 			using var strReader = new StringReader(strWriter.ToString());
 			var pemReader = new PemReader(strReader);
 			var loadedPubKey = (AsymmetricKeyParameter)pemReader.ReadObject();

@@ -2,7 +2,6 @@
 using Org.BouncyCastle.Asn1.Pkcs;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto.Operators;
-using Org.BouncyCastle.OpenSsl;
 using Org.BouncyCastle.X509;
 using SGL.Utilities.TestUtilities.XUnit;
 using System;
@@ -201,7 +200,7 @@ g30Pr6mO6JjUxgDch8E=
 			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
 			certGen.SetPublicKey(signer1KeyPair.Public.wrapped);
 			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signer1KeyPair.Private.wrapped);
-			var caCertSigner1 = certGen.Generate(signatureFactory);
+			var caCertSigner1 = new Certificate(certGen.Generate(signatureFactory));
 
 			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer 2"));
 			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer 2"));
@@ -210,12 +209,11 @@ g30Pr6mO6JjUxgDch8E=
 			certGen.AddExtension(X509Extensions.SubjectKeyIdentifier, false, new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(signer2KeyPair.Public.wrapped)));
 
 			signatureFactory = new Asn1SignatureFactory("SHA256WITHECDSA", signer2KeyPair.Private.wrapped);
-			var caCertSigner2 = certGen.Generate(signatureFactory);
+			var caCertSigner2 = new Certificate(certGen.Generate(signatureFactory));
 
 			using var caCertStrWriter = new StringWriter();
-			var caCertPemWriter = new PemWriter(caCertStrWriter);
-			caCertPemWriter.WriteObject(caCertSigner1);
-			caCertPemWriter.WriteObject(caCertSigner2);
+			caCertSigner1.StoreToPem(caCertStrWriter);
+			caCertSigner2.StoreToPem(caCertStrWriter);
 
 			validator = new CACertTrustValidator(caCertStrWriter.ToString(), ignoreValidityPeriod: false, loggerFactory.CreateLogger<CACertTrustValidator>(), loggerFactory.CreateLogger<CertificateStore>());
 		}

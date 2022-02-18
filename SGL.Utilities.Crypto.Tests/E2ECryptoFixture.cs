@@ -6,7 +6,6 @@ using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Operators;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
-using Org.BouncyCastle.OpenSsl;
 using Org.BouncyCastle.X509;
 using System;
 using System.IO;
@@ -218,16 +217,14 @@ namespace SGL.Utilities.Crypto.Tests {
 		private byte[] WritePem(Certificate cert) {
 			using MemoryStream ms = new MemoryStream();
 			using StreamWriter writer = new StreamWriter(ms);
-			PemWriter pemWriter = new PemWriter(writer);
-			pemWriter.WriteObject(cert.wrapped);
+			cert.StoreToPem(writer);
 			writer.Flush();
 			return ms.ToArray();
 		}
 		private byte[] WritePem(PublicKey pubKey) {
 			using MemoryStream ms = new MemoryStream();
 			using StreamWriter writer = new StreamWriter(ms);
-			PemWriter pemWriter = new PemWriter(writer);
-			pemWriter.WriteObject(pubKey.wrapped);
+			pubKey.StoreToPem(writer);
 			writer.Flush();
 			return ms.ToArray();
 		}
@@ -235,8 +232,7 @@ namespace SGL.Utilities.Crypto.Tests {
 		private byte[] WritePem(PrivateKey privKey, char[] password) {
 			using MemoryStream ms = new MemoryStream();
 			using StreamWriter writer = new StreamWriter(ms);
-			PemWriter pemWriter = new PemWriter(writer);
-			pemWriter.WriteObject(privKey.wrapped, "AES-256-CBC", password, random.wrapped);
+			privKey.StoreToPem(writer, PemEncryptionMode.AES_256_CBC, password, Random);
 			writer.Flush();
 			return ms.ToArray();
 		}
