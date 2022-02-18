@@ -26,6 +26,8 @@ namespace SGL.Utilities.Crypto {
 		public override int GetHashCode() => HashCode.Combine(Public, Private);
 		public override string? ToString() => "KeyPair: Public: " + Public.ToString() + " Private:" + Private.ToString();
 
+		public KeyType Type => Private.Type;
+
 		public static KeyPair LoadOneFromPem(TextReader reader, Func<char[]> passwordGetter) => PemHelper.LoadKeyPair(reader, new PemHelper.FuncPasswordFinder(passwordGetter));
 		public static IEnumerable<KeyPair> LoadAllFromPem(TextReader reader, Func<char[]> passwordGetter) => PemHelper.LoadKeyPairs(reader, new PemHelper.FuncPasswordFinder(passwordGetter));
 	}
