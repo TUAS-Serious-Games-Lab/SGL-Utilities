@@ -2,8 +2,6 @@
 using Org.BouncyCastle.Asn1.Pkcs;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto.Operators;
-using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Security;
 using Org.BouncyCastle.X509;
 using SGL.Utilities.TestUtilities.XUnit;
 using System;
@@ -149,10 +147,10 @@ g30Pr6mO6JjUxgDch8E=
 -----END PUBLIC KEY-----
 ";
 
-		private readonly SecureRandom random = new SecureRandom();
 		private readonly KeyPair signer1KeyPair;
 		private readonly PrivateKey unknownSignerPrivateKey;
 		private readonly PublicKey recipientPublicKey;
+		private readonly RandomGenerator random = new RandomGenerator();
 
 		private readonly Func<char[]> password = () => new char[] { 't', 'e', 's', 't', 'p', 'w' };
 
@@ -173,7 +171,7 @@ g30Pr6mO6JjUxgDch8E=
 			var certGen = new X509V3CertificateGenerator();
 			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer 1"));
 			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Valid Test Cert"));
-			certGen.SetSerialNumber(new BigInteger(128, random));
+			certGen.SetSerialNumber(random.GetRandomBigInteger(128));
 			certGen.SetNotBefore(DateTime.UtcNow.AddMinutes(-5));
 			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
 			certGen.SetPublicKey(recipientPublicKey.wrapped);
@@ -188,7 +186,7 @@ g30Pr6mO6JjUxgDch8E=
 			var certGen = new X509V3CertificateGenerator();
 			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer 1"));
 			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Not Yet Valid Test Cert"));
-			certGen.SetSerialNumber(new BigInteger(128, random));
+			certGen.SetSerialNumber(random.GetRandomBigInteger(128));
 			certGen.SetNotBefore(DateTime.UtcNow.AddHours(1)); // NotBefore in the future
 			certGen.SetNotAfter(DateTime.UtcNow.AddHours(2));
 			certGen.SetPublicKey(recipientPublicKey.wrapped);
@@ -203,7 +201,7 @@ g30Pr6mO6JjUxgDch8E=
 			var certGen = new X509V3CertificateGenerator();
 			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer 1"));
 			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Expired Test Cert"));
-			certGen.SetSerialNumber(new BigInteger(128, random));
+			certGen.SetSerialNumber(random.GetRandomBigInteger(128));
 			certGen.SetNotBefore(DateTime.UtcNow.AddHours(-2));
 			certGen.SetNotAfter(DateTime.UtcNow.AddHours(-1)); // NotAfter in the past
 			certGen.SetPublicKey(recipientPublicKey.wrapped);
@@ -217,7 +215,7 @@ g30Pr6mO6JjUxgDch8E=
 			var certGen = new X509V3CertificateGenerator();
 			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Some Signer"));
 			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Cert From Unknown Signer"));
-			certGen.SetSerialNumber(new BigInteger(128, random));
+			certGen.SetSerialNumber(random.GetRandomBigInteger(128));
 			certGen.SetNotBefore(DateTime.UtcNow.AddMinutes(-5));
 			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
 			certGen.SetPublicKey(recipientPublicKey.wrapped);
@@ -232,11 +230,11 @@ g30Pr6mO6JjUxgDch8E=
 			var certGen = new X509V3CertificateGenerator();
 			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer 1"));
 			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Cert With Pre-Signature Corruption"));
-			certGen.SetSerialNumber(new BigInteger(128, random));
+			certGen.SetSerialNumber(random.GetRandomBigInteger(128));
 			certGen.SetNotBefore(DateTime.UtcNow.AddMinutes(-5));
 			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
 			certGen.SetPublicKey(recipientPublicKey.wrapped);
-			var signatureFactory = new CorruptingSignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signer1KeyPair.Private.wrapped, random);
+			var signatureFactory = new CorruptingSignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signer1KeyPair.Private.wrapped, random.wrapped);
 			signatureFactory.CorruptPreSignature = true;
 			var cert = new Certificate(certGen.Generate(signatureFactory));
 
@@ -247,11 +245,11 @@ g30Pr6mO6JjUxgDch8E=
 			var certGen = new X509V3CertificateGenerator();
 			certGen.SetIssuerDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Signer 1"));
 			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Cert With Pre-Signature Corruption"));
-			certGen.SetSerialNumber(new BigInteger(128, random));
+			certGen.SetSerialNumber(random.GetRandomBigInteger(128));
 			certGen.SetNotBefore(DateTime.UtcNow.AddMinutes(-5));
 			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
 			certGen.SetPublicKey(recipientPublicKey.wrapped);
-			var signatureFactory = new CorruptingSignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signer1KeyPair.Private.wrapped, random);
+			var signatureFactory = new CorruptingSignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signer1KeyPair.Private.wrapped, random.wrapped);
 			signatureFactory.CorruptPostSignature = true;
 			var cert = new Certificate(certGen.Generate(signatureFactory));
 
