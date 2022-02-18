@@ -14,6 +14,9 @@ namespace SGL.Utilities.Crypto {
 		}
 
 		internal KeyPair(AsymmetricCipherKeyPair keyPair) {
+			if (!PublicKey.IsValidWrappedType(keyPair.Public)) throw new KeyException("Unsupported public key type.");
+			if (!PrivateKey.IsValidWrappedType(keyPair.Private)) throw new KeyException("Unsupported private key type.");
+			if (PublicKey.TryGetKeyType(keyPair.Public) != PrivateKey.TryGetKeyType(keyPair.Private)) throw new KeyException("Public and private keys in given pair don't match in type.");
 			Public = new PublicKey(keyPair.Public);
 			Private = new PrivateKey(keyPair.Private);
 		}
