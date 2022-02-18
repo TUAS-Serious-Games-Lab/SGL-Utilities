@@ -1,5 +1,4 @@
-﻿using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Security;
+﻿using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Security.Certificates;
 using System;
 
@@ -9,10 +8,11 @@ namespace SGL.Utilities.Crypto {
 			Valid, OutOfValidityPeriod, InvalidSignature, OtherError
 		}
 
-		public static Outcome CheckCertificate(Certificate cert, AsymmetricKeyParameter trustedPublicKey) {
-			var certificate = cert.wrapped;
+		public static Outcome CheckCertificate(Certificate certificate, PublicKey trustedPublicKey) {
+			var cert = certificate.wrapped;
+			var pubKey = trustedPublicKey.wrapped;
 			try {
-				certificate.CheckValidity();
+				cert.CheckValidity();
 			}
 			catch (CertificateExpiredException) {
 				return Outcome.OutOfValidityPeriod;
@@ -21,10 +21,10 @@ namespace SGL.Utilities.Crypto {
 				return Outcome.OutOfValidityPeriod;
 			}
 			try {
-				var certData = certificate.GetTbsCertificate();
-				var signature = certificate.GetSignature();
-				var signer = SignerUtilities.GetSigner(certificate.SigAlgName);
-				signer.Init(forSigning: false, trustedPublicKey);
+				var certData = cert.GetTbsCertificate();
+				var signature = cert.GetSignature();
+				var signer = SignerUtilities.GetSigner(cert.SigAlgName);
+				signer.Init(forSigning: false, pubKey);
 				signer.BlockUpdate(certData, 0, certData.Length);
 				var valid = signer.VerifySignature(signature);
 				if (valid) {

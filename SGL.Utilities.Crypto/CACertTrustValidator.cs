@@ -96,7 +96,7 @@ namespace SGL.Utilities.Crypto {
 				logger.LogError("The certificate {subjDN} is signed by {issDN} which is no known CA certificate. Thus, the certificate could not be validated.", certificate.SubjectDN, certificate.IssuerDN);
 				return false;
 			}
-			var outcome = CertificateCheckHelper.CheckCertificate(certificate, caCert.wrapped.GetPublicKey());
+			var outcome = CertificateCheckHelper.CheckCertificate(certificate, caCert.PublicKey);
 			switch (outcome) {
 				case CertificateCheckHelper.Outcome.Valid:
 					return true;

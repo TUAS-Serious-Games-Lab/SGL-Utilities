@@ -10,7 +10,7 @@ namespace SGL.Utilities.Crypto {
 	/// </summary>
 	public class KeyOnlyTrustValidator : ICertificateValidator {
 		private readonly ILogger<KeyOnlyTrustValidator> logger;
-		private readonly List<AsymmetricKeyParameter> trustedPublicKeys = new List<AsymmetricKeyParameter>();
+		private readonly List<PublicKey> trustedPublicKeys = new List<PublicKey>();
 
 		/// <summary>
 		/// Creates a <see cref="KeyOnlyTrustValidator"/> that trusts the signer public keys that are loaded from the given <paramref name="reader"/> in PEM format.
@@ -42,7 +42,7 @@ namespace SGL.Utilities.Crypto {
 			int loadedCount = 0;
 			while ((content = pemReader.ReadObject()) != null) {
 				if (content is AsymmetricKeyParameter key && !key.IsPrivate) {
-					trustedPublicKeys.Add(key);
+					trustedPublicKeys.Add(new PublicKey(key));
 					loadedCount++;
 				}
 				else if (content is AsymmetricKeyParameter privKey && privKey.IsPrivate) {
