@@ -1,13 +1,10 @@
-﻿using Org.BouncyCastle.Asn1.Pkcs;
-using Org.BouncyCastle.Asn1.X509;
-using Org.BouncyCastle.Asn1.X9;
+﻿using Org.BouncyCastle.Asn1.X9;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Generators;
-using Org.BouncyCastle.Crypto.Operators;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
-using Org.BouncyCastle.X509;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -111,69 +108,28 @@ namespace SGL.Utilities.Crypto.Tests {
 			ecKeyPair3 = ecGeneratorTasks.ElementAt(3).Result;
 			ecKeyPair4 = ecGeneratorTasks.ElementAt(4).Result;
 
-			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), signerKeyPair.Private.wrapped);
-			Asn1SignatureFactory attackerSignatureFactory = new Asn1SignatureFactory(PkcsObjectIdentifiers.Sha256WithRsaEncryption.ToString(), attackerSigningKeyPair.Private.wrapped);
 			BigInteger serialBase = new BigInteger(128, random.wrapped);
 
-			X509V3CertificateGenerator caCertGen = new X509V3CertificateGenerator();
-			X509Name issuerDN = new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Test Signer");
-			caCertGen.SetIssuerDN(issuerDN);
-			caCertGen.SetNotBefore(DateTime.UtcNow);
-			caCertGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
-			caCertGen.SetPublicKey(signerKeyPair.Public.wrapped);
-			caCertGen.SetSubjectDN(issuerDN);
-			caCertGen.SetSerialNumber(serialBase);
-			var signerSpki = SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(signerKeyPair.Public.wrapped);
-			caCertGen.AddExtension(X509Extensions.SubjectKeyIdentifier, false, new SubjectKeyIdentifier(signerSpki));
-			signerCert = new Certificate(caCertGen.Generate(signatureFactory));
+			var issuerDN = new DistinguishedName(new KeyValuePair<string, string>[] { new("o", "SGL"), new("ou", "Utility"), new("ou", "Tests"), new("cn", "Test Signer") });
+			signerCert = Certificate.Generate(issuerDN, signerKeyPair.Private, issuerDN, signerKeyPair.Public, TimeSpan.FromHours(1), serialBase.ToByteArray(), generateSubjectKeyIdentifier: true);
 
-			X509V3CertificateGenerator certGen = new X509V3CertificateGenerator();
-			certGen.SetIssuerDN(issuerDN);
-			certGen.SetNotBefore(DateTime.UtcNow);
-			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
+			var subj1DN = new DistinguishedName(new KeyValuePair<string, string>[] { new("o", "SGL"), new("ou", "Utility"), new("ou", "Tests"), new("cn", "Test 1") });
+			var subj2DN = new DistinguishedName(new KeyValuePair<string, string>[] { new("o", "SGL"), new("ou", "Utility"), new("ou", "Tests"), new("cn", "Test 2") });
+			var subj3DN = new DistinguishedName(new KeyValuePair<string, string>[] { new("o", "SGL"), new("ou", "Utility"), new("ou", "Tests"), new("cn", "Test 3") });
+			var subj4DN = new DistinguishedName(new KeyValuePair<string, string>[] { new("o", "SGL"), new("ou", "Utility"), new("ou", "Tests"), new("cn", "Test 4") });
+			var subj5DN = new DistinguishedName(new KeyValuePair<string, string>[] { new("o", "SGL"), new("ou", "Utility"), new("ou", "Tests"), new("cn", "Test 5") });
+			var subj6DN = new DistinguishedName(new KeyValuePair<string, string>[] { new("o", "SGL"), new("ou", "Utility"), new("ou", "Tests"), new("cn", "Test 6") });
+			rsaCert1 = Certificate.Generate(issuerDN, signerKeyPair.Private, subj1DN, rsaKeyPair1.Public, TimeSpan.FromHours(1), serialBase.Add(BigInteger.ValueOf(1)).ToByteArray());
+			rsaCert2 = Certificate.Generate(issuerDN, signerKeyPair.Private, subj2DN, rsaKeyPair2.Public, TimeSpan.FromHours(1), serialBase.Add(BigInteger.ValueOf(2)).ToByteArray());
+			ecCert1 = Certificate.Generate(issuerDN, signerKeyPair.Private, subj3DN, ecKeyPair1.Public, TimeSpan.FromHours(1), serialBase.Add(BigInteger.ValueOf(3)).ToByteArray());
+			ecCert2 = Certificate.Generate(issuerDN, signerKeyPair.Private, subj4DN, ecKeyPair2.Public, TimeSpan.FromHours(1), serialBase.Add(BigInteger.ValueOf(4)).ToByteArray(), authorityKeyIdentifier: signerCert.SubjectKeyIdentifier);
+			ecCert3 = Certificate.Generate(issuerDN, signerKeyPair.Private, subj5DN, ecKeyPair3.Public, TimeSpan.FromHours(1), serialBase.Add(BigInteger.ValueOf(5)).ToByteArray(), authorityKeyIdentifier: signerCert.SubjectKeyIdentifier);
+			ecCert4 = Certificate.Generate(issuerDN, signerKeyPair.Private, subj6DN, ecKeyPair4.Public, TimeSpan.FromHours(1), serialBase.Add(BigInteger.ValueOf(6)).ToByteArray(), authorityKeyIdentifier: signerCert.SubjectKeyIdentifier, generateSubjectKeyIdentifier: true);
 
-			certGen.SetPublicKey(rsaKeyPair1.Public.wrapped);
-			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Test 1"));
-			certGen.SetSerialNumber(serialBase.Add(BigInteger.ValueOf(1)));
-			rsaCert1 = new Certificate(certGen.Generate(signatureFactory));
-			certGen.SetPublicKey(rsaKeyPair2.Public.wrapped);
-			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Test 2"));
-			certGen.SetSerialNumber(serialBase.Add(BigInteger.ValueOf(2)));
-			rsaCert2 = new Certificate(certGen.Generate(signatureFactory));
-			certGen.SetPublicKey(ecKeyPair1.Public.wrapped);
-			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Test 3"));
-			certGen.SetSerialNumber(serialBase.Add(BigInteger.ValueOf(3)));
-			ecCert1 = new Certificate(certGen.Generate(signatureFactory));
-			certGen.SetPublicKey(ecKeyPair2.Public.wrapped);
-
-			certGen.AddExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifier(signerSpki));
-
-			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Test 4"));
-			certGen.SetSerialNumber(serialBase.Add(BigInteger.ValueOf(4)));
-			ecCert2 = new Certificate(certGen.Generate(signatureFactory));
-			certGen.SetPublicKey(ecKeyPair3.Public.wrapped);
-			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Test 5"));
-			certGen.SetSerialNumber(serialBase.Add(BigInteger.ValueOf(5)));
-			ecCert3 = new Certificate(certGen.Generate(signatureFactory));
-			certGen.SetPublicKey(ecKeyPair4.Public.wrapped);
-			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Test 6"));
-			certGen.SetSerialNumber(serialBase.Add(BigInteger.ValueOf(6)));
-			certGen.AddExtension(X509Extensions.SubjectKeyIdentifier, false, new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(ecKeyPair4.Public.wrapped)));
-			ecCert4 = new Certificate(certGen.Generate(signatureFactory));
-
-			certGen = new X509V3CertificateGenerator();
-			certGen.SetIssuerDN(issuerDN);
-			certGen.SetNotBefore(DateTime.UtcNow);
-			certGen.SetNotAfter(DateTime.UtcNow.AddHours(1));
-
-			certGen.SetPublicKey(rsaKeyPairAttacker.Public.wrapped);
-			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Attacker 1"));
-			certGen.SetSerialNumber(serialBase.Add(BigInteger.ValueOf(7)));
-			rsaCertAttacker = new Certificate(certGen.Generate(attackerSignatureFactory));
-			certGen.SetPublicKey(ecKeyPairAttacker.Public.wrapped);
-			certGen.SetSubjectDN(new X509Name("o=SGL,ou=Utility,ou=Tests,cn=Attacker 2"));
-			certGen.SetSerialNumber(serialBase.Add(BigInteger.ValueOf(8)));
-			ecCertAttacker = new Certificate(certGen.Generate(attackerSignatureFactory));
+			var subj7DN = new DistinguishedName(new KeyValuePair<string, string>[] { new("o", "SGL"), new("ou", "Utility"), new("ou", "Tests"), new("cn", "Attacker 1") });
+			var subj8DN = new DistinguishedName(new KeyValuePair<string, string>[] { new("o", "SGL"), new("ou", "Utility"), new("ou", "Tests"), new("cn", "Attacker 2") });
+			rsaCertAttacker = Certificate.Generate(issuerDN, attackerSigningKeyPair.Private, subj7DN, rsaKeyPairAttacker.Public, TimeSpan.FromHours(1), serialBase.Add(BigInteger.ValueOf(7)).ToByteArray());
+			ecCertAttacker = Certificate.Generate(issuerDN, attackerSigningKeyPair.Private, subj8DN, ecKeyPairAttacker.Public, TimeSpan.FromHours(1), serialBase.Add(BigInteger.ValueOf(8)).ToByteArray());
 
 			privKeyPassword = SecretGenerator.Instance.GenerateSecret(16).ToCharArray();
 
