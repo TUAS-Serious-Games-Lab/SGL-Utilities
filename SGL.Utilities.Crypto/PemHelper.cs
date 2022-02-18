@@ -1,5 +1,6 @@
 ﻿using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.OpenSsl;
+using Org.BouncyCastle.X509;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,6 +16,7 @@ namespace SGL.Utilities.Crypto {
 
 			public char[] GetPassword() => passwordGetter();
 		}
+
 		public static KeyPair LoadKeyPair(TextReader reader, IPasswordFinder passwordFinder) {
 			PemReader pemReader = new PemReader(reader, passwordFinder);
 			return ReadKeyPair(pemReader) ?? throw new PemException("Input contained no PEM objects.");
@@ -115,5 +117,27 @@ namespace SGL.Utilities.Crypto {
 			}
 		}
 
+		public static Certificate LoadCertificate(TextReader reader) {
+			PemReader pemReader = new PemReader(reader);
+			return ReadCertificate(pemReader) ?? throw new PemException("Input contained no PEM objects.");
+		}
+		public static IEnumerable<Certificate> LoadCertificates(TextReader reader) {
+			PemReader pemReader = new PemReader(reader);
+			Certificate? cert = null;
+			while ((cert = ReadCertificate(pemReader)) != null) {
+				yield return cert;
+			}
+		}
+
+		public static Certificate? ReadCertificate(PemReader pemReader) {
+			var pemContent = pemReader.ReadObject();
+			if (pemContent == null) return null;
+			if (pemContent is X509Certificate cert) {
+				return new Certificate(cert);
+			}
+			else {
+				throw new PemException("PEM did contain an object that is not a certificate.", pemContentType: pemContent.GetType());
+			}
+		}
 	}
 }
