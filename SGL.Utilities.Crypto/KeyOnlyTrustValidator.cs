@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.OpenSsl;
 using System.Collections.Generic;
 using System.IO;
@@ -38,22 +37,26 @@ namespace SGL.Utilities.Crypto {
 
 		private void LoadPublicKeysFromReader(TextReader reader, string sourceName) {
 			PemReader pemReader = new PemReader(reader);
-			object content;
 			int loadedCount = 0;
-			while ((content = pemReader.ReadObject()) != null) {
-				if (content is AsymmetricKeyParameter key && !key.IsPrivate) {
-					trustedPublicKeys.Add(new PublicKey(key));
+			for (; ; ) {
+				try {
+					var pubKey = PemHelper.ReadPublicKey(pemReader);
+					if (pubKey == null) break;
+					trustedPublicKeys.Add(pubKey);
 					loadedCount++;
 				}
-				else if (content is AsymmetricKeyParameter privKey && privKey.IsPrivate) {
-					logger.LogWarning("Source {src} contained a PRIVATE KEY of type {type}, expecting only public keys, ignoring this object. This should not be present here at all.", sourceName, content.GetType().FullName);
+				catch (PemException pe) {
+					logger.LogWarning(pe, "Read unexpected PEM object of type {type} from input {src}. This object will be skipped.", pe.PemContentType?.FullName, sourceName);
 				}
-				else {
-					logger.LogWarning("Source {src} contained an object of type {type}, expecting AsymmetricKeyParameter objects, ignoring this object.", sourceName, content.GetType().FullName);
+				catch (KeyException ke) {
+					logger.LogWarning(ke, "Read unexpected key from PEM input {src}. This object will be skipped.", sourceName);
 				}
 			}
 			if (loadedCount == 0) {
 				logger.LogWarning("Source {src} contained no usable public keys.", sourceName);
+			}
+			else {
+				logger.LogInformation("Loaded {count} trusted public keys from {src}", loadedCount, sourceName);
 			}
 		}
 
