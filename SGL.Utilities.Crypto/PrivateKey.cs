@@ -46,5 +46,6 @@ namespace SGL.Utilities.Crypto {
 				throw new KeyException("This private key does not support deriving the public key (yet).");
 			}
 		}
+		public KeyPair DeriveKeyPair() => new KeyPair(DerivePublicKey(), this);
 	}
 }
