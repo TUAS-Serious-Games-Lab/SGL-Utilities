@@ -2,7 +2,6 @@
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.OpenSsl;
-using Org.BouncyCastle.X509;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -180,22 +179,25 @@ namespace SGL.Utilities.Crypto {
 			}
 		}
 
-		private List<Certificate> loadCertificates(TextReader reader, string sourceName) {
+		private IEnumerable<Certificate> loadCertificates(TextReader reader, string sourceName) {
 			PemReader pemReader = new PemReader(reader);
-			List<Certificate> certs = new List<Certificate>();
-			object content;
-			while ((content = pemReader.ReadObject()) != null) {
-				if (content is X509Certificate cert) {
-					certs.Add(new Certificate(cert));
+			int loadedCount = 0;
+			for (; ; ) {
+				Certificate? cert = null;
+				try {
+					cert = PemHelper.ReadCertificate(pemReader);
+					if (cert == null) break;
+					loadedCount++;
 				}
-				else {
-					logger.LogWarning("Source {src} contained an object of type {type}, expecting X509Certificate objects, ignoring this object.", sourceName, content.GetType().FullName);
+				catch (PemException pe) {
+					logger.LogWarning(pe, "Source {src} contained an object of type {type}, expecting X509Certificate objects, ignoring this object.", sourceName, pe.PemContentType?.FullName);
+					continue;
 				}
+				yield return cert;
 			}
-			if (certs.Count == 0) {
+			if (loadedCount == 0) {
 				logger.LogWarning("Source {src} contained no valid certificates.", sourceName);
 			}
-			return certs;
 		}
 	}
 }
