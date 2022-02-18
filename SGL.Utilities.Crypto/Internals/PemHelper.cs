@@ -1,11 +1,13 @@
 ﻿using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.OpenSsl;
 using Org.BouncyCastle.X509;
+using SGL.Utilities.Crypto.Certificates;
+using SGL.Utilities.Crypto.Keys;
 using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace SGL.Utilities.Crypto {
+namespace SGL.Utilities.Crypto.Internals {
 	internal static class PemHelper {
 		public class FuncPasswordFinder : IPasswordFinder {
 			private Func<char[]> passwordGetter;

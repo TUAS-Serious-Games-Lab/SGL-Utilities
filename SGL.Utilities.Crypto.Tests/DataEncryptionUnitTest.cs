@@ -1,4 +1,6 @@
 ﻿using Org.BouncyCastle.Crypto;
+using SGL.Utilities.Crypto.EndToEnd;
+using SGL.Utilities.Crypto.Keys;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;

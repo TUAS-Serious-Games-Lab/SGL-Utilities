@@ -1,4 +1,4 @@
-﻿namespace SGL.Utilities.Crypto {
+﻿namespace SGL.Utilities.Crypto.EndToEnd {
 	/// <summary>
 	/// Specifies the interface for classes that provide key decryption functionality for <see cref="DataDecryptor"/>.
 	/// </summary>

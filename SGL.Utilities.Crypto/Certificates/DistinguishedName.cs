@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SGL.Utilities.Crypto {
+namespace SGL.Utilities.Crypto.Certificates {
 	public class DistinguishedName {
 		internal X509Name wrapped;
 

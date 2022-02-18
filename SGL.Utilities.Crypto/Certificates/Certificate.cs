@@ -2,11 +2,13 @@
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.X509;
+using SGL.Utilities.Crypto.Internals;
+using SGL.Utilities.Crypto.Keys;
 using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace SGL.Utilities.Crypto {
+namespace SGL.Utilities.Crypto.Certificates {
 	public class Certificate {
 		internal X509Certificate wrapped;
 
@@ -48,7 +50,7 @@ namespace SGL.Utilities.Crypto {
 						return null;
 					}
 					else {
-						var akid = Org.BouncyCastle.Asn1.X509.AuthorityKeyIdentifier.GetInstance(Asn1Object.FromByteArray(akidEnc.GetOctets()));
+						var akid = AuthorityKeyIdentifier.GetInstance(Asn1Object.FromByteArray(akidEnc.GetOctets()));
 						var akidRaw = akid?.GetKeyIdentifier();
 						var keyIdent = akidRaw != null ? new KeyIdentifier(new SubjectKeyIdentifier(akidRaw)) : null;
 						akidCache = (keyIdent, akid?.AuthorityCertIssuer, akid?.AuthorityCertSerialNumber?.ToByteArrayUnsigned());

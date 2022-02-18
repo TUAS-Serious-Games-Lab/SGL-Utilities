@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace SGL.Utilities.Crypto {
+namespace SGL.Utilities.Crypto.EndToEnd {
 	/// <summary>
 	/// Provides the functionality to encrypt the content of a data object using a randomly generated data key for each DataEncryptor object.
 	/// The data key can then be encrypted using a <see cref="KeyEncryptor"/> to obtain an <see cref="EncryptionInfo"/> object representing the key material for the data object.

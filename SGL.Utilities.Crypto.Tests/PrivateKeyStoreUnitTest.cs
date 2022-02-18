@@ -4,6 +4,7 @@ using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
+using SGL.Utilities.Crypto.Keys;
 using System.IO;
 using Xunit;
 

@@ -2,6 +2,9 @@
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.X509;
+using SGL.Utilities.Crypto.Certificates;
+using SGL.Utilities.Crypto.EndToEnd;
+using SGL.Utilities.Crypto.Keys;
 using SGL.Utilities.TestUtilities.XUnit;
 using System;
 using System.IO;

@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace SGL.Utilities.Crypto {
+namespace SGL.Utilities.Crypto.Keys {
 
 	/// <summary>
 	/// Represents a SGL.Utilities.Crypto-specific identifier of key pairs, based on their public key.
@@ -187,7 +187,7 @@ namespace SGL.Utilities.Crypto {
 				var keyIdStr = kv.Key.ToString();
 				if (keyIdStr == null) throw new NotSupportedException("Null values are not allowed as dictionary keys.");
 				writer.WritePropertyName(keyIdStr);
-				JsonSerializer.Serialize<Value>(writer, kv.Value, options);
+				JsonSerializer.Serialize(writer, kv.Value, options);
 			}
 			writer.WriteEndObject();
 		}

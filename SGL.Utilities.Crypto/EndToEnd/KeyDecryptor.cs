@@ -4,9 +4,11 @@ using Org.BouncyCastle.Crypto.Encodings;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Parameters;
+using SGL.Utilities.Crypto.Internals;
+using SGL.Utilities.Crypto.Keys;
 using System;
 
-namespace SGL.Utilities.Crypto {
+namespace SGL.Utilities.Crypto.EndToEnd {
 	/// <summary>
 	/// Provides the functionality to decrypt data keys of data objects for a specific recipient that must be in the list of recipients of the data object.
 	/// The encrypted data key is taken from the data object's metadata and decrypted using an authorized private key that must be supplied to the KeyDecyrptor.

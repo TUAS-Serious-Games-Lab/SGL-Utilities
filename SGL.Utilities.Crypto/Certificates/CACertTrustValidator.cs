@@ -1,8 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using Org.BouncyCastle.Security.Certificates;
+using SGL.Utilities.Crypto.Internals;
 using System.IO;
 
-namespace SGL.Utilities.Crypto {
+namespace SGL.Utilities.Crypto.Certificates {
 	/// <summary>
 	/// Implementes certificate validation according to a list of trusted certifiacte authority (CA) certificates, where a valid certifiacte must be signed by any of the CA certificates.
 	/// </summary>

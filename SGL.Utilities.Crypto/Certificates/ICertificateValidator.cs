@@ -1,4 +1,4 @@
-﻿namespace SGL.Utilities.Crypto {
+﻿namespace SGL.Utilities.Crypto.Certificates {
 	/// <summary>
 	/// Specifies the interface for classes that check the validity of certificates.
 	/// </summary>

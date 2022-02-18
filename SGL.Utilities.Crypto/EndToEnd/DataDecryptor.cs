@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace SGL.Utilities.Crypto {
+namespace SGL.Utilities.Crypto.EndToEnd {
 	/// <summary>
 	/// Provides the functionality to decrypt the content of a data object using a data key obtained from the encrypted data object's metadata.
 	/// Each data object requires a separate DataEncryptor object.

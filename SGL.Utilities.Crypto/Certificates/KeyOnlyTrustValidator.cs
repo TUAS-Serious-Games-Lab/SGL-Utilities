@@ -1,9 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
 using Org.BouncyCastle.OpenSsl;
+using SGL.Utilities.Crypto.Internals;
+using SGL.Utilities.Crypto.Keys;
 using System.Collections.Generic;
 using System.IO;
 
-namespace SGL.Utilities.Crypto {
+namespace SGL.Utilities.Crypto.Certificates {
 	/// <summary>
 	/// Implementes certificate validation according to a list of trusted public keys, where a valid certifiacte must be signed by one of these public keys.
 	/// </summary>

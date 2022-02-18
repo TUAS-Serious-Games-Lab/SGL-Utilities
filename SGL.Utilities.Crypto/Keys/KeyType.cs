@@ -1,3 +1,3 @@
-﻿namespace SGL.Utilities.Crypto {
+﻿namespace SGL.Utilities.Crypto.Keys {
 	public enum KeyType { RSA, EllipticCurves }
 }

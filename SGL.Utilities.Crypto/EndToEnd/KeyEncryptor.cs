@@ -6,11 +6,13 @@ using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Parameters;
+using SGL.Utilities.Crypto.Internals;
+using SGL.Utilities.Crypto.Keys;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SGL.Utilities.Crypto {
+namespace SGL.Utilities.Crypto.EndToEnd {
 	/// <summary>
 	/// Provides the functionality to encrypt data keys of data objects for a list of recipients and to generate the metadata associating recipient key ids with the recipient's encrypted copy of the data key.
 	/// </summary>
@@ -69,7 +71,7 @@ namespace SGL.Utilities.Crypto {
 			byte[]? encodedSharedSenderPublicKey = null;
 			if (useSharedSenderKeyPair && ecSharedSenderKeyPairCurveName != null) {
 				sharedSenderKeyPair = GenerateECKeyPair(ecSharedSenderKeyPairCurveName);
-				encodedSharedSenderPublicKey = EcdhKdfHelper.EncodeEcPublicKey((ECPublicKeyParameters)(sharedSenderKeyPair.Public));
+				encodedSharedSenderPublicKey = EcdhKdfHelper.EncodeEcPublicKey((ECPublicKeyParameters)sharedSenderKeyPair.Public);
 			}
 			return (trustedRecipients.ToDictionary(kv => kv.Key, kv => EncryptDataKey(kv.Value.wrapped, dataKey, sharedSenderKeyPair, encodedSharedSenderPublicKey)), encodedSharedSenderPublicKey);
 		}
@@ -94,7 +96,7 @@ namespace SGL.Utilities.Crypto {
 			bool useSharedSenderKPHere = sharedSenderKeyPair != null && sharedSenderKeyPair.Private is ECPrivateKeyParameters sharedEC &&
 							sharedEC.PublicKeyParamSet != null && recipientKey.PublicKeyParamSet != null && sharedEC.PublicKeyParamSet.Id == recipientKey.PublicKeyParamSet.Id;
 			AsymmetricCipherKeyPair senderKeyPair = useSharedSenderKPHere ? sharedSenderKeyPair! : GenerateECKeyPair(recipientKey.PublicKeyParamSet, recipientKey.Parameters);
-			byte[] encodedSenderPublicKey = useSharedSenderKPHere ? encodedSharedSenderPublicKey! : EcdhKdfHelper.EncodeEcPublicKey((ECPublicKeyParameters)(senderKeyPair.Public));
+			byte[] encodedSenderPublicKey = useSharedSenderKPHere ? encodedSharedSenderPublicKey! : EcdhKdfHelper.EncodeEcPublicKey((ECPublicKeyParameters)senderKeyPair.Public);
 			var ecdh = new ECDHBasicAgreement();
 			ecdh.Init(senderKeyPair.Private);
 			var agreement = ecdh.CalculateAgreement(recipientKey);

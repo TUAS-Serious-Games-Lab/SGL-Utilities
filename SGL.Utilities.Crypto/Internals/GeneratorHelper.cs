@@ -7,9 +7,11 @@ using Org.BouncyCastle.Crypto.Operators;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.X509;
+using SGL.Utilities.Crypto.Certificates;
+using SGL.Utilities.Crypto.Keys;
 using System;
 
-namespace SGL.Utilities.Crypto {
+namespace SGL.Utilities.Crypto.Internals {
 	internal class GeneratorHelper {
 		public static KeyPair GenerateEcKeyPair(RandomGenerator random, int keyLength, string? curveName = null) {
 			ECKeyPairGenerator keyGen = new ECKeyPairGenerator();

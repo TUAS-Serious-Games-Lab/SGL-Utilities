@@ -1,9 +1,11 @@
 ﻿using Org.BouncyCastle.Crypto;
+using SGL.Utilities.Crypto.Certificates;
+using SGL.Utilities.Crypto.Internals;
 using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace SGL.Utilities.Crypto {
+namespace SGL.Utilities.Crypto.Keys {
 	public class KeyPair {
 		public PublicKey Public { get; }
 		public PrivateKey Private { get; }

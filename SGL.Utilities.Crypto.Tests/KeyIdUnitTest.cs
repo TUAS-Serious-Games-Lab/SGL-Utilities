@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using SGL.Utilities.Crypto.Keys;
+using System.IO;
 using Xunit;
 
 namespace SGL.Utilities.Crypto.Tests {

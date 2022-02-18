@@ -2,6 +2,8 @@
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.OpenSsl;
+using SGL.Utilities.Crypto.Internals;
+using SGL.Utilities.Crypto.Keys;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,7 +13,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SGL.Utilities.Crypto {
+namespace SGL.Utilities.Crypto.Certificates {
 
 	/// <summary>
 	/// Loads, holds and indexes certificates to provide access to them.

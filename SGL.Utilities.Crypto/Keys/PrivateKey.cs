@@ -1,10 +1,12 @@
 ﻿using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
+using SGL.Utilities.Crypto.Certificates;
+using SGL.Utilities.Crypto.Internals;
 using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace SGL.Utilities.Crypto {
+namespace SGL.Utilities.Crypto.Keys {
 	public class PrivateKey {
 		internal AsymmetricKeyParameter wrapped;
 

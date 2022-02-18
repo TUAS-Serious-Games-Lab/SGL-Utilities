@@ -1,7 +1,8 @@
 ﻿using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.X509;
+using SGL.Utilities.Crypto.Keys;
 
-namespace SGL.Utilities.Crypto {
+namespace SGL.Utilities.Crypto.Certificates {
 	public class KeyIdentifier {
 		internal SubjectKeyIdentifier wrapped;
 

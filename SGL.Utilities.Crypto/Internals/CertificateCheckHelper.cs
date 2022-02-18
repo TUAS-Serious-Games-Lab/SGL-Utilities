@@ -1,8 +1,10 @@
 ﻿using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Security.Certificates;
+using SGL.Utilities.Crypto.Certificates;
+using SGL.Utilities.Crypto.Keys;
 using System;
 
-namespace SGL.Utilities.Crypto {
+namespace SGL.Utilities.Crypto.Internals {
 	internal class CertificateCheckHelper {
 		public enum Outcome {
 			Valid, OutOfValidityPeriod, InvalidSignature, OtherError

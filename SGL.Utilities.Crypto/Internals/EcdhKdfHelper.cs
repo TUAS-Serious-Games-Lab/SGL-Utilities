@@ -5,7 +5,7 @@ using Org.BouncyCastle.Security;
 using Org.BouncyCastle.X509;
 using System.Linq;
 
-namespace SGL.Utilities.Crypto {
+namespace SGL.Utilities.Crypto.Internals {
 	internal class EcdhKdfHelper {
 		public static ParametersWithIV DeriveKeyAndIV(byte[] agreement, byte[] senderPublicKey) {
 			const int keyLength = 32;

@@ -1,8 +1,9 @@
 ﻿using Org.BouncyCastle.OpenSsl;
+using SGL.Utilities.Crypto.Internals;
 using System;
 using System.IO;
 
-namespace SGL.Utilities.Crypto {
+namespace SGL.Utilities.Crypto.Keys {
 	/// <summary>
 	/// Provides functionality to load a password-encrypted private key from a PEM file and provides access to the key pair of which the private key is a part through the <see cref="KeyPair"/> property.
 	/// Currently, the following formats of keys are supported:
