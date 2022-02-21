@@ -8,7 +8,7 @@ namespace SGL.Utilities.Crypto.Keys {
 	/// Provides functionality to load a password-encrypted private key from a PEM file and provides access to the key pair of which the private key is a part through the <see cref="KeyPair"/> property.
 	/// Currently, the following formats of keys are supported:
 	/// <list type="bullet">
-	/// <item><description>A PEM file that contains an (encrypted) full key pair of a type that Bouncy Castle's <c>Org.BouncyCastle.OpenSsl.PemReader</c> can load</description></item>
+	/// <item><description>A PEM file that contains an (encrypted) full key pair of a type that the underlying cryptography implementation (Bouncy Castle's <c>Org.BouncyCastle.OpenSsl.PemReader</c>) can load</description></item>
 	/// <item><description>A PEM file containing an (encrypted) RSA private key; the public key will be derived from the private key</description></item>
 	/// <item><description>A PEM file containing an (encrypted) EC private key; the public key will be derived from the private key</description></item>
 	/// </list>
