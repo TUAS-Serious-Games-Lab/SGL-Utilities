@@ -74,11 +74,11 @@ namespace SGL.Utilities.Crypto.Certificates {
 		public bool CheckCertificate(Certificate certificate) {
 			foreach (var trustedKey in trustedPublicKeys) {
 				var outcome = CertificateCheckHelper.CheckCertificate(certificate, trustedKey);
-				if (outcome == CertificateCheckHelper.Outcome.OutOfValidityPeriod) {
+				if (outcome == CertificateCheckOutcome.OutOfValidityPeriod) {
 					logger.LogError("The certificate {subjDN} is out of it's validity period (expired or not yet valid).", certificate.SubjectDN);
 					return false;
 				}
-				if (outcome == CertificateCheckHelper.Outcome.Valid) {
+				if (outcome == CertificateCheckOutcome.Valid) {
 					return true;
 				}
 			}

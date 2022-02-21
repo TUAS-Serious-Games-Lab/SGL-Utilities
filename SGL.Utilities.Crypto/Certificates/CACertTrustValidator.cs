@@ -99,15 +99,15 @@ namespace SGL.Utilities.Crypto.Certificates {
 			}
 			var outcome = CertificateCheckHelper.CheckCertificate(certificate, caCert.PublicKey);
 			switch (outcome) {
-				case CertificateCheckHelper.Outcome.Valid:
+				case CertificateCheckOutcome.Valid:
 					return true;
-				case CertificateCheckHelper.Outcome.OutOfValidityPeriod:
+				case CertificateCheckOutcome.OutOfValidityPeriod:
 					logger.LogError("The certificate {subjDN} is out of it's validity period (expired or not yet valid).", certificate.SubjectDN);
 					return false;
-				case CertificateCheckHelper.Outcome.InvalidSignature:
+				case CertificateCheckOutcome.InvalidSignature:
 					logger.LogError("The certificate {subjDN} claims to be signed by {issDN} but the verification of the signature against the signers public key failed. This either indicates an attempted manipulation of the certificate or a problem with the signing process or the signer certificate.", certificate.SubjectDN, certificate.IssuerDN);
 					return false;
-				case CertificateCheckHelper.Outcome.OtherError:
+				case CertificateCheckOutcome.OtherError:
 					return false;
 				default:
 					return false;

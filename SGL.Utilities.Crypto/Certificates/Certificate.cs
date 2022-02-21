@@ -65,6 +65,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 		public static IEnumerable<Certificate> LoadAllFromPem(TextReader reader, Func<char[]> passwordGetter) => PemHelper.LoadCertificates(reader);
 		public void StoreToPem(TextWriter writer) => PemHelper.Write(writer, this);
 
+		public CertificateCheckOutcome Verify(PublicKey issuerPublicKey) => CertificateCheckHelper.CheckCertificate(this, issuerPublicKey);
 		public static Certificate Generate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, DateTime validFrom, DateTime validTo,
 			long serialNumber, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null, bool generateSubjectKeyIdentifier = false) =>
 				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validFrom, validTo, BigInteger.ValueOf(serialNumber), signatureDigest, authorityKeyIdentifier, generateSubjectKeyIdentifier);

@@ -6,21 +6,17 @@ using System;
 
 namespace SGL.Utilities.Crypto.Internals {
 	internal class CertificateCheckHelper {
-		public enum Outcome {
-			Valid, OutOfValidityPeriod, InvalidSignature, OtherError
-		}
-
-		public static Outcome CheckCertificate(Certificate certificate, PublicKey trustedPublicKey) {
+		public static CertificateCheckOutcome CheckCertificate(Certificate certificate, PublicKey trustedPublicKey) {
 			var cert = certificate.wrapped;
 			var pubKey = trustedPublicKey.wrapped;
 			try {
 				cert.CheckValidity();
 			}
 			catch (CertificateExpiredException) {
-				return Outcome.OutOfValidityPeriod;
+				return CertificateCheckOutcome.OutOfValidityPeriod;
 			}
 			catch (CertificateNotYetValidException) {
-				return Outcome.OutOfValidityPeriod;
+				return CertificateCheckOutcome.OutOfValidityPeriod;
 			}
 			try {
 				var certData = cert.GetTbsCertificate();
@@ -30,14 +26,14 @@ namespace SGL.Utilities.Crypto.Internals {
 				signer.BlockUpdate(certData, 0, certData.Length);
 				var valid = signer.VerifySignature(signature);
 				if (valid) {
-					return Outcome.Valid;
+					return CertificateCheckOutcome.Valid;
 				}
 				else {
-					return Outcome.InvalidSignature;
+					return CertificateCheckOutcome.InvalidSignature;
 				}
 			}
 			catch (Exception) {
-				return Outcome.OtherError;
+				return CertificateCheckOutcome.OtherError;
 			}
 		}
 	}
