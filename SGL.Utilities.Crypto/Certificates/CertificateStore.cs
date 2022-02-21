@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Org.BouncyCastle.Asn1.X509;
-using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.OpenSsl;
 using SGL.Utilities.Crypto.Internals;
 using SGL.Utilities.Crypto.Keys;
@@ -86,12 +84,12 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// <summary>
 		/// Lists the SubjectDistinguishedNames of all certificates contained in the certificate store.
 		/// </summary>
-		/// <returns>An enumerable over all SubjectDistinguishedNames as <see cref="X509Name"/>s.</returns>
+		/// <returns>An enumerable over all SubjectDistinguishedNames as <see cref="DistinguishedName"/>s.</returns>
 		public IEnumerable<DistinguishedName> ListKnownSubjectDNs() => certificatesBySubjectDN.Keys;
 		/// <summary>
 		/// Lists the SubjectKeyIdentifier values of all certificates contained in the certificate store that have that extension.
 		/// </summary>
-		/// <returns>An enumerable over all <see cref="SubjectKeyIdentifier"/>s.</returns>
+		/// <returns>An enumerable over all <see cref="KeyIdentifier"/>s.</returns>
 		public IEnumerable<KeyIdentifier> ListKnownSubjectKeyIdentifiers() => certificatesBySKID.Keys;
 
 		/// <summary>
@@ -102,12 +100,12 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// <summary>
 		/// Lists the public keys of all certificates in the certificate store.
 		/// </summary>
-		/// <returns>An enumerable over all public keys as <see cref="AsymmetricKeyParameter"/>s.</returns>
+		/// <returns>An enumerable over all public keys as <see cref="PublicKey"/>s.</returns>
 		public IEnumerable<PublicKey> ListKnownPublicKeys() => ListKnownCertificates().Select(cert => cert.PublicKey);
 		/// <summary>
-		/// Lists all certificates contained in the certificate store as <see cref="KeyValuePair{KeyId, AsymmetricKeyParameter}"/>s of the id of their public key paired with the actual certificate object.
+		/// Lists all certificates contained in the certificate store as <see cref="KeyValuePair{KeyId, PublicKey}"/>s of the id of their public key paired with the actual certificate object.
 		/// </summary>
-		/// <returns>An enumerable over all public key ids paired with the certificate, as <see cref="KeyValuePair{KeyId, AsymmetricKeyParameter}"/>.</returns>
+		/// <returns>An enumerable over all public key ids paired with the certificate, as <see cref="KeyValuePair{KeyId, PublicKey}"/>.</returns>
 		public IEnumerable<KeyValuePair<KeyId, PublicKey>> ListKnownKeyIdsAndPublicKeys() => certificatesByKeyId.Select(keyIdCert => new KeyValuePair<KeyId, PublicKey>(keyIdCert.Key, keyIdCert.Value.PublicKey));
 		/// <summary>
 		/// Loads and verifies certificates from the given string in PEM format.
