@@ -27,6 +27,21 @@ namespace SGL.Utilities.Crypto.Keys {
 		private byte[] id = new byte[1] { 0 }; // First byte indicates type (0 = empty, 1 = RSA, 2 = EC), remaining 32 bytes = SHA256 fingerprint
 
 		/// <summary>
+		/// Constructs a KeyId that represents the given id.
+		/// </summary>
+		/// <param name="id">The raw id bytes.</param>
+		/// <exception cref="ArgumentException">If the given id isn't structurally valid.</exception>
+		public KeyId(byte[] id) {
+			if (id.Length != 33) throw new ArgumentException("The given id has an invalid format.", nameof(id));
+			if (id[0] is not (1 or 2)) throw new ArgumentException("The given id doesn't have a valid type.", nameof(id));
+			this.id = id;
+		}
+		/// <summary>
+		/// Returns a copy of the raw id bytes.
+		/// </summary>
+		public byte[] Id => (byte[])id.Clone();
+
+		/// <summary>
 		/// Calculated the key id of the given public key.
 		/// </summary>
 		/// <param name="publicKey">The public key to calculate the id of. Currently, only RSA and EC keys are supported.</param>
@@ -36,9 +51,9 @@ namespace SGL.Utilities.Crypto.Keys {
 				case null:
 					throw new KeyException("Key object contained null value.");
 				case RsaKeyParameters rsa:
-					return new KeyId() { id = getKeyId(rsa) };
+					return new KeyId(getKeyId(rsa));
 				case ECPublicKeyParameters ec:
-					return new KeyId() { id = getKeyId(ec) };
+					return new KeyId(getKeyId(ec));
 				default:
 					throw new KeyException($"Unsupported key type {publicKey.GetType().FullName}.");
 			}
@@ -129,7 +144,7 @@ namespace SGL.Utilities.Crypto.Keys {
 			if (digits.Length != 33 /*bytes in id*/ * 2 /*hex per byte*/) throw new ArgumentException("Incorrect number of characters for KeyId.");
 			var id = Convert.FromHexString(digits);
 			if (id[0] < 1 || id[0] > 2) throw new ArgumentException("Given KeyId uses unknown type identifier.");
-			return new KeyId() { id = id };
+			return new KeyId(id);
 		}
 	}
 
