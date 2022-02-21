@@ -3,12 +3,12 @@ using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.IO;
 using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Security;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace SGL.Utilities.Crypto {
+namespace SGL.Utilities.Crypto.EndToEnd {
 	/// <summary>
 	/// Provides the functionality to encrypt the content of a data object using a randomly generated data key for each DataEncryptor object.
 	/// The data key can then be encrypted using a <see cref="KeyEncryptor"/> to obtain an <see cref="EncryptionInfo"/> object representing the key material for the data object.
@@ -25,7 +25,7 @@ namespace SGL.Utilities.Crypto {
 		/// </summary>
 		/// <param name="random">The random generator to use for generating the data key and the initialization vector.</param>
 		/// <param name="numberOfStreams">The number of streams, the data object consists of. This determines the number of initialization vectors that will be generated.</param>
-		public DataEncryptor(SecureRandom random, int numberOfStreams = 1) {
+		public DataEncryptor(RandomGenerator random, int numberOfStreams = 1) {
 			dataKey = new byte[32];
 			random.NextBytes(dataKey);
 			ivs = Enumerable.Range(0, numberOfStreams).Select(_ => {
@@ -43,10 +43,15 @@ namespace SGL.Utilities.Crypto {
 		/// <param name="streamIndex">The logical index of the stream within the data object.</param>
 		/// <returns>A stream that encrypts data written to it and then writes the encrypted data to <paramref name="outputStream"/>.</returns>
 		public CipherStream OpenEncryptionWriteStream(Stream outputStream, int streamIndex) {
-			var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
-			var keyParams = new ParametersWithIV(new KeyParameter(dataKey), ivs[streamIndex]);
-			cipher.Init(forEncryption: true, keyParams);
-			return new CipherStream(outputStream, null, cipher);
+			try {
+				var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
+				var keyParams = new ParametersWithIV(new KeyParameter(dataKey), ivs[streamIndex]);
+				cipher.Init(forEncryption: true, keyParams);
+				return new CipherStream(outputStream, null, cipher);
+			}
+			catch (Exception ex) {
+				throw new EncryptionException("Failed to open encryption stream.", ex);
+			}
 		}
 
 		/// <summary>

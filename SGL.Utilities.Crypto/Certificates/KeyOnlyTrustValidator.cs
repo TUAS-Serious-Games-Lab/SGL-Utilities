@@ -1,22 +1,17 @@
 ﻿using Microsoft.Extensions.Logging;
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.OpenSsl;
-using Org.BouncyCastle.X509;
-using System;
+using SGL.Utilities.Crypto.Internals;
+using SGL.Utilities.Crypto.Keys;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SGL.Utilities.Crypto {
+namespace SGL.Utilities.Crypto.Certificates {
 	/// <summary>
 	/// Implementes certificate validation according to a list of trusted public keys, where a valid certifiacte must be signed by one of these public keys.
 	/// </summary>
 	public class KeyOnlyTrustValidator : ICertificateValidator {
 		private readonly ILogger<KeyOnlyTrustValidator> logger;
-		private readonly List<AsymmetricKeyParameter> trustedPublicKeys = new List<AsymmetricKeyParameter>();
+		private readonly List<PublicKey> trustedPublicKeys = new List<PublicKey>();
 
 		/// <summary>
 		/// Creates a <see cref="KeyOnlyTrustValidator"/> that trusts the signer public keys that are loaded from the given <paramref name="reader"/> in PEM format.
@@ -44,22 +39,26 @@ namespace SGL.Utilities.Crypto {
 
 		private void LoadPublicKeysFromReader(TextReader reader, string sourceName) {
 			PemReader pemReader = new PemReader(reader);
-			object content;
 			int loadedCount = 0;
-			while ((content = pemReader.ReadObject()) != null) {
-				if (content is AsymmetricKeyParameter key && !key.IsPrivate) {
-					trustedPublicKeys.Add(key);
+			for (; ; ) {
+				try {
+					var pubKey = PemHelper.ReadPublicKey(pemReader);
+					if (pubKey == null) break;
+					trustedPublicKeys.Add(pubKey);
 					loadedCount++;
 				}
-				else if (content is AsymmetricKeyParameter privKey && privKey.IsPrivate) {
-					logger.LogWarning("Source {src} contained a PRIVATE KEY of type {type}, expecting only public keys, ignoring this object. This should not be present here at all.", sourceName, content.GetType().FullName);
+				catch (PemException pe) {
+					logger.LogWarning(pe, "Read unexpected PEM object of type {type} from input {src}. This object will be skipped.", pe.PemContentType?.FullName, sourceName);
 				}
-				else {
-					logger.LogWarning("Source {src} contained an object of type {type}, expecting AsymmetricKeyParameter objects, ignoring this object.", sourceName, content.GetType().FullName);
+				catch (KeyException ke) {
+					logger.LogWarning(ke, "Read unexpected key from PEM input {src}. This object will be skipped.", sourceName);
 				}
 			}
 			if (loadedCount == 0) {
 				logger.LogWarning("Source {src} contained no usable public keys.", sourceName);
+			}
+			else {
+				logger.LogInformation("Loaded {count} trusted public keys from {src}", loadedCount, sourceName);
 			}
 		}
 
@@ -70,20 +69,20 @@ namespace SGL.Utilities.Crypto {
 		/// As the public keys are not associated with the certificate through metadata, the trusted keys are tried one after another to verify the signature until ony succeeds.
 		/// If none of them can verify the signature, the certifiacte is rejected.
 		/// </remarks>
-		/// <param name="cert">The certificate to validate.</param>
+		/// <param name="certificate">The certificate to validate.</param>
 		/// <returns>True if the certifiacte passed all checks and was successfully validated, False otherwise.</returns>
-		public bool CheckCertificate(X509Certificate cert) {
+		public bool CheckCertificate(Certificate certificate) {
 			foreach (var trustedKey in trustedPublicKeys) {
-				var outcome = CertificateCheckHelper.CheckCertificate(cert, trustedKey);
-				if (outcome == CertificateCheckHelper.Outcome.OutOfValidityPeriod) {
-					logger.LogError("The certificate {subjDN} is out of it's validity period (expired or not yet valid).", cert.SubjectDN);
+				var outcome = CertificateCheckHelper.CheckCertificate(certificate, trustedKey);
+				if (outcome == CertificateCheckOutcome.OutOfValidityPeriod) {
+					logger.LogError("The certificate {subjDN} is out of it's validity period (expired or not yet valid).", certificate.SubjectDN);
 					return false;
 				}
-				if (outcome == CertificateCheckHelper.Outcome.Valid) {
+				if (outcome == CertificateCheckOutcome.Valid) {
 					return true;
 				}
 			}
-			logger.LogError("The certificate {subjDN} could not be validated with any of the trusted public keys.", cert.SubjectDN);
+			logger.LogError("The certificate {subjDN} could not be validated with any of the trusted public keys.", certificate.SubjectDN);
 			return false;
 		}
 	}

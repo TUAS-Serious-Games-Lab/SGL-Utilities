@@ -1,5 +1,6 @@
 ﻿using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Security;
+using SGL.Utilities.Crypto.EndToEnd;
+using SGL.Utilities.Crypto.Keys;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -25,7 +26,7 @@ namespace SGL.Utilities.Crypto.Tests {
 			}
 		}
 
-		private readonly SecureRandom random = new SecureRandom();
+		private readonly RandomGenerator random = new RandomGenerator();
 
 		[Fact]
 		public async Task DataEncryptorAndDecryptorCorrectlyRoundTripDataEncryptionForSingleStream() {
@@ -75,7 +76,7 @@ namespace SGL.Utilities.Crypto.Tests {
 
 			var decryptor = DataDecryptor.FromEncryptionInfo(encInfo, dummyKeyCryptor);
 			Assert.NotNull(decryptor);
-			Assert.Equal(testData.Length, decryptor.StreamCount);
+			Assert.Equal(testData.Length, decryptor!.StreamCount);
 			byte[][] decryptedData = new byte[decryptor!.StreamCount][];
 			for (int i = 0; i < decryptor.StreamCount; ++i) {
 				using var decStream = decryptor.OpenDecryptionReadStream(decMemStreams[i], i);
@@ -114,7 +115,7 @@ namespace SGL.Utilities.Crypto.Tests {
 
 			var decryptor = DataDecryptor.FromEncryptionInfo(encInfo, dummyKeyCryptor);
 			Assert.NotNull(decryptor);
-			Assert.Equal(testData.Length, decryptor.StreamCount);
+			Assert.Equal(testData.Length, decryptor!.StreamCount);
 			byte[][] decryptedData = new byte[decryptor!.StreamCount][];
 			for (int i = 0; i < decryptor.StreamCount; ++i) {
 				using var decStream = decryptor.OpenDecryptionReadStream(decMemStreams[i], decryptor.StreamCount - i - 1);

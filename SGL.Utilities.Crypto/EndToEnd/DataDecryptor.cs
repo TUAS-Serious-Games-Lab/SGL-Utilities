@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace SGL.Utilities.Crypto {
+namespace SGL.Utilities.Crypto.EndToEnd {
 	/// <summary>
 	/// Provides the functionality to decrypt the content of a data object using a data key obtained from the encrypted data object's metadata.
 	/// Each data object requires a separate DataEncryptor object.
@@ -32,7 +32,7 @@ namespace SGL.Utilities.Crypto {
 		/// <param name="dataKey">The data key for the data object.</param>
 		public DataDecryptor(DataEncryptionMode dataMode, List<byte[]> ivs, byte[] dataKey) {
 			if (dataMode != DataEncryptionMode.AES_256_CCM) {
-				throw new ArgumentException("Unsupported data encryption mode.");
+				throw new DecryptionException("Unsupported data encryption mode.");
 			}
 			this.ivs = ivs;
 			this.dataKey = dataKey;
@@ -46,10 +46,15 @@ namespace SGL.Utilities.Crypto {
 		/// <param name="streamIndex">The logical index of the stream within the data object.</param>
 		/// <returns>A stream that reads the encrypted data from <paramref name="inputStream"/> and decrypts data when the stream is read from.</returns>
 		public CipherStream OpenDecryptionReadStream(Stream inputStream, int streamIndex) {
-			var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
-			var keyParams = new ParametersWithIV(new KeyParameter(dataKey), ivs[streamIndex]);
-			cipher.Init(forEncryption: false, keyParams);
-			return new CipherStream(inputStream, cipher, null);
+			try {
+				var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
+				var keyParams = new ParametersWithIV(new KeyParameter(dataKey), ivs[streamIndex]);
+				cipher.Init(forEncryption: false, keyParams);
+				return new CipherStream(inputStream, cipher, null);
+			}
+			catch (Exception ex) {
+				throw new DecryptionException("Failed to open encryption stream.", ex);
+			}
 		}
 
 		/// <summary>

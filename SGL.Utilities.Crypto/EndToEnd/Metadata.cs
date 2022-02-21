@@ -1,9 +1,8 @@
-﻿using System;
+﻿using SGL.Utilities.Crypto.Keys;
 using System.Collections.Generic;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace SGL.Utilities.Crypto {
+namespace SGL.Utilities.Crypto.EndToEnd {
 
 	/// <summary>
 	/// Describes the encryption mode used for encrypting the actual contents of a data object, e.g. a message or file.

@@ -1,18 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
-using Org.BouncyCastle.Asn1.Pkcs;
 using Org.BouncyCastle.Asn1.X509;
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Generators;
-using Org.BouncyCastle.Crypto.Operators;
-using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Security;
 using Org.BouncyCastle.X509;
+using SGL.Utilities.Crypto.Certificates;
+using SGL.Utilities.Crypto.EndToEnd;
+using SGL.Utilities.Crypto.Keys;
 using SGL.Utilities.TestUtilities.XUnit;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -203,7 +198,7 @@ namespace SGL.Utilities.Crypto.Tests {
 			privKeyStore.LoadKeyPair(privKeyPemReader, fixture.PrivKeyPassword);
 			var keyDecryptor = new KeyDecryptor(privKeyStore.KeyPair);
 
-			Assert.ThrowsAny<CryptoException>(() => keyDecryptor.DecryptKey(metadata1.DataKeys[impersonatedRecipient], metadata1.SenderPublicKey));
+			Assert.ThrowsAny<DecryptionException>(() => keyDecryptor.DecryptKey(metadata1.DataKeys[impersonatedRecipient], metadata1.SenderPublicKey));
 		}
 
 		[Fact]
@@ -306,7 +301,7 @@ namespace SGL.Utilities.Crypto.Tests {
 			Assert.Equal(fixture.EcCert2, certStore.GetCertificateByKeyId(KeyId.CalculateId(fixture.EcKeyPair2.Public)));
 			Assert.Equal(fixture.EcCert3, certStore.GetCertificateByKeyId(KeyId.CalculateId(fixture.EcKeyPair3.Public)));
 			Assert.Equal(fixture.EcCert4, certStore.GetCertificateByKeyId(KeyId.CalculateId(fixture.EcKeyPair4.Public)));
-			Assert.Equal(fixture.EcCert4, certStore.GetCertificateBySubjectKeyIdentifier(new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(fixture.EcKeyPair4.Public))));
+			Assert.Equal(fixture.EcCert4, certStore.GetCertificateBySubjectKeyIdentifier(new KeyIdentifier(new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(fixture.EcKeyPair4.Public.wrapped)))));
 			Assert.Null(certStore.GetCertificateByKeyId(KeyId.CalculateId(fixture.RsaKeyPairAttacker.Public)));
 			Assert.Null(certStore.GetCertificateByKeyId(KeyId.CalculateId(fixture.EcKeyPairAttacker.Public)));
 		}

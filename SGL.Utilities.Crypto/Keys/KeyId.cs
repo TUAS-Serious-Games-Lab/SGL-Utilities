@@ -1,5 +1,4 @@
-﻿using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Digests;
+﻿using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Crypto.Parameters;
 using System;
 using System.Collections.Generic;
@@ -8,7 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace SGL.Utilities.Crypto {
+namespace SGL.Utilities.Crypto.Keys {
 
 	/// <summary>
 	/// Represents a SGL.Utilities.Crypto-specific identifier of key pairs, based on their public key.
@@ -32,37 +31,47 @@ namespace SGL.Utilities.Crypto {
 		/// </summary>
 		/// <param name="publicKey">The public key to calculate the id of. Currently, only RSA and EC keys are supported.</param>
 		/// <returns>A <see cref="KeyId"/> object identifying <paramref name="publicKey"/>.</returns>
-		public static KeyId CalculateId(AsymmetricKeyParameter publicKey) {
-			switch (publicKey) {
+		public static KeyId CalculateId(PublicKey publicKey) {
+			switch (publicKey.wrapped) {
 				case null:
-					throw new ArgumentNullException(nameof(publicKey));
+					throw new KeyException("Key object contained null value.");
 				case RsaKeyParameters rsa:
 					return new KeyId() { id = getKeyId(rsa) };
 				case ECPublicKeyParameters ec:
 					return new KeyId() { id = getKeyId(ec) };
 				default:
-					throw new ArgumentException($"Unsupported key type {publicKey.GetType().FullName}.");
+					throw new KeyException($"Unsupported key type {publicKey.GetType().FullName}.");
 			}
 		}
 
 		private static byte[] getKeyId(ECPublicKeyParameters ec) {
-			var digest = new Sha256Digest();
-			var keyBytes = ec.Q.GetEncoded(compressed: false); // TODO: Recheck, if this is deterministic
-			digest.BlockUpdate(keyBytes, 0, keyBytes.Length);
-			byte[] result = new byte[33];
-			digest.DoFinal(result, 1);
-			result[0] = 2;
-			return result;
+			try {
+				var digest = new Sha256Digest();
+				var keyBytes = ec.Q.GetEncoded(compressed: false); // TODO: Recheck, if this is deterministic
+				digest.BlockUpdate(keyBytes, 0, keyBytes.Length);
+				byte[] result = new byte[33];
+				digest.DoFinal(result, 1);
+				result[0] = 2;
+				return result;
+			}
+			catch (Exception ex) {
+				throw new KeyException("Failed to calculate KeyId.", ex);
+			}
 		}
 
 		private static byte[] getKeyId(RsaKeyParameters rsa) {
-			var digest = new Sha256Digest();
-			var modulusBytes = rsa.Modulus.ToByteArrayUnsigned();
-			digest.BlockUpdate(modulusBytes, 0, modulusBytes.Length);
-			byte[] result = new byte[33];
-			digest.DoFinal(result, 1);
-			result[0] = 1;
-			return result;
+			try {
+				var digest = new Sha256Digest();
+				var modulusBytes = rsa.Modulus.ToByteArrayUnsigned();
+				digest.BlockUpdate(modulusBytes, 0, modulusBytes.Length);
+				byte[] result = new byte[33];
+				digest.DoFinal(result, 1);
+				result[0] = 1;
+				return result;
+			}
+			catch (Exception ex) {
+				throw new KeyException("Failed to calculate KeyId.", ex);
+			}
 		}
 
 		/// <summary>
@@ -144,15 +153,11 @@ namespace SGL.Utilities.Crypto {
 #endif
 
 		/// <inheritdoc/>
-		public override void Write(Utf8JsonWriter writer, KeyId value, JsonSerializerOptions options) {
-			writer.WriteStringValue(value.ToString());
-		}
+		public override void Write(Utf8JsonWriter writer, KeyId value, JsonSerializerOptions options) => writer.WriteStringValue(value.ToString());
 
 #if NET6_0_OR_GREATER
 		/// <inheritdoc/>
-		public override void WriteAsPropertyName(Utf8JsonWriter writer, KeyId value, JsonSerializerOptions options) {
-			writer.WritePropertyName(value.ToString()!);
-		}
+		public override void WriteAsPropertyName(Utf8JsonWriter writer, KeyId value, JsonSerializerOptions options) => writer.WritePropertyName(value.ToString()!);
 #endif
 	}
 
@@ -192,7 +197,7 @@ namespace SGL.Utilities.Crypto {
 				var keyIdStr = kv.Key.ToString();
 				if (keyIdStr == null) throw new NotSupportedException("Null values are not allowed as dictionary keys.");
 				writer.WritePropertyName(keyIdStr);
-				JsonSerializer.Serialize<Value>(writer, kv.Value, options);
+				JsonSerializer.Serialize(writer, kv.Value, options);
 			}
 			writer.WriteEndObject();
 		}

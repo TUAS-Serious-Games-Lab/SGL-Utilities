@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using SGL.Utilities.Crypto.Keys;
+using System.Collections.Generic;
 
-namespace SGL.Utilities.Crypto {
+namespace SGL.Utilities.Crypto.EndToEnd {
 	/// <summary>
 	/// Specifies the interface for classes that provide key encryption functionality for <see cref="DataEncryptor"/>.
 	/// </summary>

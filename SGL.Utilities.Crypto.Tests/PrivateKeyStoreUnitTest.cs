@@ -4,12 +4,8 @@ using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
-using System;
-using System.Collections.Generic;
+using SGL.Utilities.Crypto.Keys;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace SGL.Utilities.Crypto.Tests {
@@ -88,17 +84,17 @@ wXrNoe5yySoWSz6TobSuURw=
 			using var rdr = new StringReader(rsaPem);
 			pks.LoadKeyPair(rdr, pemPassword);
 			Assert.NotNull(pks.KeyPair);
-			Assert.IsType<RsaPrivateCrtKeyParameters>(pks.KeyPair.Private);
-			Assert.IsType<RsaKeyParameters>(pks.KeyPair.Public);
+			Assert.IsType<RsaPrivateCrtKeyParameters>(pks.KeyPair.Private.wrapped);
+			Assert.IsType<RsaKeyParameters>(pks.KeyPair.Public.wrapped);
 			// We have loaded a key pair, perform an encryption / decryption cycle to test if it is (mathematically) valid:
 			SecureRandom rand = new SecureRandom();
 			byte[] testData = new byte[128];
 			rand.NextBytes(testData);
 			var rsa = new Pkcs1Encoding(new RsaEngine());
-			rsa.Init(forEncryption: true, pks.KeyPair.Public);
+			rsa.Init(forEncryption: true, pks.KeyPair.Public.wrapped);
 			var encrypted = rsa.ProcessBlock(testData, 0, testData.Length);
 			rsa = new Pkcs1Encoding(new RsaEngine());
-			rsa.Init(forEncryption: false, pks.KeyPair.Private);
+			rsa.Init(forEncryption: false, pks.KeyPair.Private.wrapped);
 			var decrypted = rsa.ProcessBlock(encrypted, 0, encrypted.Length);
 			Assert.Equal(testData, decrypted);
 		}
@@ -108,8 +104,8 @@ wXrNoe5yySoWSz6TobSuURw=
 			using var rdr = new StringReader(ecPem);
 			pks.LoadKeyPair(rdr, pemPassword);
 			Assert.NotNull(pks.KeyPair);
-			var privKey = Assert.IsType<ECPrivateKeyParameters>(pks.KeyPair.Private);
-			var pubKey = Assert.IsType<ECPublicKeyParameters>(pks.KeyPair.Public);
+			var privKey = Assert.IsType<ECPrivateKeyParameters>(pks.KeyPair.Private.wrapped);
+			var pubKey = Assert.IsType<ECPublicKeyParameters>(pks.KeyPair.Public.wrapped);
 			// We have loaded a key pair, generate a metching one and perform ECDH to test if it is (mathematically) valid:
 			SecureRandom random = new SecureRandom();
 			var ecKeyGenParams = new ECKeyGenerationParameters(pubKey.PublicKeyParamSet, random);
