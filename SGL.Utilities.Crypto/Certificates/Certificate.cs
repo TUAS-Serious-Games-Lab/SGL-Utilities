@@ -61,8 +61,8 @@ namespace SGL.Utilities.Crypto.Certificates {
 		}
 		private (KeyIdentifier? KeyIdentifier, object? Issuer, byte[]? SerialNumber)? akidCache = null;
 
-		public static Certificate LoadOneFromPem(TextReader reader, Func<char[]> passwordGetter) => PemHelper.LoadCertificate(reader);
-		public static IEnumerable<Certificate> LoadAllFromPem(TextReader reader, Func<char[]> passwordGetter) => PemHelper.LoadCertificates(reader);
+		public static Certificate LoadOneFromPem(TextReader reader) => PemHelper.LoadCertificate(reader);
+		public static IEnumerable<Certificate> LoadAllFromPem(TextReader reader) => PemHelper.LoadCertificates(reader);
 		public void StoreToPem(TextWriter writer) => PemHelper.Write(writer, this);
 
 		public CertificateCheckOutcome Verify(PublicKey issuerPublicKey) => CertificateCheckHelper.CheckCertificate(this, issuerPublicKey);
