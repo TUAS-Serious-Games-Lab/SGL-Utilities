@@ -27,13 +27,24 @@ namespace SGL.Utilities.Crypto.Certificates {
 				}
 				catch (CertificateExpiredException) {
 					if (ignoreValidityPeriod) {
-						logger.LogWarning("The CA certificate {subjDN} is expired (or not yet valid). However, as the CACertTrustValidator is set to ignore the validity period, it will still be used.", cert.SubjectDN);
+						logger.LogWarning("The CA certificate {subjDN} is expired. However, as the CACertTrustValidator is set to ignore the validity period, it will still be used.", cert.SubjectDN);
 						return true;
 					}
 					else {
-						logger.LogError("The CA certificate {subjDN} is expired (or not yet valid). It will therefore not be used and certificates signed by it will not be considered valid.", cert.SubjectDN);
+						logger.LogError("The CA certificate {subjDN} is expired. It will therefore not be used and certificates signed by it will not be considered valid.", cert.SubjectDN);
 						return false;
 					}
+				}
+				catch (CertificateNotYetValidException) {
+					if (ignoreValidityPeriod) {
+						logger.LogWarning("The CA certificate {subjDN} is not yet valid. However, as the CACertTrustValidator is set to ignore the validity period, it will still be used.", cert.SubjectDN);
+						return true;
+					}
+					else {
+						logger.LogError("The CA certificate {subjDN} is not yet valid. It will therefore not be used and certificates signed by it will not be considered valid.", cert.SubjectDN);
+						return false;
+					}
+
 				}
 			}
 		}
