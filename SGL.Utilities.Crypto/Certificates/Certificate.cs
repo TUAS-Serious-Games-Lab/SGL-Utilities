@@ -25,7 +25,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 		public DistinguishedName IssuerDN => new DistinguishedName(wrapped.IssuerDN);
 		public DateTime NotBefore => wrapped.NotBefore;
 		public DateTime NotAfter => wrapped.NotAfter;
-		public byte[] SerialNumber => wrapped.SerialNumber.ToByteArrayUnsigned();
+		public byte[] SerialNumber => wrapped.SerialNumber.ToByteArray();
 
 		public KeyIdentifier? SubjectKeyIdentifier {
 			get {
@@ -53,7 +53,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 						var akid = AuthorityKeyIdentifier.GetInstance(Asn1Object.FromByteArray(akidEnc.GetOctets()));
 						var akidRaw = akid?.GetKeyIdentifier();
 						var keyIdent = akidRaw != null ? new KeyIdentifier(new SubjectKeyIdentifier(akidRaw)) : null;
-						akidCache = (keyIdent, akid?.AuthorityCertIssuer, akid?.AuthorityCertSerialNumber?.ToByteArrayUnsigned());
+						akidCache = (keyIdent, akid?.AuthorityCertIssuer, akid?.AuthorityCertSerialNumber?.ToByteArray());
 					}
 				}
 				return akidCache;
