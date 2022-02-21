@@ -9,6 +9,11 @@ namespace SGL.Utilities.Crypto.Certificates {
 		internal KeyIdentifier(SubjectKeyIdentifier wrapped) {
 			this.wrapped = wrapped;
 		}
+
+		public KeyIdentifier(byte[] identifier) {
+			wrapped = new SubjectKeyIdentifier(identifier);
+		}
+
 		public KeyIdentifier(PublicKey publicKey) {
 			wrapped = new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(publicKey.wrapped));
 		}
