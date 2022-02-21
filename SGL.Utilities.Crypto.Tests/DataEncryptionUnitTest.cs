@@ -76,7 +76,7 @@ namespace SGL.Utilities.Crypto.Tests {
 
 			var decryptor = DataDecryptor.FromEncryptionInfo(encInfo, dummyKeyCryptor);
 			Assert.NotNull(decryptor);
-			Assert.Equal(testData.Length, decryptor.StreamCount);
+			Assert.Equal(testData.Length, decryptor!.StreamCount);
 			byte[][] decryptedData = new byte[decryptor!.StreamCount][];
 			for (int i = 0; i < decryptor.StreamCount; ++i) {
 				using var decStream = decryptor.OpenDecryptionReadStream(decMemStreams[i], i);
@@ -115,7 +115,7 @@ namespace SGL.Utilities.Crypto.Tests {
 
 			var decryptor = DataDecryptor.FromEncryptionInfo(encInfo, dummyKeyCryptor);
 			Assert.NotNull(decryptor);
-			Assert.Equal(testData.Length, decryptor.StreamCount);
+			Assert.Equal(testData.Length, decryptor!.StreamCount);
 			byte[][] decryptedData = new byte[decryptor!.StreamCount][];
 			for (int i = 0; i < decryptor.StreamCount; ++i) {
 				using var decStream = decryptor.OpenDecryptionReadStream(decMemStreams[i], decryptor.StreamCount - i - 1);
