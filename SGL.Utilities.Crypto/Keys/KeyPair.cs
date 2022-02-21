@@ -100,6 +100,7 @@ namespace SGL.Utilities.Crypto.Keys {
 		/// If <paramref name="type"/> is <see cref="KeyType.EllipticCurves"/>, the curve used can either be specified explicitly in <paramref name="curveName"/>, or a suitable default curve for the given key length is used otherwise.
 		/// </summary>
 		/// <param name="random">The random generator to use for generating the key pair.</param>
+		/// <param name="type">The type of key pair to generate.</param>
 		/// <param name="keyLength">The length of the keys in bits.</param>
 		/// <param name="curveName">The name of the named curve parameter set to use if <paramref name="type"/> is <see cref="KeyType.EllipticCurves"/>.</param>
 		/// <returns>The generated key pair.</returns>
