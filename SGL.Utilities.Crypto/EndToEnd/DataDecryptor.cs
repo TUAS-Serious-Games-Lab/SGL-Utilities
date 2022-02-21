@@ -32,7 +32,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <param name="dataKey">The data key for the data object.</param>
 		public DataDecryptor(DataEncryptionMode dataMode, List<byte[]> ivs, byte[] dataKey) {
 			if (dataMode != DataEncryptionMode.AES_256_CCM) {
-				throw new ArgumentException("Unsupported data encryption mode.");
+				throw new DecryptionException("Unsupported data encryption mode.");
 			}
 			this.ivs = ivs;
 			this.dataKey = dataKey;
@@ -46,10 +46,15 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <param name="streamIndex">The logical index of the stream within the data object.</param>
 		/// <returns>A stream that reads the encrypted data from <paramref name="inputStream"/> and decrypts data when the stream is read from.</returns>
 		public CipherStream OpenDecryptionReadStream(Stream inputStream, int streamIndex) {
-			var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
-			var keyParams = new ParametersWithIV(new KeyParameter(dataKey), ivs[streamIndex]);
-			cipher.Init(forEncryption: false, keyParams);
-			return new CipherStream(inputStream, cipher, null);
+			try {
+				var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
+				var keyParams = new ParametersWithIV(new KeyParameter(dataKey), ivs[streamIndex]);
+				cipher.Init(forEncryption: false, keyParams);
+				return new CipherStream(inputStream, cipher, null);
+			}
+			catch (Exception ex) {
+				throw new DecryptionException("Failed to open encryption stream.", ex);
+			}
 		}
 
 		/// <summary>

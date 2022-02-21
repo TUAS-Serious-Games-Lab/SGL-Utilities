@@ -14,19 +14,29 @@ using System;
 namespace SGL.Utilities.Crypto.Internals {
 	internal class GeneratorHelper {
 		public static KeyPair GenerateEcKeyPair(RandomGenerator random, int keyLength, string? curveName = null) {
-			ECKeyPairGenerator keyGen = new ECKeyPairGenerator();
-			if (curveName != null) {
-				keyGen.Init(new ECKeyGenerationParameters(ECNamedCurveTable.GetOid(curveName), random.wrapped));
+			try {
+				ECKeyPairGenerator keyGen = new ECKeyPairGenerator();
+				if (curveName != null) {
+					keyGen.Init(new ECKeyGenerationParameters(ECNamedCurveTable.GetOid(curveName), random.wrapped));
+				}
+				else {
+					keyGen.Init(new KeyGenerationParameters(random.wrapped, keyLength));
+				}
+				return new KeyPair(keyGen.GenerateKeyPair());
 			}
-			else {
-				keyGen.Init(new KeyGenerationParameters(random.wrapped, keyLength));
+			catch (Exception ex) {
+				throw new KeyException("Failed generating Elliptic Curves key pair.", ex);
 			}
-			return new KeyPair(keyGen.GenerateKeyPair());
 		}
 		public static KeyPair GenerateRsaKeyPair(RandomGenerator random, int keyLength) {
-			RsaKeyPairGenerator keyGen = new RsaKeyPairGenerator();
-			keyGen.Init(new KeyGenerationParameters(random.wrapped, keyLength));
-			return new KeyPair(keyGen.GenerateKeyPair());
+			try {
+				RsaKeyPairGenerator keyGen = new RsaKeyPairGenerator();
+				keyGen.Init(new KeyGenerationParameters(random.wrapped, keyLength));
+				return new KeyPair(keyGen.GenerateKeyPair());
+			}
+			catch (Exception ex) {
+				throw new KeyException("Failed generating Elliptic Curves key pair.", ex);
+			}
 		}
 		public static KeyPair GenerateKeyPair(RandomGenerator random, KeyType type, int keyLength, string? paramSetName = null) {
 			switch (type) {
@@ -55,22 +65,31 @@ namespace SGL.Utilities.Crypto.Internals {
 		public static Certificate GenerateCertificate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, DateTime validFrom, DateTime validTo,
 				BigInteger serialNumber, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null, bool generateSubjectKeyIdentifier = false) {
 			X509V3CertificateGenerator certGen = new X509V3CertificateGenerator();
-			certGen.SetIssuerDN(signerIdentity.wrapped);
-			certGen.SetSubjectDN(subjectIdentity.wrapped);
-			certGen.SetPublicKey(subjectKey.wrapped);
-			certGen.SetNotBefore(validFrom);
-			certGen.SetNotAfter(validTo);
-			certGen.SetSerialNumber(serialNumber);
+			try {
+				certGen.SetIssuerDN(signerIdentity.wrapped);
+				certGen.SetSubjectDN(subjectIdentity.wrapped);
+				certGen.SetPublicKey(subjectKey.wrapped);
+				certGen.SetNotBefore(validFrom);
+				certGen.SetNotAfter(validTo);
+				certGen.SetSerialNumber(serialNumber);
 
-			if (authorityKeyIdentifier != null) {
-				certGen.AddExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifier(authorityKeyIdentifier.wrapped.GetKeyIdentifier()));
+				if (authorityKeyIdentifier != null) {
+					certGen.AddExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifier(authorityKeyIdentifier.wrapped.GetKeyIdentifier()));
+				}
+				if (generateSubjectKeyIdentifier) {
+					certGen.AddExtension(X509Extensions.SubjectKeyIdentifier, false, new KeyIdentifier(subjectKey).wrapped);
+				}
 			}
-			if (generateSubjectKeyIdentifier) {
-				certGen.AddExtension(X509Extensions.SubjectKeyIdentifier, false, new KeyIdentifier(subjectKey).wrapped);
+			catch (Exception ex) {
+				throw new CertififcateException("Failed setting up certificate data.", ex);
 			}
-
 			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(GetSignerName(signerKey.Type, signatureDigest), signerKey.wrapped);
-			return new Certificate(certGen.Generate(signatureFactory));
+			try {
+				return new Certificate(certGen.Generate(signatureFactory));
+			}
+			catch (Exception ex) {
+				throw new CertififcateException("Failed generating certificate.", ex);
+			}
 		}
 		public static Certificate GenerateCertificate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, TimeSpan validityDuration,
 			BigInteger serialNumber, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null, bool generateSubjectKeyIdentifier = false) =>

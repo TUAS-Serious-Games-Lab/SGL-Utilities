@@ -34,34 +34,44 @@ namespace SGL.Utilities.Crypto.Keys {
 		public static KeyId CalculateId(PublicKey publicKey) {
 			switch (publicKey.wrapped) {
 				case null:
-					throw new ArgumentNullException(nameof(publicKey));
+					throw new KeyException("Key object contained null value.");
 				case RsaKeyParameters rsa:
 					return new KeyId() { id = getKeyId(rsa) };
 				case ECPublicKeyParameters ec:
 					return new KeyId() { id = getKeyId(ec) };
 				default:
-					throw new ArgumentException($"Unsupported key type {publicKey.GetType().FullName}.");
+					throw new KeyException($"Unsupported key type {publicKey.GetType().FullName}.");
 			}
 		}
 
 		private static byte[] getKeyId(ECPublicKeyParameters ec) {
-			var digest = new Sha256Digest();
-			var keyBytes = ec.Q.GetEncoded(compressed: false); // TODO: Recheck, if this is deterministic
-			digest.BlockUpdate(keyBytes, 0, keyBytes.Length);
-			byte[] result = new byte[33];
-			digest.DoFinal(result, 1);
-			result[0] = 2;
-			return result;
+			try {
+				var digest = new Sha256Digest();
+				var keyBytes = ec.Q.GetEncoded(compressed: false); // TODO: Recheck, if this is deterministic
+				digest.BlockUpdate(keyBytes, 0, keyBytes.Length);
+				byte[] result = new byte[33];
+				digest.DoFinal(result, 1);
+				result[0] = 2;
+				return result;
+			}
+			catch (Exception ex) {
+				throw new KeyException("Failed to calculate KeyId.", ex);
+			}
 		}
 
 		private static byte[] getKeyId(RsaKeyParameters rsa) {
-			var digest = new Sha256Digest();
-			var modulusBytes = rsa.Modulus.ToByteArrayUnsigned();
-			digest.BlockUpdate(modulusBytes, 0, modulusBytes.Length);
-			byte[] result = new byte[33];
-			digest.DoFinal(result, 1);
-			result[0] = 1;
-			return result;
+			try {
+				var digest = new Sha256Digest();
+				var modulusBytes = rsa.Modulus.ToByteArrayUnsigned();
+				digest.BlockUpdate(modulusBytes, 0, modulusBytes.Length);
+				byte[] result = new byte[33];
+				digest.DoFinal(result, 1);
+				result[0] = 1;
+				return result;
+			}
+			catch (Exception ex) {
+				throw new KeyException("Failed to calculate KeyId.", ex);
+			}
 		}
 
 		/// <summary>

@@ -32,7 +32,13 @@ namespace SGL.Utilities.Crypto.Internals {
 		}
 
 		public static KeyPair? ReadKeyPair(PemReader pemReader) {
-			var pemContent = pemReader.ReadObject();
+			object pemContent;
+			try {
+				pemContent = pemReader.ReadObject();
+			}
+			catch (Exception ex) {
+				throw new PemException("Failed reading key pair from PEM reader.", innerException: ex);
+			}
 			if (pemContent == null) return null;
 			if (pemContent is AsymmetricCipherKeyPair kp) {
 				return new KeyPair(kp);
@@ -66,7 +72,13 @@ namespace SGL.Utilities.Crypto.Internals {
 		}
 
 		public static PublicKey? ReadPublicKey(PemReader pemReader) {
-			var pemContent = pemReader.ReadObject();
+			object pemContent;
+			try {
+				pemContent = pemReader.ReadObject();
+			}
+			catch (Exception ex) {
+				throw new PemException("Failed reading public key from PEM reader.", innerException: ex);
+			}
 			if (pemContent == null) return null;
 			if (pemContent is AsymmetricKeyParameter key && !key.IsPrivate && PublicKey.IsValidWrappedType(key)) {
 				return new PublicKey(key);
@@ -99,7 +111,13 @@ namespace SGL.Utilities.Crypto.Internals {
 		}
 
 		public static PrivateKey? ReadPrivateKey(PemReader pemReader) {
-			var pemContent = pemReader.ReadObject();
+			object pemContent;
+			try {
+				pemContent = pemReader.ReadObject();
+			}
+			catch (Exception ex) {
+				throw new PemException("Failed reading private key from PEM reader.", innerException: ex);
+			}
 			if (pemContent == null) return null;
 			if (pemContent is AsymmetricKeyParameter key && key.IsPrivate && PrivateKey.IsValidWrappedType(key)) {
 				return new PrivateKey(key);
@@ -132,7 +150,13 @@ namespace SGL.Utilities.Crypto.Internals {
 		}
 
 		public static Certificate? ReadCertificate(PemReader pemReader) {
-			var pemContent = pemReader.ReadObject();
+			object pemContent;
+			try {
+				pemContent = pemReader.ReadObject();
+			}
+			catch (Exception ex) {
+				throw new PemException("Failed reading certificate from PEM reader.", innerException: ex);
+			}
 			if (pemContent == null) return null;
 			if (pemContent is X509Certificate cert) {
 				return new Certificate(cert);
@@ -143,24 +167,56 @@ namespace SGL.Utilities.Crypto.Internals {
 		}
 
 		public static void Write(TextWriter writer, PublicKey pubKey) {
-			var pemWriter = new PemWriter(writer);
-			pemWriter.WriteObject(pubKey.wrapped);
+			try {
+				var pemWriter = new PemWriter(writer);
+				pemWriter.WriteObject(pubKey.wrapped);
+			}
+			catch (CryptographyException) {
+				throw;
+			}
+			catch (Exception ex) {
+				throw new PemException("Failed writing public key to PEM writer.", innerException: ex);
+			}
 		}
 		public static void Write(TextWriter writer, Certificate cert) {
-			var pemWriter = new PemWriter(writer);
-			pemWriter.WriteObject(cert.wrapped);
+			try {
+				var pemWriter = new PemWriter(writer);
+				pemWriter.WriteObject(cert.wrapped);
+			}
+			catch (CryptographyException) {
+				throw;
+			}
+			catch (Exception ex) {
+				throw new PemException("Failed writing public key to PEM writer.", innerException: ex);
+			}
 		}
 		private static string GetEncryptionModeStr(PemEncryptionMode encMode) => encMode switch {
 			PemEncryptionMode.AES_256_CBC => "AES-256-CBC",
 			_ => throw new PemException($"Unsupported PEM encryption mode {encMode}")
 		};
 		public static void Write(TextWriter writer, PrivateKey privKey, PemEncryptionMode encMode, char[] password, RandomGenerator random) {
-			var pemWriter = new PemWriter(writer);
-			pemWriter.WriteObject(privKey.wrapped, GetEncryptionModeStr(encMode), password, random.wrapped);
+			try {
+				var pemWriter = new PemWriter(writer);
+				pemWriter.WriteObject(privKey.wrapped, GetEncryptionModeStr(encMode), password, random.wrapped);
+			}
+			catch (CryptographyException) {
+				throw;
+			}
+			catch (Exception ex) {
+				throw new PemException("Failed writing public key to PEM writer.", innerException: ex);
+			}
 		}
 		public static void Write(TextWriter writer, KeyPair keyPair, PemEncryptionMode encMode, char[] password, RandomGenerator random) {
-			var pemWriter = new PemWriter(writer);
-			pemWriter.WriteObject(keyPair.ToWrappedPair(), GetEncryptionModeStr(encMode), password, random.wrapped);
+			try {
+				var pemWriter = new PemWriter(writer);
+				pemWriter.WriteObject(keyPair.ToWrappedPair(), GetEncryptionModeStr(encMode), password, random.wrapped);
+			}
+			catch (CryptographyException) {
+				throw;
+			}
+			catch (Exception ex) {
+				throw new PemException("Failed writing public key to PEM writer.", innerException: ex);
+			}
 		}
 	}
 }

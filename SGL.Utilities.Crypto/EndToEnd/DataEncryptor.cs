@@ -3,6 +3,7 @@ using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.IO;
 using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Parameters;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -42,10 +43,15 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <param name="streamIndex">The logical index of the stream within the data object.</param>
 		/// <returns>A stream that encrypts data written to it and then writes the encrypted data to <paramref name="outputStream"/>.</returns>
 		public CipherStream OpenEncryptionWriteStream(Stream outputStream, int streamIndex) {
-			var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
-			var keyParams = new ParametersWithIV(new KeyParameter(dataKey), ivs[streamIndex]);
-			cipher.Init(forEncryption: true, keyParams);
-			return new CipherStream(outputStream, null, cipher);
+			try {
+				var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
+				var keyParams = new ParametersWithIV(new KeyParameter(dataKey), ivs[streamIndex]);
+				cipher.Init(forEncryption: true, keyParams);
+				return new CipherStream(outputStream, null, cipher);
+			}
+			catch (Exception ex) {
+				throw new EncryptionException("Failed to open encryption stream.", ex);
+			}
 		}
 
 		/// <summary>

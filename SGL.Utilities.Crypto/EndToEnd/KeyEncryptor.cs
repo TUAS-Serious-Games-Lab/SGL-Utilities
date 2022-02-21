@@ -6,6 +6,7 @@ using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Parameters;
+using Org.BouncyCastle.Math;
 using SGL.Utilities.Crypto.Internals;
 using SGL.Utilities.Crypto.Keys;
 using System;
@@ -83,46 +84,67 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 				case ECPublicKeyParameters ec:
 					return EncryptDataKeyEcdhAes(ec, dataKey, sharedSenderKeyPair, encodedSharedSenderPublicKey);
 				default:
-					throw new ArgumentException($"Unsupported recipient key type {recipientKey.GetType().FullName}.");
+					throw new EncryptionException($"Unsupported recipient key type {recipientKey.GetType().FullName}.");
 			}
 		}
 		private DataKeyInfo EncryptDataKeyRsa(RsaKeyParameters recipientKey, byte[] dataKey) {
-			var rsa = new Pkcs1Encoding(new RsaEngine());
-			rsa.Init(forEncryption: true, recipientKey);
-			var encryptedDataKey = rsa.ProcessBlock(dataKey, 0, dataKey.Length);
-			return new DataKeyInfo() { Mode = KeyEncryptionMode.RSA_PKCS1, EncryptedKey = encryptedDataKey };
+			try {
+				var rsa = new Pkcs1Encoding(new RsaEngine());
+				rsa.Init(forEncryption: true, recipientKey);
+				var encryptedDataKey = rsa.ProcessBlock(dataKey, 0, dataKey.Length);
+				return new DataKeyInfo() { Mode = KeyEncryptionMode.RSA_PKCS1, EncryptedKey = encryptedDataKey };
+			}
+			catch (Exception ex) {
+				throw new EncryptionException("Failed to encrypt data key using RSA.", ex);
+			}
 		}
 		private DataKeyInfo EncryptDataKeyEcdhAes(ECPublicKeyParameters recipientKey, byte[] dataKey, AsymmetricCipherKeyPair? sharedSenderKeyPair, byte[]? encodedSharedSenderPublicKey) {
+
 			bool useSharedSenderKPHere = sharedSenderKeyPair != null && sharedSenderKeyPair.Private is ECPrivateKeyParameters sharedEC &&
 							sharedEC.PublicKeyParamSet != null && recipientKey.PublicKeyParamSet != null && sharedEC.PublicKeyParamSet.Id == recipientKey.PublicKeyParamSet.Id;
 			AsymmetricCipherKeyPair senderKeyPair = useSharedSenderKPHere ? sharedSenderKeyPair! : GenerateECKeyPair(recipientKey.PublicKeyParamSet, recipientKey.Parameters);
 			byte[] encodedSenderPublicKey = useSharedSenderKPHere ? encodedSharedSenderPublicKey! : EcdhKdfHelper.EncodeEcPublicKey((ECPublicKeyParameters)senderKeyPair.Public);
-			var ecdh = new ECDHBasicAgreement();
-			ecdh.Init(senderKeyPair.Private);
-			var agreement = ecdh.CalculateAgreement(recipientKey);
-
-			var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
+			BigInteger agreement;
+			try {
+				var ecdh = new ECDHBasicAgreement();
+				ecdh.Init(senderKeyPair.Private);
+				agreement = ecdh.CalculateAgreement(recipientKey);
+			}
+			catch (Exception ex) {
+				throw new EncryptionException("Failed to calculate ECDH agreement.", ex);
+			}
 			var keyParams = EcdhKdfHelper.DeriveKeyAndIV(agreement.ToByteArray(), encodedSenderPublicKey);
-			cipher.Init(forEncryption: true, keyParams);
-			var encryptedDataKey = cipher.DoFinal(dataKey);
+			try {
+				var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
+				cipher.Init(forEncryption: true, keyParams);
+				var encryptedDataKey = cipher.DoFinal(dataKey);
 
-			return new DataKeyInfo() {
-				Mode = KeyEncryptionMode.ECDH_KDF2_SHA256_AES_256_CCM,
-				EncryptedKey = encryptedDataKey,
-				SenderPublicKey = useSharedSenderKPHere ? null : encodedSenderPublicKey
-			};
+				return new DataKeyInfo() {
+					Mode = KeyEncryptionMode.ECDH_KDF2_SHA256_AES_256_CCM,
+					EncryptedKey = encryptedDataKey,
+					SenderPublicKey = useSharedSenderKPHere ? null : encodedSenderPublicKey
+				};
+			}
+			catch (Exception ex) {
+				throw new EncryptionException("Failed to encrypt data key.", ex);
+			}
 		}
 
 		private AsymmetricCipherKeyPair GenerateECKeyPair(DerObjectIdentifier? curveName, ECDomainParameters? domainParams = null) {
-			if (curveName == null && domainParams == null) {
-				throw new ArgumentNullException(nameof(curveName) + " and " + nameof(domainParams));
+			try {
+				if (curveName == null && domainParams == null) {
+					throw new ArgumentNullException(nameof(curveName) + " and " + nameof(domainParams));
+				}
+				var ecKeyGenParams = curveName != null ?
+								new ECKeyGenerationParameters(curveName, random.wrapped) :
+								new ECKeyGenerationParameters(domainParams, random.wrapped);
+				var ecKeyGen = new ECKeyPairGenerator();
+				ecKeyGen.Init(ecKeyGenParams);
+				return ecKeyGen.GenerateKeyPair();
 			}
-			var ecKeyGenParams = curveName != null ?
-							new ECKeyGenerationParameters(curveName, random.wrapped) :
-							new ECKeyGenerationParameters(domainParams, random.wrapped);
-			var ecKeyGen = new ECKeyPairGenerator();
-			ecKeyGen.Init(ecKeyGenParams);
-			return ecKeyGen.GenerateKeyPair();
+			catch (Exception ex) {
+				throw new EncryptionException("Failed to generate ECDH sender key pair.", ex);
+			}
 		}
 	}
 }

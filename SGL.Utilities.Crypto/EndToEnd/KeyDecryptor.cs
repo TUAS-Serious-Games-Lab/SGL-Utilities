@@ -4,6 +4,7 @@ using Org.BouncyCastle.Crypto.Encodings;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Parameters;
+using Org.BouncyCastle.Math;
 using SGL.Utilities.Crypto.Internals;
 using SGL.Utilities.Crypto.Keys;
 using System;
@@ -60,29 +61,45 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 				case KeyEncryptionMode.RSA_PKCS1:
 					return DecryptKeyRsa(dataKeyInfo);
 				default:
-					throw new ArgumentException("Unsupported key encryption mode.");
+					throw new DecryptionException("Unsupported key encryption mode.");
 			}
 		}
 
 		private byte[] DecryptKeyRsa(DataKeyInfo dataKeyInfo) {
-			var engine = new Pkcs1Encoding(new RsaEngine());
-			engine.Init(forEncryption: false, keyPair.Private.wrapped);
-			return engine.ProcessBlock(dataKeyInfo.EncryptedKey, 0, dataKeyInfo.EncryptedKey.Length);
+			try {
+				var engine = new Pkcs1Encoding(new RsaEngine());
+				engine.Init(forEncryption: false, keyPair.Private.wrapped);
+				return engine.ProcessBlock(dataKeyInfo.EncryptedKey, 0, dataKeyInfo.EncryptedKey.Length);
+			}
+			catch (Exception ex) {
+				throw new DecryptionException("Couldn't decrypt the data key using RSA with given private key.", ex);
+			}
 		}
 
 		private byte[] DecryptKeyEcdhAes(DataKeyInfo dataKeyInfo, byte[]? sharedSenderPublicKey) {
 			byte[]? senderPublicKeyEncoded = dataKeyInfo.SenderPublicKey ?? sharedSenderPublicKey;
 			if (senderPublicKeyEncoded == null && senderPublicKeyEncoded == null) {
-				throw new ArgumentException("Recipient-specific and shared sender public key must not both be missing");
+				throw new KeyException("Recipient-specific and shared sender public key must not both be missing");
 			}
 			ECPublicKeyParameters senderPublicKey = EcdhKdfHelper.DecodeEcPublicKey(senderPublicKeyEncoded);
-			var ecdh = new ECDHBasicAgreement();
-			ecdh.Init(keyPair.Private.wrapped);
-			var agreement = ecdh.CalculateAgreement(senderPublicKey);
-			var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
+			BigInteger agreement;
+			try {
+				var ecdh = new ECDHBasicAgreement();
+				ecdh.Init(keyPair.Private.wrapped);
+				agreement = ecdh.CalculateAgreement(senderPublicKey);
+			}
+			catch (Exception ex) {
+				throw new DecryptionException("Failed to calculate ECDH agreement.", ex);
+			}
 			var keyParams = EcdhKdfHelper.DeriveKeyAndIV(agreement.ToByteArray(), senderPublicKeyEncoded);
-			cipher.Init(forEncryption: false, keyParams);
-			return cipher.DoFinal(dataKeyInfo.EncryptedKey);
+			try {
+				var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
+				cipher.Init(forEncryption: false, keyParams);
+				return cipher.DoFinal(dataKeyInfo.EncryptedKey);
+			}
+			catch (Exception ex) {
+				throw new DecryptionException("Failed to decrypt data key.", ex);
+			}
 		}
 	}
 }

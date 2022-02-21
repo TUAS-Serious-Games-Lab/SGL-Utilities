@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using Org.BouncyCastle.Asn1.X509;
-using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.X509;
 using SGL.Utilities.Crypto.Certificates;
 using SGL.Utilities.Crypto.EndToEnd;
@@ -199,7 +198,7 @@ namespace SGL.Utilities.Crypto.Tests {
 			privKeyStore.LoadKeyPair(privKeyPemReader, fixture.PrivKeyPassword);
 			var keyDecryptor = new KeyDecryptor(privKeyStore.KeyPair);
 
-			Assert.ThrowsAny<CryptoException>(() => keyDecryptor.DecryptKey(metadata1.DataKeys[impersonatedRecipient], metadata1.SenderPublicKey));
+			Assert.ThrowsAny<DecryptionException>(() => keyDecryptor.DecryptKey(metadata1.DataKeys[impersonatedRecipient], metadata1.SenderPublicKey));
 		}
 
 		[Fact]
