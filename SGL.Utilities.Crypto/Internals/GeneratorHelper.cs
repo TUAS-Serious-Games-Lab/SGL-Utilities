@@ -51,15 +51,15 @@ namespace SGL.Utilities.Crypto.Internals {
 				CertificateSignatureDigest.Sha256 => PkcsObjectIdentifiers.Sha256WithRsaEncryption.Id,
 				CertificateSignatureDigest.Sha384 => PkcsObjectIdentifiers.Sha384WithRsaEncryption.Id,
 				CertificateSignatureDigest.Sha512 => PkcsObjectIdentifiers.Sha512WithRsaEncryption.Id,
-				_ => throw new CertififcateException($"Unsupported digest {digest}")
+				_ => throw new CertificateException($"Unsupported digest {digest}")
 			},
 			KeyType.EllipticCurves => digest switch {
 				CertificateSignatureDigest.Sha256 => X9ObjectIdentifiers.ECDsaWithSha256.Id,
 				CertificateSignatureDigest.Sha384 => X9ObjectIdentifiers.ECDsaWithSha384.Id,
 				CertificateSignatureDigest.Sha512 => X9ObjectIdentifiers.ECDsaWithSha512.Id,
-				_ => throw new CertififcateException($"Unsupported digest {digest}")
+				_ => throw new CertificateException($"Unsupported digest {digest}")
 			},
-			_ => throw new CertififcateException($"Unsupported key type {keyType}")
+			_ => throw new CertificateException($"Unsupported key type {keyType}")
 		};
 
 		public static Certificate GenerateCertificate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, DateTime validFrom, DateTime validTo,
@@ -81,14 +81,14 @@ namespace SGL.Utilities.Crypto.Internals {
 				}
 			}
 			catch (Exception ex) {
-				throw new CertififcateException("Failed setting up certificate data.", ex);
+				throw new CertificateException("Failed setting up certificate data.", ex);
 			}
 			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(GetSignerName(signerKey.Type, signatureDigest), signerKey.wrapped);
 			try {
 				return new Certificate(certGen.Generate(signatureFactory));
 			}
 			catch (Exception ex) {
-				throw new CertififcateException("Failed generating certificate.", ex);
+				throw new CertificateException("Failed generating certificate.", ex);
 			}
 		}
 		public static Certificate GenerateCertificate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, TimeSpan validityDuration,

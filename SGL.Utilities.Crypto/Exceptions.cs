@@ -49,13 +49,13 @@ namespace SGL.Utilities.Crypto {
 	/// <summary>
 	/// An exception indicating a problem with certificates.
 	/// </summary>
-	public class CertififcateException : CryptographyException {
+	public class CertificateException : CryptographyException {
 		/// <summary>
 		/// Instantiates a new exception object with the given data.
 		/// </summary>
 		/// <param name="message">The exception's error message text.</param>
 		/// <param name="innerException">The exception that caused this exception.</param>
-		public CertififcateException(string? message, Exception? innerException = null) : base(message, innerException) { }
+		public CertificateException(string? message, Exception? innerException = null) : base(message, innerException) { }
 	}
 	/// <summary>
 	/// An exception indicating problem encountered during encryption.
