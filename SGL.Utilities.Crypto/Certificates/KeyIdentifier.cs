@@ -16,5 +16,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 		public override bool Equals(object? obj) => obj is KeyIdentifier identifier && wrapped.Equals(identifier.wrapped);
 		public override int GetHashCode() => wrapped.GetHashCode();
 		public override string? ToString() => wrapped.ToString();
+
+		public byte[] Identifier => wrapped.GetKeyIdentifier();
 	}
 }
