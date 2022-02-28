@@ -1,13 +1,18 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Net.Http.Headers;
+using SGL.Utilities.Crypto.Certificates;
+using SGL.Utilities.Crypto.Keys;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace SGL.Utilities.Crypto.AspNetCore {
 	public class PemOutputFormatter : TextOutputFormatter {
+		private static Type[] supportedTypes = new[] { typeof(string), typeof(IEnumerable<string>), typeof(Certificate), typeof(IEnumerable<Certificate>), typeof(PublicKey), typeof(IEnumerable<PublicKey>) };
 
 		public PemOutputFormatter() {
 			SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/x-pem-file"));
@@ -16,22 +21,46 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 		}
 
 		public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding) {
-			if (context.Object is IEnumerable<string> values) {
-				foreach (var value in values) {
-					await context.HttpContext.Response.WriteAsync(value, selectedEncoding);
-					await context.HttpContext.Response.WriteAsync("\n", selectedEncoding);
-				}
+			await using var directWriter = new StreamWriter(context.HttpContext.Response.Body, selectedEncoding);
+			await using var buffer = new MemoryStream();
+			await using var bufferWriter = new StreamWriter(buffer, selectedEncoding, leaveOpen: true);
+			switch (context.Object) {
+				case string strvalue:
+					await directWriter.WriteLineAsync(strvalue);
+					return;
+				case IEnumerable<string> strvalues:
+					foreach (var value in strvalues) {
+						await directWriter.WriteLineAsync(value);
+						await directWriter.WriteLineAsync();
+					}
+					return;
+				case Certificate certVal:
+					certVal.StoreToPem(bufferWriter);
+					break;
+				case IEnumerable<Certificate> certVals:
+					foreach (var certVal in certVals) {
+						certVal.StoreToPem(bufferWriter);
+						await bufferWriter.WriteLineAsync();
+					}
+					break;
+				case PublicKey pubKeyVal:
+					pubKeyVal.StoreToPem(bufferWriter);
+					break;
+				case IEnumerable<PublicKey> pubKeyVals:
+					foreach (var pubKeyVal in pubKeyVals) {
+						pubKeyVal.StoreToPem(bufferWriter);
+						await bufferWriter.WriteLineAsync();
+					}
+					break;
+				default:
+					throw new ArgumentException("Unsupported Object type", nameof(context));
 			}
-			else if (context.Object is string value) {
-				await context.HttpContext.Response.WriteAsync(value, selectedEncoding);
-			}
-			else {
-				throw new ArgumentException("Unsupported Object type", nameof(context));
-			}
+			await bufferWriter.FlushAsync();
+			bufferWriter.Close();
+			buffer.Position = 0;
+			await buffer.CopyToAsync(context.HttpContext.Response.Body);
 		}
 
-		protected override bool CanWriteType(Type type) {
-			return typeof(string).IsAssignableFrom(type) || typeof(IEnumerable<string>).IsAssignableFrom(type);
-		}
+		protected override bool CanWriteType(Type type) => supportedTypes.Any(t => t.IsAssignableFrom(type));
 	}
 }
