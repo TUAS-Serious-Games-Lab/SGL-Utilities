@@ -12,6 +12,7 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 		public PemOutputFormatter() {
 			SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/x-pem-file"));
 			SupportedEncodings.Add(Encoding.UTF8);
+			SupportedEncodings.Add(Encoding.Unicode);
 		}
 
 		public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding) {
