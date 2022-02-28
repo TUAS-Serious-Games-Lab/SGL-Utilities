@@ -11,6 +11,7 @@
             "SGL.Utilities.Backend.TestUtilities/bin/Debug/*/SGL.Utilities.Backend.TestUtilities.dll",
             "SGL.Utilities.Crypto/bin/Debug/*/SGL.Utilities.Crypto.dll",
             "SGL.Utilities.Crypto.EntityFrameworkCore/bin/Debug/*/SGL.Utilities.Crypto.EntityFrameworkCore.dll",
+            "SGL.Utilities.Crypto.AspNetCore/bin/Debug/*/SGL.Utilities.Crypto.AspNetCore.dll",
             "SGL.Utilities.Logging/bin/Debug/*/SGL.Utilities.Logging.dll",
             "SGL.Utilities.PrometheusNet/bin/Debug/*/SGL.Utilities.PrometheusNet.dll",
             "SGL.Utilities.TestUtilities.XUnit/bin/Debug/*/SGL.Utilities.TestUtilities.XUnit.dll"

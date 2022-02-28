@@ -24,6 +24,7 @@ nuget-package:
     - PACKAGE_NAME: "SGL.Utilities.Backend.TestUtilities"
     - PACKAGE_NAME: "SGL.Utilities.Crypto"
     - PACKAGE_NAME: "SGL.Utilities.Crypto.EntityFrameworkCore"
+    - PACKAGE_NAME: "SGL.Utilities.Crypto.AspNetCore"
     - PACKAGE_NAME: "SGL.Utilities.Logging"
     - PACKAGE_NAME: "SGL.Utilities.PrometheusNet"
     - PACKAGE_NAME: "SGL.Utilities.TestUtilities.XUnit"

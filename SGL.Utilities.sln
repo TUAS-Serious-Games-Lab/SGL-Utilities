@@ -37,7 +37,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SGL.Utilities.Crypto", "SGL
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SGL.Utilities.Crypto.Tests", "SGL.Utilities.Crypto.Tests\SGL.Utilities.Crypto.Tests.csproj", "{BA0F3932-4FCC-46B9-BF83-76EB86B470D4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SGL.Utilities.Crypto.EntityFrameworkCore", "SGL.Utilities.Crypto.EntityFrameworkCore\SGL.Utilities.Crypto.EntityFrameworkCore.csproj", "{ECA7BD64-65C1-4903-9A11-87132BDC6209}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SGL.Utilities.Crypto.EntityFrameworkCore", "SGL.Utilities.Crypto.EntityFrameworkCore\SGL.Utilities.Crypto.EntityFrameworkCore.csproj", "{ECA7BD64-65C1-4903-9A11-87132BDC6209}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SGL.Utilities.Crypto.AspNetCore", "SGL.Utilities.Crypto.AspNetCore\SGL.Utilities.Crypto.AspNetCore.csproj", "{4669E9AA-0451-4858-B487-10C0E5DB66D5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -97,6 +99,10 @@ Global
 		{ECA7BD64-65C1-4903-9A11-87132BDC6209}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ECA7BD64-65C1-4903-9A11-87132BDC6209}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ECA7BD64-65C1-4903-9A11-87132BDC6209}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4669E9AA-0451-4858-B487-10C0E5DB66D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4669E9AA-0451-4858-B487-10C0E5DB66D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4669E9AA-0451-4858-B487-10C0E5DB66D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4669E9AA-0451-4858-B487-10C0E5DB66D5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
