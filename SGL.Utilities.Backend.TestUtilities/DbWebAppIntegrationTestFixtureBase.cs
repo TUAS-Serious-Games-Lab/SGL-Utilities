@@ -35,7 +35,8 @@ namespace SGL.Utilities.Backend.TestUtilities {
 				if (dbContextDescriptor != null) services.Remove(dbContextDescriptor);
 				var dbContextOptionsDescriptor = services.SingleOrDefault(sd => sd.ServiceType == typeof(DbContextOptions<TContext>));
 				if (dbContextOptionsDescriptor != null) services.Remove(dbContextOptionsDescriptor);
-				services.AddDbContext<TContext>(options => options.UseSqlite(db.Connection));
+				services.AddDbContext<TContext>(options => options.UseSqlite(db.Connection,
+					o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery)));
 				OverrideConfig(services);
 
 				using (var context = Activator.CreateInstance(typeof(TContext), db.ContextOptions) as TContext ?? throw new InvalidOperationException()) {
