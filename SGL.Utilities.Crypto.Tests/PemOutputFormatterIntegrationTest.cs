@@ -119,7 +119,7 @@ namespace SGL.Utilities.Crypto.Tests {
 
 	public class PemOutputFormatterIntegrationTestStartup {
 		public void ConfigureServices(IServiceCollection services) {
-			services.AddControllers(options => options.OutputFormatters.Insert(0, new PemOutputFormatter()));
+			services.AddControllers(options => options.AddPemFormatters());
 		}
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
 			app.UseRouting();
