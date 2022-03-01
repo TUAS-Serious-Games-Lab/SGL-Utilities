@@ -14,6 +14,7 @@ nuget-package:
     - 'cd ${PACKAGE_NAME}'
     - 'dotnet pack -c Release -p:Version="${VERSION}"'
     - 'dotnet nuget add source "${CI_API_V4_URL}/projects/${PACKAGE_REPO_PROJECT_ID}/packages/nuget/index.json" --name gitlab --username gitlab-ci-token --password $CI_JOB_TOKEN --store-password-in-clear-text'
+    - 'ls bin/Release/${PACKAGE_NAME}.*.nupkg'
     - 'dotnet nuget push "bin/Release/${PACKAGE_NAME}.${VERSION}.nupkg" --source gitlab --symbol-source gitlab'
   parallel:
     matrix:
