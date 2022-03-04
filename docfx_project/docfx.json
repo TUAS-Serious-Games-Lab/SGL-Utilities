@@ -7,6 +7,7 @@
             "SGL.Utilities/bin/Debug/*/SGL.Utilities.dll",
             "SGL.Utilities.Backend/bin/Debug/*/SGL.Utilities.Backend.dll",
             "SGL.Utilities.Backend.AspNetCore/bin/Debug/*/SGL.Utilities.Backend.AspNetCore.dll",
+            "SGL.Utilities.Backend.BlobStore/bin/Debug/*/SGL.Utilities.Backend.BlobStore.dll",
             "SGL.Utilities.Backend.Security/bin/Debug/*/SGL.Utilities.Backend.Security.dll",
             "SGL.Utilities.Backend.TestUtilities/bin/Debug/*/SGL.Utilities.Backend.TestUtilities.dll",
             "SGL.Utilities.Crypto/bin/Debug/*/SGL.Utilities.Crypto.dll",

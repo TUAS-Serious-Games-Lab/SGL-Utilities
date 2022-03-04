@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "SGL.Utilities.Backend.BlobStore.GC": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}
