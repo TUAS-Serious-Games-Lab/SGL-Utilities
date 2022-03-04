@@ -2,6 +2,7 @@
 using CommandLine.Text;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -13,7 +14,7 @@ namespace SGL.Utilities.Backend.BlobStore.GC {
 			[Option('f', "force", Group = "Mode", HelpText = "Actually permanently(!) delete all temporary files in the given blob repository.")]
 			public bool Force { get; set; } = false;
 			[Value(0, MetaName = "REPOSITORY_DIRECTORY", HelpText = "The blob storage directory to operate on.")]
-			public string Directory { get; set; } = Environment.CurrentDirectory;
+			public string Directory { get; set; } = Path.Combine(Environment.CurrentDirectory, "BlobStorage");
 
 			[Usage]
 			public static IEnumerable<Example> Examples => new List<Example> {
