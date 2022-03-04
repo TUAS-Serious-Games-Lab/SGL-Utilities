@@ -14,23 +14,13 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<PackageId>SGL.Utilities.Backend.BlobStore.GC</PackageId>
-		<Version>0.0.0-dev</Version>
-		<Authors>Serious Games Lab Team at Hochschule Trier</Authors>
-		<Company>Hochschule Trier, Serious Games Lab</Company>
-		<Description>A CLI tool for cleaning up temporary files in SGL.Utilities.Backend.BlobStore blob repositories.</Description>
-	</PropertyGroup>
-
-	<PropertyGroup>
 		<DebugType>embedded</DebugType>
-	</PropertyGroup>
-
-	<PropertyGroup>
-		<NuspecFile>SGL.Utilities.Backend.BlobStore.GC.nuspec</NuspecFile>
+		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="CommandLineParser" Version="2.8.0" />
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.11.1" />
 	</ItemGroup>
 
 	<ItemGroup>
