@@ -28,10 +28,10 @@ namespace SGL.Utilities.Backend.Applications {
 			try {
 				var appsSetProp = context.GetType().GetProperties(System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Public)
 					.Single(prop => prop.PropertyType == typeof(DbSet<TApp>));
-				return (appsSetProp.GetValue(context) as DbSet<TApp>) ?? throw new ArgumentException("The given context didn't provide a valid DbSet<TApp>.", nameof(context));
+				return (appsSetProp.GetValue(context) as DbSet<TApp>) ?? throw new ArgumentException($"The given context didn't provide a valid DbSet<{typeof(TApp).Name}>.", nameof(context));
 			}
 			catch (InvalidOperationException ex) {
-				throw new ArgumentException("Couldn't find a property of type DbSet<TApp> in the given context.", nameof(context), ex);
+				throw new ArgumentException($"Couldn't find a property of type DbSet<{typeof(TApp).Name}> in the given context.", nameof(context), ex);
 			}
 		}
 
