@@ -3,11 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace SGL.Utilities.Backend.Applications {
 	public class NullQueryOption { }
+
 	/// <summary>
 	/// Provides a persistent implementation of <see cref="IApplicationRepository{TApp, TQueryOptions}"/> using Entity Framework Core to map the objects into a relational database.
 	/// </summary>
@@ -26,8 +28,8 @@ namespace SGL.Utilities.Backend.Applications {
 
 		protected virtual DbSet<TApp> GetAppsSet(TContext context) {
 			try {
-				var appsSetProp = context.GetType().GetProperties(System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Public)
-					.Single(prop => prop.PropertyType == typeof(DbSet<TApp>));
+				var properties = context.GetType().GetProperties(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
+				var appsSetProp = properties.Single(prop => prop.PropertyType == typeof(DbSet<TApp>));
 				return (appsSetProp.GetValue(context) as DbSet<TApp>) ?? throw new ArgumentException($"The given context didn't provide a valid DbSet<{typeof(TApp).Name}>.", nameof(context));
 			}
 			catch (InvalidOperationException ex) {
