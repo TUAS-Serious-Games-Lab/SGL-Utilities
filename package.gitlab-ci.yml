@@ -20,6 +20,7 @@ nuget-package:
     matrix:
     - PACKAGE_NAME: "SGL.Utilities"
     - PACKAGE_NAME: "SGL.Utilities.Backend"
+    - PACKAGE_NAME: "SGL.Utilities.Backend.Abstractions"
     - PACKAGE_NAME: "SGL.Utilities.Backend.AspNetCore"
     - PACKAGE_NAME: "SGL.Utilities.Backend.BlobStore"
     - PACKAGE_NAME: "SGL.Utilities.Backend.BlobStore.GC"

@@ -21,6 +21,7 @@
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\SGL.Utilities\SGL.Utilities.csproj" />
+		<ProjectReference Include="..\SGL.Utilities.Backend.Abstractions\SGL.Utilities.Backend.Abstractions.csproj" />
 	</ItemGroup>
 
 	<PropertyGroup>
