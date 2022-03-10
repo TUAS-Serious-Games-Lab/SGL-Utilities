@@ -1,29 +1,29 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <AnalysisLevel>Preview</AnalysisLevel>
-  </PropertyGroup>
-  <PropertyGroup>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net5.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<AnalysisLevel>Preview</AnalysisLevel>
+	</PropertyGroup>
+	<PropertyGroup>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	</PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-  </PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+	</PropertyGroup>
 
-  <PropertyGroup>
-    <PackageId>SGL.Utilities</PackageId>
-    <Version>0.0.0-dev</Version>
-    <Authors>Serious Games Lab Team at Hochschule Trier</Authors>
-    <Company>Hochschule Trier, Serious Games Lab</Company>
-    <Description>A library providing common utilities for SGL projects.</Description>
-  </PropertyGroup>
+	<PropertyGroup>
+		<PackageId>SGL.Utilities</PackageId>
+		<Version>0.0.0-dev</Version>
+		<Authors>Serious Games Lab Team at Hochschule Trier</Authors>
+		<Company>Hochschule Trier, Serious Games Lab</Company>
+		<Description>A library providing common utilities for SGL projects.</Description>
+	</PropertyGroup>
 
-  <PropertyGroup>
-    <DebugType>embedded</DebugType>
-  </PropertyGroup>
+	<PropertyGroup>
+		<DebugType>embedded</DebugType>
+	</PropertyGroup>
 
 </Project>

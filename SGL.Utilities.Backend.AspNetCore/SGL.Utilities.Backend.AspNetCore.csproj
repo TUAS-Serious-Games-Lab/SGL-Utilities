@@ -1,41 +1,41 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <AnalysisLevel>Preview</AnalysisLevel>
-  </PropertyGroup>
-  <PropertyGroup>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-  </PropertyGroup>
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="5.0.10" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\SGL.Utilities.Backend.Security\SGL.Utilities.Backend.Security.csproj" />
-    <ProjectReference Include="..\SGL.Utilities.Backend\SGL.Utilities.Backend.csproj" />
-    <ProjectReference Include="..\SGL.Utilities.Logging\SGL.Utilities.Logging.csproj" />
-    <ProjectReference Include="..\SGL.Utilities\SGL.Utilities.csproj" />
-  </ItemGroup>
+	<PropertyGroup>
+		<TargetFramework>net5.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<AnalysisLevel>Preview</AnalysisLevel>
+	</PropertyGroup>
+	<PropertyGroup>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+	</PropertyGroup>
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.10" />
+		<PackageReference Include="Microsoft.AspNetCore.Authorization" Version="5.0.10" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\SGL.Utilities.Backend.Security\SGL.Utilities.Backend.Security.csproj" />
+		<ProjectReference Include="..\SGL.Utilities.Backend\SGL.Utilities.Backend.csproj" />
+		<ProjectReference Include="..\SGL.Utilities.Logging\SGL.Utilities.Logging.csproj" />
+		<ProjectReference Include="..\SGL.Utilities\SGL.Utilities.csproj" />
+	</ItemGroup>
 
-  <PropertyGroup>
-    <PackageId>SGL.Utilities.Backend.AspNetCore</PackageId>
-    <Version>0.0.0-dev</Version>
-    <Authors>Serious Games Lab Team at Hochschule Trier</Authors>
-    <Company>Hochschule Trier, Serious Games Lab</Company>
-    <Description>A library providing common utilities for web services and web applications ASP.Net Core in SGL projects using.</Description>
-  </PropertyGroup>
+	<PropertyGroup>
+		<PackageId>SGL.Utilities.Backend.AspNetCore</PackageId>
+		<Version>0.0.0-dev</Version>
+		<Authors>Serious Games Lab Team at Hochschule Trier</Authors>
+		<Company>Hochschule Trier, Serious Games Lab</Company>
+		<Description>A library providing common utilities for web services and web applications ASP.Net Core in SGL projects using.</Description>
+	</PropertyGroup>
 
-  <PropertyGroup>
-    <DebugType>embedded</DebugType>
-  </PropertyGroup>
+	<PropertyGroup>
+		<DebugType>embedded</DebugType>
+	</PropertyGroup>
 
 </Project>
