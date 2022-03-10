@@ -22,10 +22,24 @@ namespace SGL.Utilities.Backend.TestUtilities.Applications {
 			if (apps.ContainsKey(app.Name)) throw new EntityUniquenessConflictException("Application", "Name", app.Name);
 			if (app.Id == Guid.Empty) app.Id = Guid.NewGuid();
 			if (apps.Values.Any(a => a.Id == app.Id)) throw new EntityUniquenessConflictException("Application", "Id", app.Id);
+			OnAdd(app);
 			ct.ThrowIfCancellationRequested();
 			apps.Add(app.Name, app);
 			return app;
 		}
+
+		/// <summary>
+		/// An overridable hook that is called before adding an object to the in-memory map.
+		/// Overriding this allows deriving classes to apply their own logic steps for added objects.
+		/// </summary>
+		/// <param name="app">The object being added.</param>
+		protected virtual void OnAdd(TApp app) { }
+		/// <summary>
+		/// An overridable hook that is called before updating an object in the in-memory map.
+		/// Overriding this allows deriving classes to apply their own logic steps for updated objects.
+		/// </summary>
+		/// <param name="app">The object being added.</param>
+		protected virtual void OnUpdate(TApp app) { }
 
 		/// <inheritdoc/>
 		public async Task<TApp?> GetApplicationByNameAsync(string appName, TQueryOptions? queryOptions = null, CancellationToken ct = default) {
@@ -50,6 +64,7 @@ namespace SGL.Utilities.Backend.TestUtilities.Applications {
 		public async Task<TApp> UpdateApplicationAsync(TApp app, CancellationToken ct = default) {
 			await Task.CompletedTask;
 			Debug.Assert(apps.ContainsKey(app.Name));
+			OnUpdate(app);
 			ct.ThrowIfCancellationRequested();
 			apps[app.Name] = app;
 			return app;
