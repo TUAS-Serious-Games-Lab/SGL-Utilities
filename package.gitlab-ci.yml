@@ -23,7 +23,6 @@ nuget-package:
     - PACKAGE_NAME: "SGL.Utilities.Backend.Abstractions"
     - PACKAGE_NAME: "SGL.Utilities.Backend.AspNetCore"
     - PACKAGE_NAME: "SGL.Utilities.Backend.BlobStore"
-    - PACKAGE_NAME: "SGL.Utilities.Backend.BlobStore.GC"
     - PACKAGE_NAME: "SGL.Utilities.Backend.Security"
     - PACKAGE_NAME: "SGL.Utilities.Backend.TestUtilities"
     - PACKAGE_NAME: "SGL.Utilities.Crypto"
