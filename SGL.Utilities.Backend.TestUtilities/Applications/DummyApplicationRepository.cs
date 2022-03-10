@@ -7,9 +7,15 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace SGL.Utilities.Backend.TestUtilities.Applications {
+	/// <summary>
+	/// An in-memory dummy implementation of <see cref="IApplicationRepository{TApp, TQueryOptions}"/> to use in test code.
+	/// </summary>
+	/// <typeparam name="TApp">The entity class that represents application descriptions to manage.</typeparam>
+	/// <typeparam name="TQueryOptions">A class that encapsulates options for querying methods.</typeparam>
 	public class DummyApplicationRepository<TApp, TQueryOptions> : IApplicationRepository<TApp, TQueryOptions> where TApp : class, IApplication where TQueryOptions : class {
 		private readonly Dictionary<string, TApp> apps = new();
 
+		/// <inheritdoc/>
 		public async Task<TApp> AddApplicationAsync(TApp app, CancellationToken ct = default) {
 			await Task.CompletedTask;
 			ct.ThrowIfCancellationRequested();
@@ -21,6 +27,7 @@ namespace SGL.Utilities.Backend.TestUtilities.Applications {
 			return app;
 		}
 
+		/// <inheritdoc/>
 		public async Task<TApp?> GetApplicationByNameAsync(string appName, TQueryOptions? queryOptions = null, CancellationToken ct = default) {
 			await Task.CompletedTask;
 			ct.ThrowIfCancellationRequested();
@@ -32,12 +39,14 @@ namespace SGL.Utilities.Backend.TestUtilities.Applications {
 			}
 		}
 
+		/// <inheritdoc/>
 		public async Task<IList<TApp>> ListApplicationsAsync(TQueryOptions? queryOptions = null, CancellationToken ct = default) {
 			await Task.CompletedTask;
 			ct.ThrowIfCancellationRequested();
 			return apps.Values.ToList();
 		}
 
+		/// <inheritdoc/>
 		public async Task<TApp> UpdateApplicationAsync(TApp app, CancellationToken ct = default) {
 			await Task.CompletedTask;
 			Debug.Assert(apps.ContainsKey(app.Name));

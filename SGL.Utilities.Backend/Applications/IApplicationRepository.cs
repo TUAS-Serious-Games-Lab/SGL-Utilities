@@ -8,6 +8,8 @@ namespace SGL.Utilities.Backend.Applications {
 	/// Specifies the interface for a repository to store application objects that can be used by services to associate their data with
 	/// one of multiple applications using them through a kind of multi-tenant functionality.
 	/// </summary>
+	/// <typeparam name="TApp">The entity class that represents application descriptions to manage.</typeparam>
+	/// <typeparam name="TQueryOptions">A class that encapsulates options for querying methods, e.g. whether related entities should be fetched.</typeparam>
 	public interface IApplicationRepository<TApp, TQueryOptions> where TApp : IApplication where TQueryOptions : class {
 		/// <summary>
 		/// Asynchronously obtains the application with the given name if it exists.

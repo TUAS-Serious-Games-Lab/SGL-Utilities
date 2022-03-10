@@ -8,11 +8,18 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace SGL.Utilities.Backend.Applications {
+	/// <summary>
+	/// An empty stub type that can be used with <see cref="IApplicationRepository{TApp, TQueryOptions}"/> and <see cref="DbApplicationRepository{TApp, TQueryOptions, TContext}"/> or other implementations
+	/// as the type argument for <c>TQueryOptions</c> when no query options are needed.
+	/// </summary>
 	public class NullQueryOption { }
 
 	/// <summary>
 	/// Provides a persistent implementation of <see cref="IApplicationRepository{TApp, TQueryOptions}"/> using Entity Framework Core to map the objects into a relational database.
 	/// </summary>
+	/// <typeparam name="TApp">The entity class that represents application descriptions to manage.</typeparam>
+	/// <typeparam name="TQueryOptions">A class that encapsulates options for querying methods, e.g. whether related entities should be fetched.</typeparam>
+	/// <typeparam name="TContext">The database context class by which the application entity objects shall be managed.</typeparam>
 	public class DbApplicationRepository<TApp, TQueryOptions, TContext> : IApplicationRepository<TApp, TQueryOptions> where TApp : class, IApplication where TQueryOptions : class where TContext : DbContext {
 		private TContext context;
 		private DbSet<TApp> appsSet;
@@ -26,6 +33,16 @@ namespace SGL.Utilities.Backend.Applications {
 			appsSet = GetAppsSet(context);
 		}
 
+		/// <summary>
+		/// Used by the constructor to obtain the <see cref="DbSet{TApp}"/> that is used to query and store the application objects from the <see cref="DbContext"/> subclass given for <c>TContext</c>.
+		/// It can be overridden by deriving classes to change the lookup behavior.
+		/// The default implementation provided here obtains the set by searching for a public non-static property of the appropriate type (<see cref="DbSet{TApp}"/>) in context class.
+		/// It expects there to be only one such property. This property's value is then returned to be used by the other methods.
+		/// </summary>
+		/// <param name="context">The context class object, as passed to the constructor.</param>
+		/// <returns>The <see cref="DbSet{TApp}"/> object that the other methods will use for their database operations.</returns>
+		/// <exception cref="ArgumentException">When the given context class doesn't have an appropriate property or has multiple <see cref="DbSet{TApp}"/>-typed properties,
+		/// or when the property returned a null value.</exception>
 		protected virtual DbSet<TApp> GetAppsSet(TContext context) {
 			try {
 				var properties = context.GetType().GetProperties(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
@@ -37,6 +54,16 @@ namespace SGL.Utilities.Backend.Applications {
 			}
 		}
 
+		/// <summary>
+		/// Called by querying methods (<see cref="GetApplicationByNameAsync(string, TQueryOptions?, CancellationToken)"/>, <see cref="ListApplicationsAsync(TQueryOptions?, CancellationToken)"/>)
+		/// before they execute their query. The default implementation just passes the query through.
+		/// Deriving classes can override this to manipulate the query, usually based on the query options.
+		/// The intended use case for this is chaining in <see cref="EntityFrameworkQueryableExtensions.Include{TEntity, TProperty}(IQueryable{TEntity}, System.Linq.Expressions.Expression{Func{TEntity, TProperty}})"/> calls
+		/// to also load related entity objects with the query result, if requested so by the query options.
+		/// </summary>
+		/// <param name="query">The query object coming from a query method.</param>
+		/// <param name="options">An object encapsulating options that shall be applied to the query, as passed to the query method.</param>
+		/// <returns>An <see cref="IQueryable{TApp}"/> built around <paramref name="query"/>. The default implementation returns <paramref name="query"/> unchanged.</returns>
 		protected virtual IQueryable<TApp> OnPrepareQuery(IQueryable<TApp> query, TQueryOptions? options) {
 			return query;
 		}
