@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace SGL.Utilities.Backend.Applications {
+	public class NullQueryOption { }
 	/// <summary>
 	/// Provides a persistent implementation of <see cref="IApplicationRepository{TApp, TQueryOptions}"/> using Entity Framework Core to map the objects into a relational database.
 	/// </summary>
