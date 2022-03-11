@@ -3,6 +3,11 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace SGL.Utilities.Backend.Applications {
+	/// <summary>
+	/// An empty stub type that can be used with <see cref="IApplicationRepository{TApp, TQueryOptions}"/> and <see cref="DbApplicationRepository{TApp, TQueryOptions, TContext}"/> or other implementations
+	/// as the type argument for <c>TQueryOptions</c> when no query options are needed.
+	/// </summary>
+	public class NullQueryOption { }
 
 	/// <summary>
 	/// Specifies the interface for a repository to store application objects that can be used by services to associate their data with

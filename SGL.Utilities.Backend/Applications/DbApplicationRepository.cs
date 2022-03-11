@@ -9,12 +9,6 @@ using System.Threading.Tasks;
 
 namespace SGL.Utilities.Backend.Applications {
 	/// <summary>
-	/// An empty stub type that can be used with <see cref="IApplicationRepository{TApp, TQueryOptions}"/> and <see cref="DbApplicationRepository{TApp, TQueryOptions, TContext}"/> or other implementations
-	/// as the type argument for <c>TQueryOptions</c> when no query options are needed.
-	/// </summary>
-	public class NullQueryOption { }
-
-	/// <summary>
 	/// Provides a persistent implementation of <see cref="IApplicationRepository{TApp, TQueryOptions}"/> using Entity Framework Core to map the objects into a relational database.
 	/// </summary>
 	/// <typeparam name="TApp">The entity class that represents application descriptions to manage.</typeparam>
