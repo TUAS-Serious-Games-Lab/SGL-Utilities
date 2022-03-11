@@ -69,7 +69,7 @@ namespace SGL.Utilities.Backend.BlobStore {
 		/// <param name="content">A <see cref="Stream"/> with the desired content. The stream will be read to completion, copying all read data into the target file.</param>
 		/// <param name="ct">A cancellation token to allow cancelling the store operation.</param>
 		/// <returns>A task object representing the store operation.</returns>
-		Task StoreBlobAsync(BlobPath blobPath, Stream content, CancellationToken ct = default) {
+		Task<long> StoreBlobAsync(BlobPath blobPath, Stream content, CancellationToken ct = default) {
 			return StoreBlobAsync(blobPath.AppName, blobPath.OwnerId, blobPath.BlobId, blobPath.Suffix, content, ct);
 		}
 		/// <summary>
