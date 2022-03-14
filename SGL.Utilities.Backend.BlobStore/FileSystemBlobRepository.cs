@@ -129,7 +129,7 @@ namespace SGL.Utilities.Backend.BlobStore {
 		public Task DeleteBlobAsync(string appName, Guid ownerId, Guid blobId, string suffix, CancellationToken ct = default) {
 			return Task.Run(() => {
 				File.Delete(makeFilePath(appName, ownerId, blobId, suffix));
-			});
+			}, ct);
 		}
 
 		/// <inheritdoc/>
