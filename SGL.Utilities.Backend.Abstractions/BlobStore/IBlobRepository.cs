@@ -76,7 +76,7 @@ namespace SGL.Utilities.Backend.BlobStore {
 		/// Asynchronously stores the data contained in <paramref name="content"/> under the logical path given in <paramref name="appName"/>, <paramref name="ownerId"/>, <paramref name="ownerId"/>, and <paramref name="suffix"/>.
 		/// </summary>
 		/// <param name="appName">The technical name of the application from which the blob originates.</param>
-		/// <param name="ownerId">The id of the user that submitted the blob.</param>
+		/// <param name="ownerId">The id of the owner with which the blob is associated.</param>
 		/// <param name="blobId">The unique id of the blob itself.</param>
 		/// <param name="suffix">The file suffix for the file name.</param>
 		/// <param name="content">A <see cref="Stream"/> with the desired content. The stream will be read to completion, copying all read data into the target file.</param>
@@ -96,10 +96,10 @@ namespace SGL.Utilities.Backend.BlobStore {
 			return ReadBlobAsync(blobPath.AppName, blobPath.OwnerId, blobPath.BlobId, blobPath.Suffix, ct);
 		}
 		/// <summary>
-		/// Asynchronously opens the blob under the logical path given in <paramref name="appName"/>, <paramref name="ownerId"/>, <paramref name="ownerId"/>, and <paramref name="suffix"/> for reading.
+		/// Asynchronously opens the blob under the logical path given in <paramref name="appName"/>, <paramref name="ownerId"/>, <paramref name="blobId"/>, and <paramref name="suffix"/> for reading.
 		/// </summary>
 		/// <param name="appName">The technical name of the application from which the blob originates.</param>
-		/// <param name="ownerId">The id of the user that submitted the blob.</param>
+		/// <param name="ownerId">The id of the owner with which the blob is associated.</param>
 		/// <param name="blobId">The unique id of the blob itself.</param>
 		/// <param name="suffix">The file suffix for the file name.</param>
 		/// <param name="ct">A cancellation token to allow cancelling the opertation.</param>
@@ -122,7 +122,7 @@ namespace SGL.Utilities.Backend.BlobStore {
 		/// Asynchronously copies the contents of the blob under the logical path given in <paramref name="appName"/>, <paramref name="ownerId"/>, <paramref name="ownerId"/>, and <paramref name="suffix"/> into the stream given in <paramref name="contentDestination"/>.
 		/// </summary>
 		/// <param name="appName">The technical name of the application from which the blob originates.</param>
-		/// <param name="ownerId">The id of the user that submitted the blob.</param>
+		/// <param name="ownerId">The id of the owner with which the blob is associated.</param>
 		/// <param name="blobId">The unique id of the blob itself.</param>
 		/// <param name="suffix">The file suffix for the file name.</param>
 		/// <param name="contentDestination">A stream to write the copied content to.</param>
@@ -133,9 +133,9 @@ namespace SGL.Utilities.Backend.BlobStore {
 		/// Enumerates over all known blobs belonging to the given user of the given application.
 		/// </summary>
 		/// <param name="appName">The technical name of the application from which the blobs originate.</param>
-		/// <param name="userId">The id of the user that submitted the blobs.</param>
+		/// <param name="ownerId">The id of the owner with which the blob is associated.</param>
 		/// <returns>An enumerable to iterate over the paths.</returns>
-		IEnumerable<BlobPath> EnumerateBlobs(string appName, Guid userId);
+		IEnumerable<BlobPath> EnumerateBlobs(string appName, Guid ownerId);
 		/// <summary>
 		/// Enumerates over all known blobs for a given application.
 		/// </summary>
@@ -160,7 +160,7 @@ namespace SGL.Utilities.Backend.BlobStore {
 		/// Asynchronously deletes the blob under the logical path given in <paramref name="appName"/>, <paramref name="ownerId"/>, <paramref name="ownerId"/>, and <paramref name="suffix"/>.
 		/// </summary>
 		/// <param name="appName">The technical name of the application from which the blob originates.</param>
-		/// <param name="ownerId">The id of the user that submitted the blob.</param>
+		/// <param name="ownerId">The id of the owner with which the blob is associated.</param>
 		/// <param name="blobId">The unique id of the blob itself.</param>
 		/// <param name="suffix">The file suffix for the file name.</param>
 		/// <param name="ct">A cancellation token to allow cancelling (the waiting on) the opertation. Note the it is not guaranteed whether this prevents the deletion, as it is dependent on when in the process the task is interrupted.</param>
