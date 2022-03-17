@@ -33,7 +33,7 @@ namespace SGL.Utilities.Backend.AspNetCore {
 	/// </summary>
 	public static class UploadLimitExtensions {
 		/// <summary>
-		/// Adds the <see cref="IOptions{UploadLimitOptions}"/> config object to the dependency injection container.
+		/// Adds the <see cref="UploadLimitOptions"/> config object to the dependency injection container.
 		/// </summary>
 		/// <param name="services">The service collection for the DI container.</param>
 		/// <param name="config">The root config object too lookup the config section under.</param>
