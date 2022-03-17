@@ -12,7 +12,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SGL.Utilities.Backend.AspNetCore {
-	internal class Authentication { };
+	/// <summary>
+	/// Acts as a category marker for log messages coming from the events registered by <see cref="JwtAuthenticationExtensions.UseJwtBearerAuthentication(IServiceCollection, IConfiguration)"/>.
+	/// </summary>
+	public class JwtAuthentication { };
 
 	/// <summary>
 	/// Provides the <see cref="UseJwtBearerAuthentication(IServiceCollection, IConfiguration)"/> extension method.
@@ -51,27 +54,27 @@ namespace SGL.Utilities.Backend.AspNetCore {
 				options.Events = new JwtBearerEvents {
 					OnAuthenticationFailed = context => {
 						var token = readTokenFromRequest(context.Request);
-						var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Authentication>>();
+						var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<JwtAuthentication>>();
 						logger.LogError(context.Exception, "Authentication failed for user {userid} and app {appName}.",
 							token?.Claims.GetClaim("userid") ?? "null", token?.Claims.GetClaim("appname") ?? "null");
 						return Task.CompletedTask;
 					},
 					OnChallenge = context => {
-						var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Authentication>>();
+						var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<JwtAuthentication>>();
 						logger.LogInformation("Challenging user for authentication for {verb} access to {path}.",
 							context.Request.Method, context.Request.Path.Value ?? "<path not specified in request>");
 						return Task.CompletedTask;
 					},
 					OnForbidden = context => {
 						var token = readTokenFromRequest(context.Request);
-						var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Authentication>>();
+						var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<JwtAuthentication>>();
 						logger.LogError(context.Result.Failure, "Access forbidden for {verb} access to {path} from user {userid} and app {appName}.",
 							context.Request.Method, context.Request.Path.Value,
 							token?.Claims.GetClaim("userid") ?? "null", token?.Claims.GetClaim("appname") ?? "null");
 						return Task.CompletedTask;
 					},
 					OnTokenValidated = context => {
-						var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Authentication>>();
+						var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<JwtAuthentication>>();
 						logger.LogInformation("Successfully authenticated user {userid} from app {appName} for {verb} access to {path}",
 							context.Principal?.GetClaim("userid") ?? "null", context.Principal?.GetClaim("appname") ?? "null",
 							context.Request.Method, context.Request.Path.Value ?? "<path not specified in request>");
