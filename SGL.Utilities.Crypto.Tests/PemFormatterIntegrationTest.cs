@@ -14,8 +14,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -75,23 +77,35 @@ namespace SGL.Utilities.Crypto.Tests {
 			return new StreamReader(await response.Content.ReadAsStreamAsync());
 		}
 
+		public async Task<HttpStatusCode> PostPem(string path, MemoryStream body) {
+			body.Position = 0;
+			using var client = fixture.CreateClient();
+			var request = new HttpRequestMessage(HttpMethod.Post, path);
+			var content = new StreamContent(body);
+			content.Headers.ContentType = MediaTypeWithQualityHeaderValue.Parse("application/x-pem-file");
+			request.Content = content;
+			var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead);
+			response.EnsureSuccessStatusCode();
+			return response.StatusCode;
+		}
+
 		[Fact]
-		public async Task SingleCertPemStringIsCorrectlyPassedThrough() {
+		public async Task SingleCertPemStringIsCorrectlyPassedThroughGet() {
 			var response = Certificate.LoadOneFromPem(await GetPem("api/pem-formatter-test/cert/string/single"));
 			Assert.Equal(fixture.Cert1, response);
 		}
 		[Fact]
-		public async Task MultipleCertPemStringsAreCorrectlyPassedThrough() {
+		public async Task MultipleCertPemStringsAreCorrectlyPassedThroughGet() {
 			var response = Certificate.LoadAllFromPem(await GetPem("api/pem-formatter-test/cert/string/multiple"));
 			Assert.Equal(new[] { fixture.Cert1, fixture.Cert2 }, response);
 		}
 		[Fact]
-		public async Task SingleKeyPemStringIsCorrectlyPassedThrough() {
+		public async Task SingleKeyPemStringIsCorrectlyPassedThroughGet() {
 			var response = PublicKey.LoadOneFromPem(await GetPem("api/pem-formatter-test/key/string/single"));
 			Assert.Equal(fixture.KeyPair1.Public, response);
 		}
 		[Fact]
-		public async Task MultipleKeyPemStringsAreCorrectlyPassedThrough() {
+		public async Task MultipleKeyPemStringsAreCorrectlyPassedThroughGet() {
 			var response = PublicKey.LoadAllFromPem(await GetPem("api/pem-formatter-test/key/string/multiple"));
 			Assert.Equal(new[] { fixture.KeyPair1.Public, fixture.KeyPair2.Public, fixture.KeyPair3.Public }, response);
 		}
@@ -114,6 +128,85 @@ namespace SGL.Utilities.Crypto.Tests {
 		public async Task MultipleKeyPemObjectsAreCorrectlyFormatted() {
 			var response = PublicKey.LoadAllFromPem(await GetPem("api/pem-formatter-test/key/object/multiple"));
 			Assert.Equal(new[] { fixture.KeyPair1.Public, fixture.KeyPair2.Public, fixture.KeyPair3.Public }, response);
+		}
+
+		[Fact]
+		public async Task SingleCertPemStringIsCorrectlyPassedThroughPost() {
+			using var body = new MemoryStream();
+			using (var writer = new StreamWriter(body, Encoding.UTF8, leaveOpen: true)) {
+				fixture.Cert1.StoreToPem(writer);
+			}
+			var statusCode = await PostPem("api/pem-formatter-test/cert/string/single", body);
+			Assert.Equal(HttpStatusCode.OK, statusCode);
+		}
+		[Fact]
+		public async Task MultipleCertPemStringsAreCorrectlyPassedThroughPost() {
+			using var body = new MemoryStream();
+			using (var writer = new StreamWriter(body, Encoding.UTF8, leaveOpen: true)) {
+				fixture.Cert1.StoreToPem(writer);
+				fixture.Cert2.StoreToPem(writer);
+			}
+			var statusCode = await PostPem("api/pem-formatter-test/cert/string/multiple", body);
+			Assert.Equal(HttpStatusCode.OK, statusCode);
+		}
+		[Fact]
+		public async Task SingleKeyPemStringIsCorrectlyPassedThroughPost() {
+			using var body = new MemoryStream();
+			using (var writer = new StreamWriter(body, Encoding.UTF8, leaveOpen: true)) {
+				fixture.KeyPair1.Public.StoreToPem(writer);
+			}
+			var statusCode = await PostPem("api/pem-formatter-test/key/string/single", body);
+			Assert.Equal(HttpStatusCode.OK, statusCode);
+		}
+		[Fact]
+		public async Task MultipleKeyPemStringsAreCorrectlyPassedThroughPost() {
+			using var body = new MemoryStream();
+			using (var writer = new StreamWriter(body, Encoding.UTF8, leaveOpen: true)) {
+				fixture.KeyPair1.Public.StoreToPem(writer);
+				fixture.KeyPair2.Public.StoreToPem(writer);
+				fixture.KeyPair3.Public.StoreToPem(writer);
+			}
+			var statusCode = await PostPem("api/pem-formatter-test/key/string/multiple", body);
+			Assert.Equal(HttpStatusCode.OK, statusCode);
+		}
+		[Fact]
+		public async Task SingleCertPemObjectIsCorrectlyParsed() {
+			using var body = new MemoryStream();
+			using (var writer = new StreamWriter(body, Encoding.UTF8, leaveOpen: true)) {
+				fixture.Cert1.StoreToPem(writer);
+			}
+			var statusCode = await PostPem("api/pem-formatter-test/cert/object/single", body);
+			Assert.Equal(HttpStatusCode.OK, statusCode);
+		}
+		[Fact]
+		public async Task MultipleCertPemObjectsAreCorrectlyParsed() {
+			using var body = new MemoryStream();
+			using (var writer = new StreamWriter(body, Encoding.UTF8, leaveOpen: true)) {
+				fixture.Cert1.StoreToPem(writer);
+				fixture.Cert2.StoreToPem(writer);
+			}
+			var statusCode = await PostPem("api/pem-formatter-test/cert/object/multiple", body);
+			Assert.Equal(HttpStatusCode.OK, statusCode);
+		}
+		[Fact]
+		public async Task SingleKeyPemObjectIsCorrectlyParsed() {
+			using var body = new MemoryStream();
+			using (var writer = new StreamWriter(body, Encoding.UTF8, leaveOpen: true)) {
+				fixture.KeyPair1.Public.StoreToPem(writer);
+			}
+			var statusCode = await PostPem("api/pem-formatter-test/key/object/single", body);
+			Assert.Equal(HttpStatusCode.OK, statusCode);
+		}
+		[Fact]
+		public async Task MultipleKeyPemObjectsAreCorrectlyParsed() {
+			using var body = new MemoryStream();
+			using (var writer = new StreamWriter(body, Encoding.UTF8, leaveOpen: true)) {
+				fixture.KeyPair1.Public.StoreToPem(writer);
+				fixture.KeyPair2.Public.StoreToPem(writer);
+				fixture.KeyPair3.Public.StoreToPem(writer);
+			}
+			var statusCode = await PostPem("api/pem-formatter-test/key/object/multiple", body);
+			Assert.Equal(HttpStatusCode.OK, statusCode);
 		}
 	}
 
@@ -201,6 +294,90 @@ namespace SGL.Utilities.Crypto.Tests {
 		[HttpGet("key/object/multiple")]
 		public IEnumerable<PublicKey> GetMultipleKeyObjects() {
 			return new[] { fixture.KeyPair1.Public, fixture.KeyPair2.Public, fixture.KeyPair3.Public };
+		}
+
+		[Consumes("application/x-pem-file")]
+		[HttpPost("cert/string/single")]
+		public ActionResult PostSingleCertString([FromBody] string pem) {
+			using var reader = new StringReader(pem);
+			var cert = Certificate.LoadOneFromPem(reader);
+			if (!cert.Equals(fixture.Cert1)) {
+				return Conflict();
+			}
+			return Ok();
+		}
+
+		[Consumes("application/x-pem-file")]
+		[HttpPost("cert/string/multiple")]
+		public ActionResult PostMultipleCertStrings([FromBody] IEnumerable<string> pems) {
+			var certs = pems.Select(pem => {
+				using var reader = new StringReader(pem);
+				return Certificate.LoadOneFromPem(reader);
+			}).ToList();
+			if (!certs.SequenceEqual(new[] { fixture.Cert1, fixture.Cert2 })) {
+				return Conflict();
+			}
+			return Ok();
+		}
+
+		[Consumes("application/x-pem-file")]
+		[HttpPost("key/string/single")]
+		public ActionResult PostSingleKeyString([FromBody] string pem) {
+			using var reader = new StringReader(pem);
+			var key = PublicKey.LoadOneFromPem(reader);
+			if (!key.Equals(fixture.KeyPair1.Public)) {
+				return Conflict();
+			}
+			return Ok();
+		}
+
+		[Consumes("application/x-pem-file")]
+		[HttpPost("key/string/multiple")]
+		public ActionResult PostMultipleKeyStrings([FromBody] IEnumerable<string> pems) {
+			var keys = pems.Select(pem => {
+				using var reader = new StringReader(pem);
+				return PublicKey.LoadOneFromPem(reader);
+			}).ToList();
+			if (!keys.SequenceEqual(new[] { fixture.KeyPair1.Public, fixture.KeyPair2.Public, fixture.KeyPair3.Public })) {
+				return Conflict();
+			}
+			return Ok();
+		}
+
+		[Consumes("application/x-pem-file")]
+		[HttpPost("cert/object/single")]
+		public ActionResult PostSingleCertObject([FromBody] Certificate cert) {
+			if (!cert.Equals(fixture.Cert1)) {
+				return Conflict();
+			}
+			return Ok();
+		}
+
+		[Consumes("application/x-pem-file")]
+		[HttpPost("cert/object/multiple")]
+		public ActionResult PostMultipleCertObjects([FromBody] IEnumerable<Certificate> certs) {
+			if (!certs.SequenceEqual(new[] { fixture.Cert1, fixture.Cert2 })) {
+				return Conflict();
+			}
+			return Ok();
+		}
+
+		[Consumes("application/x-pem-file")]
+		[HttpPost("key/object/single")]
+		public ActionResult PostSingleKeyObject([FromBody] PublicKey key) {
+			if (!key.Equals(fixture.KeyPair1.Public)) {
+				return Conflict();
+			}
+			return Ok();
+		}
+
+		[Consumes("application/x-pem-file")]
+		[HttpPost("key/object/multiple")]
+		public ActionResult PostMultipleKeyObjects([FromBody] IEnumerable<PublicKey> keys) {
+			if (!keys.SequenceEqual(new[] { fixture.KeyPair1.Public, fixture.KeyPair2.Public, fixture.KeyPair3.Public })) {
+				return Conflict();
+			}
+			return Ok();
 		}
 	}
 }
