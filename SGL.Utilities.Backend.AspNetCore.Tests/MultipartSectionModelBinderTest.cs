@@ -100,6 +100,13 @@ namespace SGL.Utilities.Backend.AspNetCore.Tests {
 			fixture.AssertExpected(complex);
 			return Ok();
 		}
+		[DisableFormValueModelBinding]
+		[HttpPost("two-json/with-name-override")]
+		public ActionResult PostTwoJsonBodiesWithNameOverride([FromMultipartSection(Name = "foo")] TestDto1 simple, [FromMultipartSection(Name = "BAR")] TestDto2 complex) {
+			fixture.AssertExpected(simple);
+			fixture.AssertExpected(complex);
+			return Ok();
+		}
 	}
 
 	public class MultipartSectionModelBinderTest : IClassFixture<MultipartSectionModelBinderTestFixture> {
@@ -121,6 +128,21 @@ namespace SGL.Utilities.Backend.AspNetCore.Tests {
 			var content = new MultipartFormDataContent();
 			content.Add(contentPart1, "simple");
 			content.Add(contentPart2, "complex");
+			request.Content = content;
+			var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead);
+			output.WriteStreamContents(await response.Content.ReadAsStreamAsync());
+			response.EnsureSuccessStatusCode();
+			Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+		}
+		[Fact]
+		public async Task TwoJsonBodiesWithNameOverrideAreBoundCorrectly() {
+			using var client = fixture.CreateClient();
+			var request = new HttpRequestMessage(HttpMethod.Post, "api/multipart-section-model-binder-test/two-json/with-name-override");
+			var contentPart1 = JsonContent.Create(fixture.SimpleBody);
+			var contentPart2 = JsonContent.Create(fixture.ComplexBody);
+			var content = new MultipartFormDataContent();
+			content.Add(contentPart1, "foo");
+			content.Add(contentPart2, "bar");
 			request.Content = content;
 			var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead);
 			output.WriteStreamContents(await response.Content.ReadAsStreamAsync());
