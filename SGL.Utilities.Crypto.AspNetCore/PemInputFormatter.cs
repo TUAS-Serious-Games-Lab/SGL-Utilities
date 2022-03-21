@@ -12,15 +12,34 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SGL.Utilities.Crypto.AspNetCore {
+	/// <summary>
+	/// Provides input formatting for the <c>application/x-pem-file</c> content type.
+	/// This formatter can either serve as a simple pass-through formatter, where the controller takes a PEM string or an <see cref="IEnumerable{T}"/> of such strings.
+	/// If the controller takes a single PEM string, the entire request body is provided in the string, after checking that it contains at least one PEM object.
+	/// If the controller takes an <see cref="IEnumerable{T}"/> of PEM strings, the request body is split up into string, each of which contains one of the PEM objects in the request body.
+	/// In this case, text between the PEM objects is discarded.
+	///
+	/// Alternatively, this formatter can actually parse higher-level objects from SGL.Utility.Crypto, by calling their <c>TryLoadOneFromPem</c> or <c>LoadAllFromPem</c> methods.
+	/// This latter mode supports <see cref="Certificate"/>s, <see cref="PublicKey"/>s, and <see cref="IEnumerable{T}"/>s of these types.
+	/// Parsing <see cref="PrivateKey"/>s or <see cref="KeyPair"/>s is not supported, as there is no reasonable way to provide an encryption password for reading the submitted object.
+	/// </summary>
 	public class PemInputFormatter : TextInputFormatter {
 		private static Type[] supportedTypes = new[] { typeof(string), typeof(IEnumerable<string>), typeof(Certificate), typeof(IEnumerable<Certificate>), typeof(PublicKey), typeof(IEnumerable<PublicKey>) };
 
+		/// <summary>
+		/// Initializes a PemInputFormatter.
+		/// </summary>
 		public PemInputFormatter() {
 			SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/x-pem-file"));
 			SupportedEncodings.Add(Encoding.UTF8);
 			SupportedEncodings.Add(Encoding.Unicode);
 		}
 
+		/// <summary>
+		/// Returns a bool indicating whether the given type can be formatted by this formatter.
+		/// </summary>
+		/// <param name="type">The type to check.</param>
+		/// <returns>A bool indicating whether the given type can be formatted by this formatter.</returns>
 		protected override bool CanReadType(Type type) => supportedTypes.Any(t => t.IsAssignableFrom(type));
 
 		private Task<InputFormatterResult> HandleNoValueString(ILogger<PemInputFormatter> logger, InputFormatterContext context, string logMessage) {
@@ -34,6 +53,24 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 			}
 		}
 
+		/// <summary>
+		/// Asynchronously reads an object of the type indicated by the <see cref="InputFormatterContext.ModelType"/> of <paramref name="context"/> in PEM format from the body of the HTTP request contained in <paramref name="context"/>.
+		/// The given encoding is used to read the characters of the PEM data.
+		/// </summary>
+		/// <param name="context">The context to operate on.</param>
+		/// <param name="encoding">The text encoding to use.</param>
+		/// <returns>
+		/// <list type="bullet">
+		/// <item><term><see cref="InputFormatterResult.Success(object)"/></term><description>
+		/// If the requested object was successfully read. Contains the value read from the body.
+		/// This is also returned with the default value, if <see cref="InputFormatterContext.TreatEmptyInputAsDefaultValue"/> of <paramref name="context"/> was true.
+		/// </description></item>
+		/// <item><term><see cref="InputFormatterResult.NoValue"/></term><description>
+		/// If the body contained no value and <see cref="InputFormatterContext.TreatEmptyInputAsDefaultValue"/> of <paramref name="context"/> was false.
+		/// </description></item>
+		/// <item><term><see cref="InputFormatterResult.Failure"/></term><description>Otherwise, i.e. when the body didn't contained invalid data.</description></item>
+		/// </list>
+		/// </returns>
 		public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding) {
 			var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<PemInputFormatter>>();
 			var type = supportedTypes.FirstOrDefault(t => context.ModelType.IsAssignableFrom(t));
