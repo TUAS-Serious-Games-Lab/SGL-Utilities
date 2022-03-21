@@ -100,7 +100,14 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// <param name="reader">A reader containing at least one PEM-encoded certificate.</param>
 		/// <returns>The loaded certificate.</returns>
 		/// <exception cref="PemException">When the reader either contained no PEM objects or if the PEM object that was read was no certificate.</exception>
-		public static Certificate LoadOneFromPem(TextReader reader) => PemHelper.LoadCertificate(reader);
+		public static Certificate LoadOneFromPem(TextReader reader) => PemHelper.TryLoadCertificate(reader) ?? throw new PemException("Input contained no PEM objects.");
+		/// <summary>
+		/// Attempts to load one certificate from the PEM-encoded data in <paramref name="reader"/>.
+		/// </summary>
+		/// <param name="reader">A reader containing at least one PEM-encoded certificate.</param>
+		/// <returns>The loaded certificate, or null if <paramref name="reader"/> contains not PEM objects..</returns>
+		/// <exception cref="PemException">When the the PEM object read from <paramref name="reader"/> was no certificate.</exception>
+		public static Certificate? TryLoadOneFromPem(TextReader reader) => PemHelper.TryLoadCertificate(reader);
 		/// <summary>
 		/// Loads all certificates from the PEM-encoded data in <paramref name="reader"/>.
 		/// </summary>

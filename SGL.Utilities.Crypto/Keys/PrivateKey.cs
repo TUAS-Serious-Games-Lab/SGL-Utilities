@@ -46,7 +46,15 @@ namespace SGL.Utilities.Crypto.Keys {
 		/// <param name="reader">A <see cref="TextReader"/> containing at least one PEM-encoded key pair or private key.</param>
 		/// <param name="passwordGetter">A function object that is called to obtain the password used for decrypting the private key.</param>
 		/// <returns>The loaded private key.</returns>
-		public static PrivateKey LoadOneFromPem(TextReader reader, Func<char[]> passwordGetter) => PemHelper.LoadPrivateKey(reader, new PemHelper.FuncPasswordFinder(passwordGetter));
+		public static PrivateKey LoadOneFromPem(TextReader reader, Func<char[]> passwordGetter) => TryLoadOneFromPem(reader, passwordGetter) ?? throw new PemException("Input contained no PEM objects.");
+		/// <summary>
+		/// Attempts to load one private key from the PEM-encoded data in <paramref name="reader"/>.
+		/// If a full key pair is read from the PEM data, its private key will be used.
+		/// </summary>
+		/// <param name="reader">A <see cref="TextReader"/> containing at least one PEM-encoded key pair or private key.</param>
+		/// <param name="passwordGetter">A function object that is called to obtain the password used for decrypting the private key.</param>
+		/// <returns>The loaded private key, or null if <paramref name="reader"/> contains not PEM objects.</returns>
+		public static PrivateKey? TryLoadOneFromPem(TextReader reader, Func<char[]> passwordGetter) => PemHelper.TryLoadPrivateKey(reader, new PemHelper.FuncPasswordFinder(passwordGetter));
 		/// <summary>
 		/// Loads all private keys from the PEM-encoded data in <paramref name="reader"/>.
 		/// If a full key pair is read from the PEM data, its private key will be used.

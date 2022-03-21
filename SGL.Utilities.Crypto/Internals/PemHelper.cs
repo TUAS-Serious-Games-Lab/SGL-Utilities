@@ -19,9 +19,9 @@ namespace SGL.Utilities.Crypto.Internals {
 			public char[] GetPassword() => passwordGetter();
 		}
 
-		public static KeyPair LoadKeyPair(TextReader reader, IPasswordFinder passwordFinder) {
+		public static KeyPair? TryLoadKeyPair(TextReader reader, IPasswordFinder passwordFinder) {
 			PemReader pemReader = new PemReader(reader, passwordFinder);
-			return ReadKeyPair(pemReader) ?? throw new PemException("Input contained no PEM objects.");
+			return ReadKeyPair(pemReader);
 		}
 		public static IEnumerable<KeyPair> LoadKeyPairs(TextReader reader, IPasswordFinder passwordFinder) {
 			PemReader pemReader = new PemReader(reader, passwordFinder);
@@ -59,7 +59,7 @@ namespace SGL.Utilities.Crypto.Internals {
 			}
 		}
 
-		public static PublicKey LoadPublicKey(TextReader reader) {
+		public static PublicKey? TryLoadPublicKey(TextReader reader) {
 			PemReader pemReader = new PemReader(reader);
 			return ReadPublicKey(pemReader) ?? throw new PemException("Input contained no PEM objects.");
 		}
@@ -98,7 +98,7 @@ namespace SGL.Utilities.Crypto.Internals {
 			}
 		}
 
-		public static PrivateKey LoadPrivateKey(TextReader reader, IPasswordFinder passwordFinder) {
+		public static PrivateKey? TryLoadPrivateKey(TextReader reader, IPasswordFinder passwordFinder) {
 			PemReader pemReader = new PemReader(reader, passwordFinder);
 			return ReadPrivateKey(pemReader) ?? throw new PemException("Input contained no PEM objects.");
 		}
@@ -137,7 +137,7 @@ namespace SGL.Utilities.Crypto.Internals {
 			}
 		}
 
-		public static Certificate LoadCertificate(TextReader reader) {
+		public static Certificate? TryLoadCertificate(TextReader reader) {
 			PemReader pemReader = new PemReader(reader);
 			return ReadCertificate(pemReader) ?? throw new PemException("Input contained no PEM objects.");
 		}

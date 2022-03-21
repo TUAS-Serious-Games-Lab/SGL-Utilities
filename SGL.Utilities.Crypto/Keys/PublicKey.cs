@@ -43,7 +43,14 @@ namespace SGL.Utilities.Crypto.Keys {
 		/// </summary>
 		/// <param name="reader">A <see cref="TextReader"/> containing at least one PEM-encoded key pair or public key.</param>
 		/// <returns>The loaded public key.</returns>
-		public static PublicKey LoadOneFromPem(TextReader reader) => PemHelper.LoadPublicKey(reader);
+		public static PublicKey LoadOneFromPem(TextReader reader) => TryLoadOneFromPem(reader) ?? throw new PemException("Input contained no PEM objects.");
+		/// <summary>
+		/// Attempts to load one public key from the PEM-encoded data in <paramref name="reader"/>.
+		/// If a full key pair is read from the PEM data, its public key will be used.
+		/// </summary>
+		/// <param name="reader">A <see cref="TextReader"/> containing at least one PEM-encoded key pair or public key.</param>
+		/// <returns>The loaded public key, or null if <paramref name="reader"/> contains not PEM objects.</returns>
+		public static PublicKey? TryLoadOneFromPem(TextReader reader) => PemHelper.TryLoadPublicKey(reader);
 		/// <summary>
 		/// Loads all public keys from the PEM-encoded data in <paramref name="reader"/>.
 		/// If a full key pair is read from the PEM data, its public key will be used.

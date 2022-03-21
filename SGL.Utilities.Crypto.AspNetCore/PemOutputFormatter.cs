@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using SGL.Utilities.Crypto.Certificates;
 using SGL.Utilities.Crypto.Keys;
@@ -37,6 +39,7 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 		/// <param name="selectedEncoding">The text encoding to use.</param>
 		/// <returns>A task object representing the asynchronous operation.</returns>
 		public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding) {
+			var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<PemOutputFormatter>>();
 			await using var directWriter = new StreamWriter(context.HttpContext.Response.Body, selectedEncoding);
 			await using var buffer = new MemoryStream();
 			await using var bufferWriter = new StreamWriter(buffer, selectedEncoding, leaveOpen: true);
@@ -69,7 +72,8 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 					}
 					break;
 				default:
-					throw new ArgumentException("Unsupported Object type", nameof(context));
+					logger.LogError("Attempt to write unsupported object type '{type}'.", context.ObjectType?.FullName ?? "null");
+					throw new ArgumentException("Unsupported object type", nameof(context));
 			}
 			await bufferWriter.FlushAsync();
 			bufferWriter.Close();
