@@ -42,14 +42,14 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 		/// <returns>A bool indicating whether the given type can be formatted by this formatter.</returns>
 		protected override bool CanReadType(Type type) => supportedTypes.Any(t => t.IsAssignableFrom(type));
 
-		private Task<InputFormatterResult> HandleNoValueString(ILogger<PemInputFormatter> logger, InputFormatterContext context, string logMessage) {
+		private InputFormatterResult HandleNoValueString(ILogger<PemInputFormatter> logger, InputFormatterContext context, string logMessage) {
 			if (context.TreatEmptyInputAsDefaultValue) {
 				logger.LogDebug(logMessage);
-				return InputFormatterResult.SuccessAsync("");
+				return InputFormatterResult.Success("");
 			}
 			else {
 				logger.LogError(logMessage);
-				return InputFormatterResult.NoValueAsync();
+				return InputFormatterResult.NoValue();
 			}
 		}
 
@@ -76,41 +76,41 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 			var type = supportedTypes.FirstOrDefault(t => context.ModelType.IsAssignableFrom(t));
 			if (type == null && context.ModelType.IsAssignableTo(typeof(PrivateKey))) {
 				logger.LogError("Attempt to read private key, which is unsupported, as the passphrase can not be properly passed. Consume string instead and perform PEM parsing on higher level.");
-				return await InputFormatterResult.FailureAsync();
+				return InputFormatterResult.Failure();
 			}
 			else if (type == null && context.ModelType.IsAssignableTo(typeof(IEnumerable<PrivateKey>))) {
 				logger.LogError("Attempt to read private key list, which is unsupported, as the passphrase can not be properly passed. Consume string instead and perform PEM parsing on higher level.");
-				return await InputFormatterResult.FailureAsync();
+				return InputFormatterResult.Failure();
 			}
 			else if (type == null) {
 				logger.LogError("Attempt to read unsupported object type '{type}'.", context.ModelType?.FullName ?? "null");
-				return await InputFormatterResult.FailureAsync();
+				return InputFormatterResult.Failure();
 			}
 			else if (type == typeof(string)) {
 				using var strReader = context.ReaderFactory(context.HttpContext.Request.Body, encoding);
 				var value = await strReader.ReadToEndAsync();
 				if (string.IsNullOrWhiteSpace(value)) {
-					return await HandleNoValueString(logger, context, "Body contained no PEM data (it was null, empty, or only contained whitespace).");
+					return HandleNoValueString(logger, context, "Body contained no PEM data (it was null, empty, or only contained whitespace).");
 				}
 				var beginPos = value.IndexOf("-----BEGIN", 0);
 				var endPos = value.IndexOf("-----END", 0);
 				if (beginPos < 0 && endPos < 0) {
-					return await HandleNoValueString(logger, context, "Body contained no PEM data (neither a BEGIN nor an END string was found).");
+					return HandleNoValueString(logger, context, "Body contained no PEM data (neither a BEGIN nor an END string was found).");
 				}
 				else if (beginPos < 0) {
 					logger.LogError("PEM data in body is missing the BEGIN string.");
-					return await InputFormatterResult.FailureAsync();
+					return InputFormatterResult.Failure();
 				}
 				else if (endPos < 0) {
 					logger.LogError("PEM data in body is missing the END string.");
-					return await InputFormatterResult.FailureAsync();
+					return InputFormatterResult.Failure();
 				}
 				else if (endPos < beginPos) {
 					logger.LogError("PEM data in body has first END string before first BEGIN string.");
-					return await InputFormatterResult.FailureAsync();
+					return InputFormatterResult.Failure();
 				}
 				else {
-					return await InputFormatterResult.SuccessAsync(value);
+					return InputFormatterResult.Success(value);
 				}
 			}
 			else if (type == typeof(IEnumerable<string>)) {
@@ -134,18 +134,18 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 					}
 					else if (beginLine) {
 						logger.LogError("Body contained BEGIN before matching END for previous BEGIN.");
-						return await InputFormatterResult.FailureAsync();
+						return InputFormatterResult.Failure();
 					}
 					else if (endLine) {
 						logger.LogError("Body contained END before matching BEGIN.");
-						return await InputFormatterResult.FailureAsync();
+						return InputFormatterResult.Failure();
 					}
 					else if (sb != null) { // data line inside object, just append to current object
 						sb.AppendLine(line);
 					}
 					// else: ignore lines outside BEGIN-END-blocks, i.e. outside PEM object
 				}
-				return await InputFormatterResult.SuccessAsync(values);
+				return InputFormatterResult.Success(values);
 			}
 			// Buffer data into memory asynchronously, as the PEM reading methods only support synchronous IO and we want to avoid blocking on IO.
 			await using var buffer = new MemoryStream();
@@ -157,22 +157,22 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 					var val = Certificate.TryLoadOneFromPem(reader);
 					if (val == null && !context.TreatEmptyInputAsDefaultValue) {
 						logger.LogError("The body contained no PEM objects.");
-						return await InputFormatterResult.NoValueAsync();
+						return InputFormatterResult.NoValue();
 					}
-					return await InputFormatterResult.SuccessAsync(val!);
+					return InputFormatterResult.Success(val!);
 				}
 				catch (Exception ex) {
 					logger.LogError(ex, "Error while loading certificate from PEM body.");
-					return await InputFormatterResult.FailureAsync();
+					return InputFormatterResult.Failure();
 				}
 			}
 			else if (type == typeof(IEnumerable<Certificate>)) {
 				try {
-					return await InputFormatterResult.SuccessAsync(Certificate.LoadAllFromPem(reader).ToList());
+					return InputFormatterResult.Success(Certificate.LoadAllFromPem(reader).ToList());
 				}
 				catch (Exception ex) {
 					logger.LogError(ex, "Error while loading certificates from PEM body.");
-					return await InputFormatterResult.FailureAsync();
+					return InputFormatterResult.Failure();
 				}
 			}
 			else if (type == typeof(PublicKey)) {
@@ -180,27 +180,27 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 					PublicKey val = PublicKey.LoadOneFromPem(reader);
 					if (val == null && !context.TreatEmptyInputAsDefaultValue) {
 						logger.LogError("The body contained no PEM objects.");
-						return await InputFormatterResult.NoValueAsync();
+						return InputFormatterResult.NoValue();
 					}
-					return await InputFormatterResult.SuccessAsync(val!);
+					return InputFormatterResult.Success(val!);
 				}
 				catch (Exception ex) {
 					logger.LogError(ex, "Error while loading public key from PEM body.");
-					return await InputFormatterResult.FailureAsync();
+					return InputFormatterResult.Failure();
 				}
 			}
 			else if (type == typeof(IEnumerable<PublicKey>)) {
 				try {
-					return await InputFormatterResult.SuccessAsync(PublicKey.LoadAllFromPem(reader).ToList());
+					return InputFormatterResult.Success(PublicKey.LoadAllFromPem(reader).ToList());
 				}
 				catch (Exception ex) {
 					logger.LogError(ex, "Error while loading public keys from PEM body.");
-					return await InputFormatterResult.FailureAsync();
+					return InputFormatterResult.Failure();
 				}
 			}
 			else {
 				logger.LogError("Unexpected type '{type}' requested.", type?.FullName ?? "null");
-				return await InputFormatterResult.FailureAsync();
+				return InputFormatterResult.Failure();
 			}
 		}
 	}
