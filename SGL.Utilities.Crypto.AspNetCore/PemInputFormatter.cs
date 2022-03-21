@@ -23,6 +23,17 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 
 		protected override bool CanReadType(Type type) => supportedTypes.Any(t => t.IsAssignableFrom(type));
 
+		private Task<InputFormatterResult> HandleNoValueString(ILogger<PemInputFormatter> logger, InputFormatterContext context, string logMessage) {
+			if (context.TreatEmptyInputAsDefaultValue) {
+				logger.LogDebug(logMessage);
+				return InputFormatterResult.SuccessAsync("");
+			}
+			else {
+				logger.LogError(logMessage);
+				return InputFormatterResult.NoValueAsync();
+			}
+		}
+
 		public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding) {
 			var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<PemInputFormatter>>();
 			var type = supportedTypes.FirstOrDefault(t => context.ModelType.IsAssignableFrom(t));
@@ -42,14 +53,12 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 				using var strReader = context.ReaderFactory(context.HttpContext.Request.Body, encoding);
 				var value = await strReader.ReadToEndAsync();
 				if (string.IsNullOrWhiteSpace(value)) {
-					logger.LogError("Body contained no PEM data (it was null, empty, or only contained whitespace).");
-					return await InputFormatterResult.NoValueAsync();
+					return await HandleNoValueString(logger, context, "Body contained no PEM data (it was null, empty, or only contained whitespace).");
 				}
 				var beginPos = value.IndexOf("-----BEGIN", 0);
 				var endPos = value.IndexOf("-----END", 0);
 				if (beginPos < 0 && endPos < 0) {
-					logger.LogError("Body contained no PEM data (neither a BEGIN nor an END string was found).");
-					return await InputFormatterResult.NoValueAsync();
+					return await HandleNoValueString(logger, context, "Body contained no PEM data (neither a BEGIN nor an END string was found).");
 				}
 				else if (beginPos < 0) {
 					logger.LogError("PEM data in body is missing the BEGIN string.");
