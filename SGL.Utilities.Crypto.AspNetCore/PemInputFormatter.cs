@@ -113,7 +113,7 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 			}
 			else if (type == typeof(IEnumerable<Certificate>)) {
 				try {
-					return await InputFormatterResult.SuccessAsync(Certificate.LoadAllFromPem(reader));
+					return await InputFormatterResult.SuccessAsync(Certificate.LoadAllFromPem(reader).ToList());
 				}
 				catch (Exception ex) {
 					logger.LogError(ex, "Error while loading certificates from PEM body.");
@@ -131,7 +131,7 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 			}
 			else if (type == typeof(IEnumerable<PublicKey>)) {
 				try {
-					return await InputFormatterResult.SuccessAsync(PublicKey.LoadAllFromPem(reader));
+					return await InputFormatterResult.SuccessAsync(PublicKey.LoadAllFromPem(reader).ToList());
 				}
 				catch (Exception ex) {
 					logger.LogError(ex, "Error while loading public keys from PEM body.");
