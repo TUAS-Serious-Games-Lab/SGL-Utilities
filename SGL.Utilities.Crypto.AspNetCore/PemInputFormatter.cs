@@ -117,7 +117,12 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 			using var reader = context.ReaderFactory(buffer, encoding);
 			if (type == typeof(Certificate)) {
 				try {
-					return await InputFormatterResult.SuccessAsync(Certificate.LoadOneFromPem(reader));
+					var val = Certificate.TryLoadOneFromPem(reader);
+					if (val == null && !context.TreatEmptyInputAsDefaultValue) {
+						logger.LogError("The body contained no PEM objects.");
+						return await InputFormatterResult.NoValueAsync();
+					}
+					return await InputFormatterResult.SuccessAsync(val!);
 				}
 				catch (Exception ex) {
 					logger.LogError(ex, "Error while loading certificate from PEM body.");
@@ -135,7 +140,12 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 			}
 			else if (type == typeof(PublicKey)) {
 				try {
-					return await InputFormatterResult.SuccessAsync(PublicKey.LoadOneFromPem(reader));
+					PublicKey val = PublicKey.LoadOneFromPem(reader);
+					if (val == null && !context.TreatEmptyInputAsDefaultValue) {
+						logger.LogError("The body contained no PEM objects.");
+						return await InputFormatterResult.NoValueAsync();
+					}
+					return await InputFormatterResult.SuccessAsync(val!);
 				}
 				catch (Exception ex) {
 					logger.LogError(ex, "Error while loading public key from PEM body.");
