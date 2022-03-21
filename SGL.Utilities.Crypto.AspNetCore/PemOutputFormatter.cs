@@ -39,18 +39,19 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 		/// <param name="selectedEncoding">The text encoding to use.</param>
 		/// <returns>A task object representing the asynchronous operation.</returns>
 		public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding) {
+			var ct = context.HttpContext.RequestAborted;
 			var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<PemOutputFormatter>>();
 			await using var directWriter = new StreamWriter(context.HttpContext.Response.Body, selectedEncoding);
 			await using var buffer = new MemoryStream();
 			await using var bufferWriter = new StreamWriter(buffer, selectedEncoding, leaveOpen: true);
 			switch (context.Object) {
 				case string strvalue:
-					await directWriter.WriteLineAsync(strvalue);
+					await directWriter.WriteLineAsync(strvalue.AsMemory(), ct);
 					return;
 				case IEnumerable<string> strvalues:
 					foreach (var value in strvalues) {
-						await directWriter.WriteLineAsync(value);
-						await directWriter.WriteLineAsync();
+						await directWriter.WriteLineAsync(value.AsMemory(), ct);
+						await directWriter.WriteLineAsync(ReadOnlyMemory<char>.Empty, ct);
 					}
 					return;
 				case Certificate certVal:
@@ -59,7 +60,7 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 				case IEnumerable<Certificate> certVals:
 					foreach (var certVal in certVals) {
 						certVal.StoreToPem(bufferWriter);
-						await bufferWriter.WriteLineAsync();
+						await bufferWriter.WriteLineAsync(ReadOnlyMemory<char>.Empty, ct);
 					}
 					break;
 				case PublicKey pubKeyVal:
@@ -68,7 +69,7 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 				case IEnumerable<PublicKey> pubKeyVals:
 					foreach (var pubKeyVal in pubKeyVals) {
 						pubKeyVal.StoreToPem(bufferWriter);
-						await bufferWriter.WriteLineAsync();
+						await bufferWriter.WriteLineAsync(ReadOnlyMemory<char>.Empty, ct);
 					}
 					break;
 				default:
@@ -78,7 +79,7 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 			await bufferWriter.FlushAsync();
 			bufferWriter.Close();
 			buffer.Position = 0;
-			await buffer.CopyToAsync(context.HttpContext.Response.Body);
+			await buffer.CopyToAsync(context.HttpContext.Response.Body, ct);
 		}
 
 		/// <summary>

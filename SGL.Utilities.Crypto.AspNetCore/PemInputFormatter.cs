@@ -73,6 +73,7 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 		/// </returns>
 		public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding) {
 			var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<PemInputFormatter>>();
+			var ct = context.HttpContext.RequestAborted;
 			var type = supportedTypes.FirstOrDefault(t => context.ModelType.IsAssignableFrom(t));
 			if (type == null && context.ModelType.IsAssignableTo(typeof(PrivateKey))) {
 				logger.LogError("Attempt to read private key, which is unsupported, as the passphrase can not be properly passed. Consume string instead and perform PEM parsing on higher level.");
@@ -87,8 +88,10 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 				return InputFormatterResult.Failure();
 			}
 			else if (type == typeof(string)) {
+				ct.ThrowIfCancellationRequested();
 				using var strReader = context.ReaderFactory(context.HttpContext.Request.Body, encoding);
 				var value = await strReader.ReadToEndAsync();
+				ct.ThrowIfCancellationRequested();
 				if (string.IsNullOrWhiteSpace(value)) {
 					return HandleNoValueString(logger, context, "Body contained no PEM data (it was null, empty, or only contained whitespace).");
 				}
@@ -114,12 +117,14 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 				}
 			}
 			else if (type == typeof(IEnumerable<string>)) {
+				ct.ThrowIfCancellationRequested();
 				using var strReader = context.ReaderFactory(context.HttpContext.Request.Body, encoding);
 				var values = new List<string>();
 				StringBuilder sbBuff = new StringBuilder();
 				StringBuilder? sb = null; // The string builder for the current PEM object, if there is one, or null if outside PEM object.
 				string? line;
 				while ((line = await strReader.ReadLineAsync()) != null) {
+					ct.ThrowIfCancellationRequested();
 					string trimmedLine = line.TrimStart();
 					bool beginLine = trimmedLine.StartsWith("-----BEGIN");
 					bool endLine = !beginLine && trimmedLine.StartsWith("-----END");
@@ -149,7 +154,7 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 			}
 			// Buffer data into memory asynchronously, as the PEM reading methods only support synchronous IO and we want to avoid blocking on IO.
 			await using var buffer = new MemoryStream();
-			await context.HttpContext.Request.Body.CopyToAsync(buffer);
+			await context.HttpContext.Request.Body.CopyToAsync(buffer, ct);
 			buffer.Position = 0;
 			using var reader = context.ReaderFactory(buffer, encoding);
 			if (type == typeof(Certificate)) {
