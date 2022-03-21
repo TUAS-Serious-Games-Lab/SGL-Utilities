@@ -45,18 +45,22 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 					logger.LogError("Body contained no PEM data (it was null, empty, or only contained whitespace).");
 					return await InputFormatterResult.NoValueAsync();
 				}
-				bool hasBegin = value.Contains("-----BEGIN");
-				bool hasEnd = value.Contains("-----END");
-				if (!hasBegin && !hasEnd) {
+				var beginPos = value.IndexOf("-----BEGIN", 0);
+				var endPos = value.IndexOf("-----END", 0);
+				if (beginPos < 0 && endPos < 0) {
 					logger.LogError("Body contained no PEM data (neither a BEGIN nor an END string was found).");
 					return await InputFormatterResult.NoValueAsync();
 				}
-				else if (!hasBegin) {
+				else if (beginPos < 0) {
 					logger.LogError("PEM data in body is missing the BEGIN string.");
 					return await InputFormatterResult.FailureAsync();
 				}
-				else if (!hasEnd) {
+				else if (endPos < 0) {
 					logger.LogError("PEM data in body is missing the END string.");
+					return await InputFormatterResult.FailureAsync();
+				}
+				else if (endPos < beginPos) {
+					logger.LogError("PEM data in body has first END string before first BEGIN string.");
 					return await InputFormatterResult.FailureAsync();
 				}
 				else {
