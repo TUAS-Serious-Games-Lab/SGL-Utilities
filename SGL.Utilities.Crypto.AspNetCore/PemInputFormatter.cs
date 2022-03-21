@@ -100,7 +100,7 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 			// Buffer data into memory asynchronously, as the PEM reading methods only support synchronous IO and we want to avoid blocking on IO.
 			await using var buffer = new MemoryStream();
 			await context.HttpContext.Request.Body.CopyToAsync(buffer);
-			using var reader = context.ReaderFactory(context.HttpContext.Request.Body, encoding);
+			using var reader = context.ReaderFactory(buffer, encoding);
 			if (type == typeof(Certificate)) {
 				try {
 					return await InputFormatterResult.SuccessAsync(Certificate.LoadOneFromPem(reader));
