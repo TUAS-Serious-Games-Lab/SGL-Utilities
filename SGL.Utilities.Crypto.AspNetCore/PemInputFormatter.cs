@@ -82,11 +82,11 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 						values.Add(sb.ToString());//  Add string with the object to result
 						sb = null; // Now outside object
 					}
-					if (beginLine) {
+					else if (beginLine) {
 						logger.LogError("Body contained BEGIN before matching END for previous BEGIN.");
 						return await InputFormatterResult.FailureAsync();
 					}
-					if (endLine) {
+					else if (endLine) {
 						logger.LogError("Body contained END before matching BEGIN.");
 						return await InputFormatterResult.FailureAsync();
 					}
