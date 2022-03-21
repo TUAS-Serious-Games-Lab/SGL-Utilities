@@ -27,16 +27,6 @@ namespace SGL.Utilities.Crypto.Keys {
 			}
 		}
 
-		private class PasswordFinder : IPasswordFinder {
-			private readonly char[] password;
-
-			public PasswordFinder(char[] password) {
-				this.password = password;
-			}
-
-			public char[] GetPassword() => password;
-		}
-
 		/// <summary>
 		/// Loads a key pair from the PEM file at the given path, using the given password for decryption if the private key is encrypted.
 		/// </summary>
@@ -55,6 +45,6 @@ namespace SGL.Utilities.Crypto.Keys {
 		/// <param name="reader">A text reader that contains the key pair in the PEM format.</param>
 		/// <param name="password">The password to use for encrypted key pairs.</param>
 		/// <exception cref="PemException">If the reader didn't contain a PEM with a key pair or a supported private key.</exception>
-		public void LoadKeyPair(TextReader reader, char[] password) => keyPair = PemHelper.LoadKeyPair(reader, new PasswordFinder(password));
+		public void LoadKeyPair(TextReader reader, char[] password) => keyPair = KeyPair.LoadOneFromPem(reader, () => password);
 	}
 }
