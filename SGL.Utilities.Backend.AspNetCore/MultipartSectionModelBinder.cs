@@ -20,15 +20,31 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace SGL.Utilities.Backend.AspNetCore {
+	/// <summary>
+	/// Implements ASP.Net Core model binding for scenarios where a controller method parameter should consume a whole <c>multipart/formdata</c> request body section in a manner similar to how
+	/// parameters can normally consume the request body, e.g. as a JSON object.
+	/// The parameter that should consume a request body section need to be marked with <see cref="FromMultipartSectionAttribute"/>.
+	/// Additionally, as the <see cref="MultipartSectionModelBinder"/> needs to read through the reuqest body, it is incompatible with the model binders for form values.
+	/// Thus these need to be disabled using <see cref="DisableFormValueModelBindingAttribute"/> for the method.
+	/// Each parameter is bound to a section with a name that matches the <see cref="ModelBinderAttribute.Name"/> of its <see cref="FromMultipartSectionAttribute"/>, if that is set.
+	/// Otherwise, the name of the parameter itself is used. In both cases the match is done case-insensitive.
+	/// Obtaining the value from the body content is done using the <see cref="IInputFormatter"/>s registered in <see cref="MvcOptions"/>.
+	/// </summary>
 	public class MultipartSectionModelBinder : IModelBinder {
 		private readonly IList<IInputFormatter> formatters;
 		private readonly IHttpRequestStreamReaderFactory readerFactory;
 
+		/// <summary>
+		/// Initializes the model binder, injecting the taken dependencies.
+		/// </summary>
 		public MultipartSectionModelBinder(IOptions<MvcOptions> options, IHttpRequestStreamReaderFactory readerFactory) {
 			this.formatters = options.Value.InputFormatters;
 			this.readerFactory = readerFactory;
 		}
 
+		/// <summary>
+		/// Asynchronously attempts to bind the model to the matching section of the request body.
+		/// </summary>
 		public async Task BindModelAsync(ModelBindingContext bindingContext) {
 			const int boundaryLengthLimit = 100;
 			var request = bindingContext.HttpContext.Request;
@@ -101,8 +117,13 @@ namespace SGL.Utilities.Backend.AspNetCore {
 		}
 	}
 
-
+	/// <summary>
+	/// Marks a model component for model binding to a matching multipart request body section using <see cref="MultipartSectionModelBinder"/>.
+	/// </summary>
 	public class FromMultipartSectionAttribute : ModelBinderAttribute {
+		/// <summary>
+		/// Initializes the attribute object.
+		/// </summary>
 		public FromMultipartSectionAttribute() : base(typeof(MultipartSectionModelBinder)) { }
 	}
 }
