@@ -73,14 +73,14 @@ namespace SGL.Utilities.Backend.AspNetCore.Tests {
 	}
 
 	public class TestDto1 {
-		public int Number { get; set; }
-		public string Text { get; set; }
-		public DateTime Date { get; set; }
+		public int Number { get; set; } = 0;
+		public string Text { get; set; } = "";
+		public DateTime Date { get; set; } = DateTime.UnixEpoch;
 	}
 
 	public class TestDto2 {
-		public IEnumerable<string> Strings { get; set; }
-		public Dictionary<string, int> Mapping { get; set; }
+		public IEnumerable<string> Strings { get; set; } = new List<string>();
+		public Dictionary<string, int> Mapping { get; set; } = new Dictionary<string, int>();
 	}
 
 	[Route("api/multipart-section-model-binder-test")]
