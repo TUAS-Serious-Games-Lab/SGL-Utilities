@@ -22,7 +22,7 @@ using Xunit.Abstractions;
 
 namespace SGL.Utilities.Crypto.Tests {
 
-	public class PemOutputFormatterIntegrationTestFixture : WebApplicationFactory<PemOutputFormatterIntegrationTestStartup> {
+	public class PemFormatterIntegrationTestFixture : WebApplicationFactory<PemOutputFormatterIntegrationTestStartup> {
 		public RandomGenerator Random { get; } = new RandomGenerator();
 		public KeyPair KeyPair1 { get; }
 		public KeyPair KeyPair2 { get; }
@@ -31,7 +31,7 @@ namespace SGL.Utilities.Crypto.Tests {
 		public Certificate Cert2 { get; }
 		public ITestOutputHelper? Output { get; set; } = null;
 
-		public PemOutputFormatterIntegrationTestFixture() {
+		public PemFormatterIntegrationTestFixture() {
 			KeyPair1 = KeyPair.GenerateEllipticCurves(Random, 521);
 			KeyPair2 = KeyPair.GenerateEllipticCurves(Random, 521);
 			KeyPair3 = KeyPair.GenerateEllipticCurves(Random, 521);
@@ -56,11 +56,11 @@ namespace SGL.Utilities.Crypto.Tests {
 		}
 	}
 
-	public class PemOutputFormatterIntegrationTest : IClassFixture<PemOutputFormatterIntegrationTestFixture> {
-		private readonly PemOutputFormatterIntegrationTestFixture fixture;
+	public class PemFormatterIntegrationTest : IClassFixture<PemFormatterIntegrationTestFixture> {
+		private readonly PemFormatterIntegrationTestFixture fixture;
 		private readonly ITestOutputHelper output;
 
-		public PemOutputFormatterIntegrationTest(PemOutputFormatterIntegrationTestFixture fixture, ITestOutputHelper output) {
+		public PemFormatterIntegrationTest(PemFormatterIntegrationTestFixture fixture, ITestOutputHelper output) {
 			this.fixture = fixture;
 			this.output = output;
 			fixture.Output = output;
@@ -133,9 +133,9 @@ namespace SGL.Utilities.Crypto.Tests {
 	[ApiController]
 	public class TestController : ControllerBase {
 
-		private PemOutputFormatterIntegrationTestFixture fixture;
+		private PemFormatterIntegrationTestFixture fixture;
 
-		public TestController(PemOutputFormatterIntegrationTestFixture fixture) {
+		public TestController(PemFormatterIntegrationTestFixture fixture) {
 			this.fixture = fixture;
 		}
 
