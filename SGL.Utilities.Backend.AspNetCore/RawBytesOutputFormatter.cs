@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace SGL.Utilities.Backend.AspNetCore {
 	public class RawBytesOutputFormatter : OutputFormatter {
-		public int BatchSize { get; set; } = 1024 * 1024;
+		public int BatchSize { get; init; } = 1024 * 1024;
 
 		public override bool CanWriteResult(OutputFormatterCanWriteContext context) {
 			return context.ObjectType == typeof(byte[]) && (context.ObjectType?.IsAssignableTo(typeof(IEnumerable<byte>)) ?? false);
