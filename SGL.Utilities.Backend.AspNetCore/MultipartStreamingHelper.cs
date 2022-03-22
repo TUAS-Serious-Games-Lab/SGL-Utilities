@@ -56,7 +56,7 @@ namespace SGL.Utilities.Backend.AspNetCore {
 			// if contentType is given, must match contentType:
 			(contentType == null || (Section.ContentType?.Equals(contentType, StringComparison.OrdinalIgnoreCase) ?? false));
 
-		public async Task<bool> SkipUntilSection(CancellationToken ct, params (string? name, string? contentType)[] selectors) {
+		public async Task<bool> ReadUntilSection(CancellationToken ct, params (string? name, string? contentType)[] selectors) {
 			Section = await reader.ReadNextSectionAsync(ct);
 			while (Section != null) {
 				if (ContentDispositionHeaderValue.TryParse(Section.ContentDisposition, out contentDisposition)) {
