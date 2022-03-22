@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 
 namespace SGL.Utilities.Backend.AspNetCore {
 	public class RawBytesOutputFormatter : OutputFormatter {
+		public int BatchSize { get; set; } = 1024 * 1024;
+
 		public override bool CanWriteResult(OutputFormatterCanWriteContext context) {
 			return context.ObjectType == typeof(byte[]) && (context.ObjectType?.IsAssignableTo(typeof(IEnumerable<byte>)) ?? false);
 		}
@@ -29,7 +31,7 @@ namespace SGL.Utilities.Backend.AspNetCore {
 					await body.WriteAsync(arr.AsMemory(), ct);
 				}
 				else {
-					foreach (var buffer in value.AsArrayBatches(1024 * 1024)) {
+					foreach (var buffer in value.AsArrayBatches(BatchSize)) {
 						await body.WriteAsync(buffer.AsMemory(), ct);
 					}
 				}
