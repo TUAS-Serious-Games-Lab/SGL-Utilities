@@ -60,6 +60,7 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 		/// <param name="context">The context to operate on.</param>
 		/// <param name="encoding">The text encoding to use.</param>
 		/// <returns>
+		/// A task object representing the asynchronous operation, wrapping the following:
 		/// <list type="bullet">
 		/// <item><term><see cref="InputFormatterResult.Success(object)"/></term><description>
 		/// If the requested object was successfully read. Contains the value read from the body.
