@@ -60,6 +60,7 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 		/// <param name="context">The context to operate on.</param>
 		/// <param name="encoding">The text encoding to use.</param>
 		/// <returns>
+		/// A task object representing the asynchronous operation, wrapping the following:
 		/// <list type="bullet">
 		/// <item><term><see cref="InputFormatterResult.Success(object)"/></term><description>
 		/// If the requested object was successfully read. Contains the value read from the body.
@@ -68,7 +69,7 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 		/// <item><term><see cref="InputFormatterResult.NoValue"/></term><description>
 		/// If the body contained no value and <see cref="InputFormatterContext.TreatEmptyInputAsDefaultValue"/> of <paramref name="context"/> was false.
 		/// </description></item>
-		/// <item><term><see cref="InputFormatterResult.Failure"/></term><description>Otherwise, i.e. when the body didn't contained invalid data.</description></item>
+		/// <item><term><see cref="InputFormatterResult.Failure"/></term><description>Otherwise, i.e. when the body contained invalid data.</description></item>
 		/// </list>
 		/// </returns>
 		public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding) {
