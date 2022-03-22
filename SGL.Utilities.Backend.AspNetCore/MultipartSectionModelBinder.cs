@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -50,6 +51,7 @@ namespace SGL.Utilities.Backend.AspNetCore {
 			var request = bindingContext.HttpContext.Request;
 			var logger = bindingContext.HttpContext.RequestServices.GetRequiredService<ILogger<MultipartSectionModelBinder>>();
 			var ct = bindingContext.HttpContext.RequestAborted;
+			var fromMultipartSectionAttribute = bindingContext.ModelMetadata.AdditionalValues.GetValueOrDefault(typeof(FromMultipartSectionAttribute)) as FromMultipartSectionAttribute;
 			request.EnableBuffering();
 			request.Body.Position = 0;
 			string modelName = bindingContext.ModelName;
@@ -125,5 +127,14 @@ namespace SGL.Utilities.Backend.AspNetCore {
 		/// Initializes the attribute object.
 		/// </summary>
 		public FromMultipartSectionAttribute() : base(typeof(MultipartSectionModelBinder)) { }
+	}
+
+	public class FromMultipartSectionMetadataProvider : IDisplayMetadataProvider {
+		public void CreateDisplayMetadata(DisplayMetadataProviderContext context) {
+			var attribute = context.Attributes.OfType<FromMultipartSectionAttribute>().FirstOrDefault();
+			if (attribute != null) {
+				context.DisplayMetadata.AdditionalValues.Add(typeof(FromMultipartSectionAttribute), attribute);
+			}
+		}
 	}
 }
