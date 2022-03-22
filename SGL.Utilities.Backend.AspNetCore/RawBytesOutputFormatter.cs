@@ -29,7 +29,7 @@ namespace SGL.Utilities.Backend.AspNetCore {
 					await body.WriteAsync(arr.AsMemory(), ct);
 				}
 				else {
-					foreach (var buffer in value.AsArrayBatches(8192)) {
+					foreach (var buffer in value.AsArrayBatches(1024 * 1024)) {
 						await body.WriteAsync(buffer.AsMemory(), ct);
 					}
 				}
