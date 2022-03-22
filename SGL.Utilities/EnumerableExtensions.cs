@@ -11,6 +11,14 @@ namespace SGL.Utilities {
 	/// Provides utility extension methods for working with enumerables.
 	/// </summary>
 	public static class EnumerableExtensions {
+		public static IEnumerable<T[]> AsArrayBatches<T>(this IEnumerable<T> source, int batchSize) {
+			while (source.Count() > 0) {
+				var batch = source.Take(batchSize).ToArray();
+				source.Skip(batchSize);
+				yield return batch;
+			}
+		}
+
 		/// <summary>
 		/// Processes the elements of <c>source</c> in batches of size <c>batchSize</c> by invoking <c>batchFunc</c> for each batch and enables asynchronous enumeration of the results.
 		/// </summary>
