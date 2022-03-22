@@ -62,7 +62,7 @@ namespace SGL.Utilities.Backend.AspNetCore.Tests {
 
 	public class MultipartSectionModelBinderTestStartup {
 		public void ConfigureServices(IServiceCollection services) {
-			services.AddControllers(options => { });
+			services.AddControllers(options => options.AddMultipartSectionMetadata());
 		}
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
 			app.UseRouting();
@@ -94,15 +94,43 @@ namespace SGL.Utilities.Backend.AspNetCore.Tests {
 		}
 
 		[DisableFormValueModelBinding]
-		[HttpPost("two-json/no-name-override")]
-		public ActionResult PostTwoJsonBodiesWithoutNameOverride([FromMultipartSection] TestDto1 simple, [FromMultipartSection] TestDto2 complex) {
+		[HttpPost("two-json/no-name-override/no-content-type")]
+		public ActionResult PostTwoJsonBodiesWithoutNameOverrideWithoutContentType([FromMultipartSection] TestDto1 simple, [FromMultipartSection] TestDto2 complex) {
 			fixture.AssertExpected(simple);
 			fixture.AssertExpected(complex);
 			return Ok();
 		}
 		[DisableFormValueModelBinding]
-		[HttpPost("two-json/with-name-override")]
-		public ActionResult PostTwoJsonBodiesWithNameOverride([FromMultipartSection(Name = "foo")] TestDto1 simple, [FromMultipartSection(Name = "BAR")] TestDto2 complex) {
+		[HttpPost("two-json/name-override/no-content-type")]
+		public ActionResult PostTwoJsonBodiesWithNameOverrideWithoutContentType([FromMultipartSection(Name = "foo")] TestDto1 simple, [FromMultipartSection(Name = "BAR")] TestDto2 complex) {
+			fixture.AssertExpected(simple);
+			fixture.AssertExpected(complex);
+			return Ok();
+		}
+		[DisableFormValueModelBinding]
+		[HttpPost("two-json/no-name-override/content-type")]
+		public ActionResult PostTwoJsonBodiesWithoutNameOverrideWithContentType([FromMultipartSection] TestDto1 simple, [FromMultipartSection(ContentType = "application/json")] TestDto2 complex) {
+			fixture.AssertExpected(simple);
+			fixture.AssertExpected(complex);
+			return Ok();
+		}
+		[DisableFormValueModelBinding]
+		[HttpPost("two-json/name-override/content-type")]
+		public ActionResult PostTwoJsonBodiesWithNameOverrideWithContentType([FromMultipartSection(Name = "foo", ContentType = "application/json")] TestDto1 simple, [FromMultipartSection(Name = "BAR")] TestDto2 complex) {
+			fixture.AssertExpected(simple);
+			fixture.AssertExpected(complex);
+			return Ok();
+		}
+		[DisableFormValueModelBinding]
+		[HttpPost("two-json/no-name-override/content-types")]
+		public ActionResult PostTwoJsonBodiesWithoutNameOverrideWithContentTypes([FromMultipartSection(ContentType = "application/json")] TestDto1 simple, [FromMultipartSection(ContentType = "application/json")] TestDto2 complex) {
+			fixture.AssertExpected(simple);
+			fixture.AssertExpected(complex);
+			return Ok();
+		}
+		[DisableFormValueModelBinding]
+		[HttpPost("two-json/name-override/content-types")]
+		public ActionResult PostTwoJsonBodiesWithNameOverrideWithContentTypes([FromMultipartSection(Name = "foo", ContentType = "application/json")] TestDto1 simple, [FromMultipartSection(Name = "Bar", ContentType = "application/json")] TestDto2 complex) {
 			fixture.AssertExpected(simple);
 			fixture.AssertExpected(complex);
 			return Ok();
@@ -119,35 +147,32 @@ namespace SGL.Utilities.Backend.AspNetCore.Tests {
 			fixture.Output = output;
 		}
 
-		[Fact]
-		public async Task TwoJsonBodiesWithoutNameOverrideAreBoundCorrectly() {
+		private async Task testTwoJsons(string path, string part1Name, string part2Name) {
 			using var client = fixture.CreateClient();
-			var request = new HttpRequestMessage(HttpMethod.Post, "api/multipart-section-model-binder-test/two-json/no-name-override");
+			var request = new HttpRequestMessage(HttpMethod.Post, path);
 			var contentPart1 = JsonContent.Create(fixture.SimpleBody);
 			var contentPart2 = JsonContent.Create(fixture.ComplexBody);
 			var content = new MultipartFormDataContent();
-			content.Add(contentPart1, "simple");
-			content.Add(contentPart2, "complex");
+			content.Add(contentPart1, part1Name);
+			content.Add(contentPart2, part2Name);
 			request.Content = content;
 			var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead);
 			output.WriteStreamContents(await response.Content.ReadAsStreamAsync());
 			response.EnsureSuccessStatusCode();
 			Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 		}
+
 		[Fact]
-		public async Task TwoJsonBodiesWithNameOverrideAreBoundCorrectly() {
-			using var client = fixture.CreateClient();
-			var request = new HttpRequestMessage(HttpMethod.Post, "api/multipart-section-model-binder-test/two-json/with-name-override");
-			var contentPart1 = JsonContent.Create(fixture.SimpleBody);
-			var contentPart2 = JsonContent.Create(fixture.ComplexBody);
-			var content = new MultipartFormDataContent();
-			content.Add(contentPart1, "foo");
-			content.Add(contentPart2, "bar");
-			request.Content = content;
-			var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead);
-			output.WriteStreamContents(await response.Content.ReadAsStreamAsync());
-			response.EnsureSuccessStatusCode();
-			Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-		}
+		public async Task TwoJsonBodiesWithoutNameOverrideWithoutContentTypeAreBoundCorrectly() => await testTwoJsons("api/multipart-section-model-binder-test/two-json/no-name-override/no-content-type", "simple", "complex");
+		[Fact]
+		public async Task TwoJsonBodiesWithNameOverrideWithoutContentTypeAreBoundCorrectly() => await testTwoJsons("api/multipart-section-model-binder-test/two-json/name-override/no-content-type", "foo", "bar");
+		[Fact]
+		public async Task TwoJsonBodiesWithoutNameOverrideWithContentTypeAreBoundCorrectly() => await testTwoJsons("api/multipart-section-model-binder-test/two-json/no-name-override/content-type", "simple", "complex");
+		[Fact]
+		public async Task TwoJsonBodiesWithNameOverrideWithContentTypeAreBoundCorrectly() => await testTwoJsons("api/multipart-section-model-binder-test/two-json/name-override/content-type", "foo", "bar");
+		[Fact]
+		public async Task TwoJsonBodiesWithoutNameOverrideWithContentTypesAreBoundCorrectly() => await testTwoJsons("api/multipart-section-model-binder-test/two-json/no-name-override/content-types", "simple", "complex");
+		[Fact]
+		public async Task TwoJsonBodiesWithNameOverrideWithContentTypesAreBoundCorrectly() => await testTwoJsons("api/multipart-section-model-binder-test/two-json/name-override/content-types", "foo", "bar");
 	}
 }
