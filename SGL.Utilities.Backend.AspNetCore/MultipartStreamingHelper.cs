@@ -50,7 +50,7 @@ namespace SGL.Utilities.Backend.AspNetCore {
 
 		private bool matchesSelector(string? name, string? contentType) =>
 			// false if we we aren't in a section with a valid content disposition:
-			contentDisposition != null && Section != null &&
+			Section != null && contentDisposition != null &&
 			// if name is given, must match name:
 			(name == null || contentDisposition.Name.Equals(name, StringComparison.OrdinalIgnoreCase)) &&
 			// if contentType is given, must match contentType:
