@@ -85,11 +85,11 @@ namespace SGL.Utilities.Backend.AspNetCore.Tests {
 
 	[Route("api/multipart-section-model-binder-test")]
 	[ApiController]
-	public class TestController : ControllerBase {
+	public class MultipartSectionModelBinderTestController : ControllerBase {
 
 		private MultipartSectionModelBinderTestFixture fixture;
 
-		public TestController(MultipartSectionModelBinderTestFixture fixture) {
+		public MultipartSectionModelBinderTestController(MultipartSectionModelBinderTestFixture fixture) {
 			this.fixture = fixture;
 		}
 
