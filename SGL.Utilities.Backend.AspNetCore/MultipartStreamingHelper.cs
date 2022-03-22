@@ -17,7 +17,7 @@ namespace SGL.Utilities.Backend.AspNetCore {
 		public MultipartSection? Section { get; private set; } = null;
 		private ContentDispositionHeaderValue? contentDisposition = null;
 		public ContentDispositionHeaderValue? ContentDisposition => contentDisposition;
-		public ActionResult? InitResult { get; } = null;
+		public ActionResult? InitError { get; } = null;
 
 		private Action<string, string?> skippedUnexpectedSectionNameContentTypeCallback;
 		private Action<string?> skippedSectionWithoutValidContentDispositionCallback;
@@ -26,15 +26,15 @@ namespace SGL.Utilities.Backend.AspNetCore {
 				Func<ActionResult> boundaryTooLongCallback, Action<string, string?>? skippedUnexpectedSectionNameContentTypeCallback = null,
 				Action<string?>? skippedSectionWithoutValidContentDispositionCallback = null, int boundaryLengthLimit = 100) {
 			if (string.IsNullOrEmpty(request.ContentType) || !request.ContentType.Contains("multipart/", StringComparison.OrdinalIgnoreCase)) {
-				InitResult = invalidContentTypeCallback(request.ContentType);
+				InitError = invalidContentTypeCallback(request.ContentType);
 			}
 			var parsedContentType = MediaTypeHeaderValue.Parse(request.ContentType);
 			Boundary = HeaderUtilities.RemoveQuotes(parsedContentType.Boundary).Value;
 			if (string.IsNullOrEmpty(Boundary)) {
-				InitResult = noBoundaryCallback();
+				InitError = noBoundaryCallback();
 			}
 			if (Boundary.Length > boundaryLengthLimit) {
-				InitResult = boundaryTooLongCallback();
+				InitError = boundaryTooLongCallback();
 			}
 
 			reader = new MultipartReader(Boundary, request.Body);
