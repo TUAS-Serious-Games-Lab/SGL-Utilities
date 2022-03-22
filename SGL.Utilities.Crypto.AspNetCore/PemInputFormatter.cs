@@ -68,7 +68,7 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 		/// <item><term><see cref="InputFormatterResult.NoValue"/></term><description>
 		/// If the body contained no value and <see cref="InputFormatterContext.TreatEmptyInputAsDefaultValue"/> of <paramref name="context"/> was false.
 		/// </description></item>
-		/// <item><term><see cref="InputFormatterResult.Failure"/></term><description>Otherwise, i.e. when the body didn't contained invalid data.</description></item>
+		/// <item><term><see cref="InputFormatterResult.Failure"/></term><description>Otherwise, i.e. when the body contained invalid data.</description></item>
 		/// </list>
 		/// </returns>
 		public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding) {
