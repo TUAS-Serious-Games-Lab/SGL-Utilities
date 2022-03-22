@@ -57,6 +57,9 @@ namespace SGL.Utilities.Backend.AspNetCore {
 			(contentType == null || (Section.ContentType?.Equals(contentType, StringComparison.OrdinalIgnoreCase) ?? false));
 
 		public async Task<bool> ReadUntilSection(CancellationToken ct, params (string? name, string? contentType)[] selectors) {
+			if (selectors.Length == 0) {
+				throw new ArgumentException("No selectors given.", nameof(selectors));
+			}
 			Section = await reader.ReadNextSectionAsync(ct);
 			while (Section != null) {
 				if (ContentDispositionHeaderValue.TryParse(Section.ContentDisposition, out contentDisposition)) {
