@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace SGL.Utilities.Backend.AspNetCore {
 	public class RawBytesOutputFormatter : OutputFormatter {
 		public override bool CanWriteResult(OutputFormatterCanWriteContext context) {
-			return context.ObjectType?.IsAssignableTo(typeof(IEnumerable<byte>)) ?? false;
+			return context.ObjectType == typeof(byte[]) && (context.ObjectType?.IsAssignableTo(typeof(IEnumerable<byte>)) ?? false);
 		}
 
 		public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context) {
@@ -25,8 +25,13 @@ namespace SGL.Utilities.Backend.AspNetCore {
 					throw new ArgumentException("The Object to write was not a valid IEnumerable<byte>.", nameof(context));
 				}
 
-				foreach (var buffer in value.AsArrayBatches(8192)) {
-					await body.WriteAsync(buffer.AsMemory(), ct);
+				if (value is byte[] arr) {
+					await body.WriteAsync(arr.AsMemory(), ct);
+				}
+				else {
+					foreach (var buffer in value.AsArrayBatches(8192)) {
+						await body.WriteAsync(buffer.AsMemory(), ct);
+					}
 				}
 			}
 			catch (OperationCanceledException) {
