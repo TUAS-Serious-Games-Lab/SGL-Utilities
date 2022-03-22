@@ -77,8 +77,15 @@ namespace SGL.Utilities.Backend.AspNetCore {
 				while ((section = await reader.ReadNextSectionAsync(ct)) != null) {
 					if (ContentDispositionHeaderValue.TryParse(section.ContentDisposition, out var contentDisposition)) {
 						if (contentDisposition != null && contentDisposition.Name.Equals(modelName, StringComparison.OrdinalIgnoreCase)) {
-							await BindSectionForModelAsync(bindingContext, modelName, section, contentDisposition);
-							return;
+							if (fromMultipartSectionAttribute?.ContentType == null || (section.ContentType?.StartsWith(fromMultipartSectionAttribute.ContentType, StringComparison.OrdinalIgnoreCase) ?? false)) {
+								await BindSectionForModelAsync(bindingContext, modelName, section, contentDisposition);
+								return;
+							}
+							else {
+								logger.LogWarning("When binding model '{modelName}', the request contains a multipart section with the expected name '{name}', but its content type '{actualContentType}' " +
+									"does not match the expected content type '{expectedContentType}'. This section will be ignored for binding. If another section has the same name and the correct content type, it may still be bound.",
+									modelName, contentDisposition.Name, section.ContentType, fromMultipartSectionAttribute.ContentType);
+							}
 						}
 					}
 				}
@@ -127,6 +134,8 @@ namespace SGL.Utilities.Backend.AspNetCore {
 		/// Initializes the attribute object.
 		/// </summary>
 		public FromMultipartSectionAttribute() : base(typeof(MultipartSectionModelBinder)) { }
+
+		public string? ContentType { get; init; } = null;
 	}
 
 	public class FromMultipartSectionMetadataProvider : IDisplayMetadataProvider {
