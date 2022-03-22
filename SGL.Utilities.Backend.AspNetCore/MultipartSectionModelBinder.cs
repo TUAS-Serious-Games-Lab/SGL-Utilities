@@ -146,4 +146,11 @@ namespace SGL.Utilities.Backend.AspNetCore {
 			}
 		}
 	}
+
+	public static class MvcOptionsMultipartSectionMetadataExtensions {
+		public static MvcOptions AddMultipartSectionMetadata(this MvcOptions options) {
+			options.ModelMetadataDetailsProviders.Add(new FromMultipartSectionMetadataProvider());
+			return options;
+		}
+	}
 }
