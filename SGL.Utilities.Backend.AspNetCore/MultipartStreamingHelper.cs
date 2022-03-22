@@ -19,8 +19,8 @@ namespace SGL.Utilities.Backend.AspNetCore {
 		public ContentDispositionHeaderValue? ContentDisposition => contentDisposition;
 		public ActionResult? InitError { get; } = null;
 
-		private Action<string, string?> skippedUnexpectedSectionNameContentTypeCallback;
-		private Action<string?> skippedSectionWithoutValidContentDispositionCallback;
+		public Action<string, string?> SkippedUnexpectedSectionNameContentTypeCallback { get; set; }
+		public Action<string?> SkippedSectionWithoutValidContentDispositionCallback { get; set; }
 
 		public MultipartStreamingHelper(HttpRequest request, Func<string, ActionResult> invalidContentTypeCallback, Func<ActionResult> noBoundaryCallback,
 				Func<ActionResult> boundaryTooLongCallback, Action<string, string?>? skippedUnexpectedSectionNameContentTypeCallback = null,
@@ -41,11 +41,11 @@ namespace SGL.Utilities.Backend.AspNetCore {
 			if (skippedUnexpectedSectionNameContentTypeCallback == null) {
 				skippedUnexpectedSectionNameContentTypeCallback = (name, contentType) => { };
 			}
-			this.skippedUnexpectedSectionNameContentTypeCallback = skippedUnexpectedSectionNameContentTypeCallback;
+			SkippedUnexpectedSectionNameContentTypeCallback = skippedUnexpectedSectionNameContentTypeCallback;
 			if (skippedSectionWithoutValidContentDispositionCallback == null) {
 				skippedSectionWithoutValidContentDispositionCallback = (contentType) => { };
 			}
-			this.skippedSectionWithoutValidContentDispositionCallback = skippedSectionWithoutValidContentDispositionCallback;
+			SkippedSectionWithoutValidContentDispositionCallback = skippedSectionWithoutValidContentDispositionCallback;
 		}
 
 		private bool matchesSelector(string? name, string? contentType) =>
@@ -63,10 +63,10 @@ namespace SGL.Utilities.Backend.AspNetCore {
 					if (selectors.Any(s => matchesSelector(s.name, s.contentType))) {
 						return true;
 					}
-					skippedUnexpectedSectionNameContentTypeCallback(contentDisposition.Name.ToString(), Section.ContentType);
+					SkippedUnexpectedSectionNameContentTypeCallback(contentDisposition.Name.ToString(), Section.ContentType);
 				}
 				else {
-					skippedSectionWithoutValidContentDispositionCallback(Section.ContentType);
+					SkippedSectionWithoutValidContentDispositionCallback(Section.ContentType);
 				}
 				Section = await reader.ReadNextSectionAsync(ct);
 			}
