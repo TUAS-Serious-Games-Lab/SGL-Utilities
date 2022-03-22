@@ -18,7 +18,6 @@ namespace SGL.Utilities.Backend.AspNetCore {
 		}
 
 		public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding) {
-			var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<PlainTextInputFormatter>>();
 			try {
 				using var reader = context.ReaderFactory(context.HttpContext.Request.Body, encoding);
 				var content = await reader.ReadToEndAsync();
@@ -28,6 +27,7 @@ namespace SGL.Utilities.Backend.AspNetCore {
 				throw;
 			}
 			catch (Exception ex) {
+				var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<PlainTextInputFormatter>>();
 				logger.LogError(ex, "Reading request body failed due to exception.");
 				return InputFormatterResult.Failure();
 			}
