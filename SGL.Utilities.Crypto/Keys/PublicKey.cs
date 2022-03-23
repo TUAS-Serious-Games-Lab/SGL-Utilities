@@ -36,7 +36,7 @@ namespace SGL.Utilities.Crypto.Keys {
 		public override string? ToString() => wrapped.ToString();
 
 		/// <summary>
-		/// Calculated the key id of this public key.
+		/// Calculates the key id of this public key.
 		/// </summary>
 		/// <returns>A <see cref="KeyId"/> object identifying this public key.</returns>
 		public KeyId CalculateId() {
