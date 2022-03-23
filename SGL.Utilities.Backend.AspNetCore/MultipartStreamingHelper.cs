@@ -179,6 +179,7 @@ namespace SGL.Utilities.Backend.AspNetCore {
 		/// Like with the selector list used for reading, if a parameter is null it implicitly matches.
 		/// Thus, to only check for the <paramref name="name"/>, <paramref name="contentType"/> can simply be null and vice-versa.
 		/// If both parameters are null, this method just checks if there is a current section at all (with a valid content disposition).
+		/// Both checks are also done case insensitively as is the case with the selectors when reading.
 		/// </summary>
 		/// <param name="name">The name to match with the one specified in the current section's content disposition.</param>
 		/// <param name="contentType">The content type to match with the one of the current section.</param>
