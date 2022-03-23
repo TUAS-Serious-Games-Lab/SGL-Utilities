@@ -125,6 +125,7 @@ namespace SGL.Utilities.Backend.AspNetCore {
 		/// <param name="ct">A <see cref="CancellationToken"/> that allows cancelling the operation.</param>
 		/// <param name="selectors">
 		/// A collection of selectors that are used to select the next expected section.
+		/// Each selector is represented as a tuple of two nullable <see cref="string"/>s, where the first one represents a section <c>name</c> and the second one represents a <c>contentTypePrefix</c>.
 		/// For a section to qualify as a valid section to exit this method, it must satisfy at least one of the selectors.
 		/// A selector is satisfied all these conditions are met:
 		/// <list type="bullet">
