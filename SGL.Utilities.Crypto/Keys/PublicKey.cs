@@ -1,6 +1,8 @@
 ﻿using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Crypto.Parameters;
 using SGL.Utilities.Crypto.Internals;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -32,6 +34,53 @@ namespace SGL.Utilities.Crypto.Keys {
 		public override int GetHashCode() => wrapped.GetHashCode();
 		/// <inheritdoc/>
 		public override string? ToString() => wrapped.ToString();
+
+		/// <summary>
+		/// Calculates the key id of this public key.
+		/// </summary>
+		/// <returns>A <see cref="KeyId"/> object identifying this public key.</returns>
+		public KeyId CalculateId() {
+			switch (wrapped) {
+				case null:
+					throw new KeyException("Key object contained null value.");
+				case RsaKeyParameters rsa:
+					return new KeyId(getKeyId(rsa));
+				case ECPublicKeyParameters ec:
+					return new KeyId(getKeyId(ec));
+				default:
+					throw new KeyException($"Unsupported key type {wrapped.GetType().FullName}.");
+			}
+		}
+
+		private static byte[] getKeyId(ECPublicKeyParameters ec) {
+			try {
+				var digest = new Sha256Digest();
+				var keyBytes = ec.Q.GetEncoded(compressed: false); // TODO: Recheck, if this is deterministic
+				digest.BlockUpdate(keyBytes, 0, keyBytes.Length);
+				byte[] result = new byte[33];
+				digest.DoFinal(result, 1);
+				result[0] = 2;
+				return result;
+			}
+			catch (Exception ex) {
+				throw new KeyException("Failed to calculate KeyId.", ex);
+			}
+		}
+
+		private static byte[] getKeyId(RsaKeyParameters rsa) {
+			try {
+				var digest = new Sha256Digest();
+				var modulusBytes = rsa.Modulus.ToByteArrayUnsigned();
+				digest.BlockUpdate(modulusBytes, 0, modulusBytes.Length);
+				byte[] result = new byte[33];
+				digest.DoFinal(result, 1);
+				result[0] = 1;
+				return result;
+			}
+			catch (Exception ex) {
+				throw new KeyException("Failed to calculate KeyId.", ex);
+			}
+		}
 
 		/// <summary>
 		/// Returns the type of the key.

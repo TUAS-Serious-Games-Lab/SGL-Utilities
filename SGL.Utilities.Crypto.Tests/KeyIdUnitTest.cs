@@ -18,12 +18,12 @@ namespace SGL.Utilities.Crypto.Tests {
 		[InlineData(KeyType.EllipticCurves, 521)]
 		public void KeyIdStaysConsistentThroughPemSerialization(KeyType keyGenType, int keySize) {
 			var keyPair = KeyPair.Generate(random, keyGenType, keySize);
-			var keyId1 = KeyId.CalculateId(keyPair.Public);
+			var keyId1 = keyPair.Public.CalculateId();
 			using var strWriter = new StringWriter();
 			keyPair.Public.StoreToPem(strWriter);
 			using var strReader = new StringReader(strWriter.ToString());
 			var loadedPubKey = PublicKey.LoadOneFromPem(strReader);
-			var keyId2 = KeyId.CalculateId(loadedPubKey);
+			var keyId2 = loadedPubKey.CalculateId();
 			Assert.Equal(keyId1, keyId2);
 		}
 
@@ -36,9 +36,9 @@ namespace SGL.Utilities.Crypto.Tests {
 		[InlineData(521)]
 		public void KeyIdStaysConsistentThroughECPrivateToPublicKeyDerivation(int keySize) {
 			var keyPair = KeyPair.GenerateEllipticCurves(random, keySize);
-			var keyId1 = KeyId.CalculateId(keyPair.Public);
+			var keyId1 = keyPair.Public.CalculateId();
 			var derivedPubKey = keyPair.Private.DerivePublicKey();
-			var keyId2 = KeyId.CalculateId(derivedPubKey);
+			var keyId2 = derivedPubKey.CalculateId();
 			Assert.Equal(keyId1, keyId2);
 		}
 
@@ -51,13 +51,13 @@ namespace SGL.Utilities.Crypto.Tests {
 		[InlineData(521)]
 		public void KeyIdStaysConsistentThroughECPrivateToPublicKeyDerivationAndPemSerialization(int keySize) {
 			var keyPair = KeyPair.GenerateEllipticCurves(random, keySize);
-			var keyId1 = KeyId.CalculateId(keyPair.Public);
+			var keyId1 = keyPair.Public.CalculateId();
 			var derivedPubKey = keyPair.Private.DerivePublicKey();
 			using var strWriter = new StringWriter();
 			derivedPubKey.StoreToPem(strWriter);
 			using var strReader = new StringReader(strWriter.ToString());
 			var loadedPubKey = PublicKey.LoadOneFromPem(strReader);
-			var keyId2 = KeyId.CalculateId(loadedPubKey);
+			var keyId2 = loadedPubKey.CalculateId();
 			Assert.Equal(keyId1, keyId2);
 		}
 	}

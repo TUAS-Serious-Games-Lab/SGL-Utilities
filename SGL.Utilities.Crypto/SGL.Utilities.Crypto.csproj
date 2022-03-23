@@ -30,5 +30,9 @@
 		<InternalsVisibleTo Include="SGL.Utilities.Crypto.Tests" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<ProjectReference Include="..\SGL.Utilities.Crypto.Abstractions\SGL.Utilities.Crypto.Abstractions.csproj" />
+	</ItemGroup>
+
 
 </Project>

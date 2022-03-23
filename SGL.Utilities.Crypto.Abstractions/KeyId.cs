@@ -1,6 +1,4 @@
-﻿using Org.BouncyCastle.Crypto.Digests;
-using Org.BouncyCastle.Crypto.Parameters;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -40,54 +38,6 @@ namespace SGL.Utilities.Crypto.Keys {
 		/// Returns a copy of the raw id bytes.
 		/// </summary>
 		public byte[] Id => (byte[])id.Clone();
-
-		/// <summary>
-		/// Calculated the key id of the given public key.
-		/// </summary>
-		/// <param name="publicKey">The public key to calculate the id of. Currently, only RSA and EC keys are supported.</param>
-		/// <returns>A <see cref="KeyId"/> object identifying <paramref name="publicKey"/>.</returns>
-		public static KeyId CalculateId(PublicKey publicKey) {
-			switch (publicKey.wrapped) {
-				case null:
-					throw new KeyException("Key object contained null value.");
-				case RsaKeyParameters rsa:
-					return new KeyId(getKeyId(rsa));
-				case ECPublicKeyParameters ec:
-					return new KeyId(getKeyId(ec));
-				default:
-					throw new KeyException($"Unsupported key type {publicKey.GetType().FullName}.");
-			}
-		}
-
-		private static byte[] getKeyId(ECPublicKeyParameters ec) {
-			try {
-				var digest = new Sha256Digest();
-				var keyBytes = ec.Q.GetEncoded(compressed: false); // TODO: Recheck, if this is deterministic
-				digest.BlockUpdate(keyBytes, 0, keyBytes.Length);
-				byte[] result = new byte[33];
-				digest.DoFinal(result, 1);
-				result[0] = 2;
-				return result;
-			}
-			catch (Exception ex) {
-				throw new KeyException("Failed to calculate KeyId.", ex);
-			}
-		}
-
-		private static byte[] getKeyId(RsaKeyParameters rsa) {
-			try {
-				var digest = new Sha256Digest();
-				var modulusBytes = rsa.Modulus.ToByteArrayUnsigned();
-				digest.BlockUpdate(modulusBytes, 0, modulusBytes.Length);
-				byte[] result = new byte[33];
-				digest.DoFinal(result, 1);
-				result[0] = 1;
-				return result;
-			}
-			catch (Exception ex) {
-				throw new KeyException("Failed to calculate KeyId.", ex);
-			}
-		}
 
 		/// <summary>
 		/// Tests this <see cref="KeyId"/> object and <paramref name="obj"/> for value equality, i.e. if both objects represent the same key id.
