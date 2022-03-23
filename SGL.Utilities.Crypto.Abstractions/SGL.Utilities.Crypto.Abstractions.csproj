@@ -14,7 +14,7 @@
 		<Version>0.0.0-dev</Version>
 		<Authors>Serious Games Lab Team at Hochschule Trier</Authors>
 		<Company>Hochschule Trier, Serious Games Lab</Company>
-		<Description>A library providing interfaces and data structures for cryptography functionality for SGL Projects.</Description>
+		<Description>A library providing data structures for cryptography functionality for SGL Projects.</Description>
 	</PropertyGroup>
 
 	<PropertyGroup>
