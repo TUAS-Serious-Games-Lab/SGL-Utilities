@@ -41,7 +41,16 @@ namespace SGL.Utilities.Backend.AspNetCore {
 		/// </summary>
 		public ActionResult? InitError { get; } = null;
 
+		/// <summary>
+		/// Allows changing (or retrieving) the callback that is invoked when a section is skipped because its name and / or content type was not expected.
+		/// Changing this after initialization, allows using code to, e.g. change logging messages depending on the phase of the request processing.
+		/// </summary>
 		public Action<string, string?> SkippedUnexpectedSectionNameContentTypeCallback { get; set; }
+
+		/// <summary>
+		/// Allows changing (or retrieving) the callback that is invoked when a section is skipped because it had no valid content disposition.
+		/// Changing this after initialization, allows using code to, e.g. change logging messages depending on the phase of the request processing.
+		/// </summary>
 		public Action<string?> SkippedSectionWithoutValidContentDispositionCallback { get; set; }
 
 		/// <summary>
