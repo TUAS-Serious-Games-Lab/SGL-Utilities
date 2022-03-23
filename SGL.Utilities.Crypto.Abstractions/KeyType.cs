@@ -1,6 +1,6 @@
 ﻿namespace SGL.Utilities.Crypto.Keys {
 	/// <summary>
-	/// Represents a type of a <see cref="KeyPair"/>, <see cref="PrivateKey"/>, or <see cref="PublicKey"/>.
+	/// Represents the type of a key pair, public key, or private key.
 	/// </summary>
 	public enum KeyType {
 		/// <summary>
