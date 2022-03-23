@@ -24,7 +24,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <param name="keyPair">The recipient key pair to use for decryption.</param>
 		public KeyDecryptor(KeyPair keyPair) {
 			this.keyPair = keyPair;
-			keyId = KeyId.CalculateId(keyPair.Public);
+			keyId = keyPair.Public.CalculateId();
 		}
 
 		/// <summary>

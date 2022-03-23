@@ -244,13 +244,13 @@ b7qZIq+EKADZHDgbuQ0ZvK2dZswsQwRMNDnWgmGOci0MdLcMpQxrOalkYr47ZvaL
 			byte[] inputDataKey = new byte[dataKeySize];
 			random.NextBytes(inputDataKey);
 
-			var encryptor = new KeyEncryptor(allValidKeyPairs.Select(kp => new KeyValuePair<KeyId, PublicKey>(KeyId.CalculateId(kp.Public), kp.Public)).ToList(), random, shared);
+			var encryptor = new KeyEncryptor(allValidKeyPairs.Select(kp => new KeyValuePair<KeyId, PublicKey>(kp.Public.CalculateId(), kp.Public)).ToList(), random, shared);
 			var (encryptedKeys, sharedSenderKey) = encryptor.EncryptDataKey(inputDataKey);
 			Assert.All(encryptedKeys.Values, k => Assert.NotEqual(inputDataKey, k.EncryptedKey));
 			Assert.Equal(shared, sharedSenderKey != null);
 
 			var decryptor = new KeyDecryptor(recipient);
-			var outputDataKey = decryptor.DecryptKey(encryptedKeys[KeyId.CalculateId(recipient.Public)], sharedSenderKey);
+			var outputDataKey = decryptor.DecryptKey(encryptedKeys[recipient.Public.CalculateId()], sharedSenderKey);
 			Assert.Equal(inputDataKey, outputDataKey);
 		}
 
@@ -260,7 +260,7 @@ b7qZIq+EKADZHDgbuQ0ZvK2dZswsQwRMNDnWgmGOci0MdLcMpQxrOalkYr47ZvaL
 			byte[] inputDataKey = new byte[dataKeySize];
 			random.NextBytes(inputDataKey);
 
-			var encryptor = new KeyEncryptor(subsetValidKeyPairs.Select(kp => new KeyValuePair<KeyId, PublicKey>(KeyId.CalculateId(kp.Public), kp.Public)).ToList(), random, shared);
+			var encryptor = new KeyEncryptor(subsetValidKeyPairs.Select(kp => new KeyValuePair<KeyId, PublicKey>(kp.Public.CalculateId(), kp.Public)).ToList(), random, shared);
 			var (encryptedKeys, sharedSenderKey) = encryptor.EncryptDataKey(inputDataKey);
 			Assert.All(encryptedKeys.Values, k => Assert.NotEqual(inputDataKey, k.EncryptedKey));
 			Assert.Equal(shared, sharedSenderKey != null);

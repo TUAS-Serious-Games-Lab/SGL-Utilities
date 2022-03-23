@@ -164,7 +164,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 		public void LoadCertificatesFromReader(TextReader reader, string sourceName) {
 			var certs = loadCertificates(reader, sourceName);
 			foreach (var cert in certs) {
-				var keyid = KeyId.CalculateId(cert.PublicKey);
+				var keyid = cert.PublicKey.CalculateId();
 				if (validator.CheckCertificate(cert)) {
 					certificatesByKeyId[keyid] = cert;
 					certificatesBySubjectDN[cert.SubjectDN] = cert;
