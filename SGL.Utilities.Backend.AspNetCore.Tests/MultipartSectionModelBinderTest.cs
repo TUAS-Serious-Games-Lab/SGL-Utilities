@@ -109,28 +109,28 @@ namespace SGL.Utilities.Backend.AspNetCore.Tests {
 		}
 		[DisableFormValueModelBinding]
 		[HttpPost("two-json/no-name-override/content-type")]
-		public ActionResult PostTwoJsonBodiesWithoutNameOverrideWithContentType([FromMultipartSection] TestDto1 simple, [FromMultipartSection(ContentType = "application/json")] TestDto2 complex) {
+		public ActionResult PostTwoJsonBodiesWithoutNameOverrideWithContentType([FromMultipartSection] TestDto1 simple, [FromMultipartSection(ContentTypePrefix = "application/json")] TestDto2 complex) {
 			fixture.AssertExpected(simple);
 			fixture.AssertExpected(complex);
 			return Ok();
 		}
 		[DisableFormValueModelBinding]
 		[HttpPost("two-json/name-override/content-type")]
-		public ActionResult PostTwoJsonBodiesWithNameOverrideWithContentType([FromMultipartSection(Name = "foo", ContentType = "application/json")] TestDto1 simple, [FromMultipartSection(Name = "BAR")] TestDto2 complex) {
+		public ActionResult PostTwoJsonBodiesWithNameOverrideWithContentType([FromMultipartSection(Name = "foo", ContentTypePrefix = "application/json")] TestDto1 simple, [FromMultipartSection(Name = "BAR")] TestDto2 complex) {
 			fixture.AssertExpected(simple);
 			fixture.AssertExpected(complex);
 			return Ok();
 		}
 		[DisableFormValueModelBinding]
 		[HttpPost("two-json/no-name-override/content-types")]
-		public ActionResult PostTwoJsonBodiesWithoutNameOverrideWithContentTypes([FromMultipartSection(ContentType = "application/json")] TestDto1 simple, [FromMultipartSection(ContentType = "application/json")] TestDto2 complex) {
+		public ActionResult PostTwoJsonBodiesWithoutNameOverrideWithContentTypes([FromMultipartSection(ContentTypePrefix = "application/json")] TestDto1 simple, [FromMultipartSection(ContentTypePrefix = "application/json")] TestDto2 complex) {
 			fixture.AssertExpected(simple);
 			fixture.AssertExpected(complex);
 			return Ok();
 		}
 		[DisableFormValueModelBinding]
 		[HttpPost("two-json/name-override/content-types")]
-		public ActionResult PostTwoJsonBodiesWithNameOverrideWithContentTypes([FromMultipartSection(Name = "foo", ContentType = "application/json")] TestDto1 simple, [FromMultipartSection(Name = "Bar", ContentType = "application/json")] TestDto2 complex) {
+		public ActionResult PostTwoJsonBodiesWithNameOverrideWithContentTypes([FromMultipartSection(Name = "foo", ContentTypePrefix = "application/json")] TestDto1 simple, [FromMultipartSection(Name = "Bar", ContentTypePrefix = "application/json")] TestDto2 complex) {
 			fixture.AssertExpected(simple);
 			fixture.AssertExpected(complex);
 			return Ok();

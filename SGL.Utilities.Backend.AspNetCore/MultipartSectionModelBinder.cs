@@ -32,8 +32,8 @@ namespace SGL.Utilities.Backend.AspNetCore {
 	/// Each parameter is bound to a section with a name that matches the <see cref="ModelBinderAttribute.Name"/> of its <see cref="FromMultipartSectionAttribute"/>, if that is set.
 	/// Otherwise, the name of the parameter itself is used. In both cases the match is done case-insensitive.
 	///
-	/// If <see cref="FromMultipartSectionAttribute.ContentType"/> is set, a matching section also needs to have the content type specified by this to be bound to the marked parameter.
-	/// For <see cref="FromMultipartSectionAttribute.ContentType"/> to be available to this model binder, a <see cref="FromMultipartSectionMetadataProvider"/> needs to be registered, usually done using <see cref="MvcOptionsMultipartSectionMetadataExtensions.AddMultipartSectionMetadata(MvcOptions)"/>.
+	/// If <see cref="FromMultipartSectionAttribute.ContentTypePrefix"/> is set, a matching section also needs to have a content type with the case-insensitive prefix specified by this to be bound to the marked parameter.
+	/// For <see cref="FromMultipartSectionAttribute.ContentTypePrefix"/> to be available to this model binder, a <see cref="FromMultipartSectionMetadataProvider"/> needs to be registered, usually done using <see cref="MvcOptionsMultipartSectionMetadataExtensions.AddMultipartSectionMetadata(MvcOptions)"/>.
 	///
 	/// Obtaining the value from the body content is done using the <see cref="IInputFormatter"/>s registered in <see cref="MvcOptions"/>.
 	/// </summary>
@@ -83,14 +83,14 @@ namespace SGL.Utilities.Backend.AspNetCore {
 				while ((section = await reader.ReadNextSectionAsync(ct)) != null) {
 					if (ContentDispositionHeaderValue.TryParse(section.ContentDisposition, out var contentDisposition)) {
 						if (contentDisposition != null && contentDisposition.Name.Equals(modelName, StringComparison.OrdinalIgnoreCase)) {
-							if (fromMultipartSectionAttribute?.ContentType == null || (section.ContentType?.StartsWith(fromMultipartSectionAttribute.ContentType, StringComparison.OrdinalIgnoreCase) ?? false)) {
+							if (fromMultipartSectionAttribute?.ContentTypePrefix == null || (section.ContentType?.StartsWith(fromMultipartSectionAttribute.ContentTypePrefix, StringComparison.OrdinalIgnoreCase) ?? false)) {
 								await BindSectionForModelAsync(bindingContext, modelName, section, contentDisposition);
 								return;
 							}
 							else {
 								logger.LogWarning("When binding model '{modelName}', the request contains a multipart section with the expected name '{name}', but its content type '{actualContentType}' " +
 									"does not match the expected content type '{expectedContentType}'. This section will be ignored for binding. If another section has the same name and the correct content type, it may still be bound.",
-									modelName, contentDisposition.Name, section.ContentType, fromMultipartSectionAttribute.ContentType);
+									modelName, contentDisposition.Name, section.ContentType, fromMultipartSectionAttribute.ContentTypePrefix);
 							}
 						}
 					}
@@ -142,15 +142,15 @@ namespace SGL.Utilities.Backend.AspNetCore {
 		public FromMultipartSectionAttribute() : base(typeof(MultipartSectionModelBinder)) { }
 
 		/// <summary>
-		/// If set, constraints model binding for the marked parameter to multipart sections with the specified content type.
+		/// If set, constraints model binding for the marked parameter to multipart sections with a content type with the specified prefix.
 		/// For this to be passed through to the model binder, a <see cref="FromMultipartSectionMetadataProvider"/> needs to be registered, usually done using <see cref="MvcOptionsMultipartSectionMetadataExtensions.AddMultipartSectionMetadata(MvcOptions)"/>.
 		/// </summary>
-		public string? ContentType { get; init; } = null;
+		public string? ContentTypePrefix { get; init; } = null;
 	}
 
 	/// <summary>
 	/// Provides the <see cref="FromMultipartSectionAttribute"/> object in <see cref="DisplayMetadata.AdditionalValues"/> for model binding contexts on models marked with that attribute.
-	/// This is needed to pass the <see cref="FromMultipartSectionAttribute.ContentType"/> to <see cref="MultipartSectionModelBinder"/>.
+	/// This is needed to pass the <see cref="FromMultipartSectionAttribute.ContentTypePrefix"/> to <see cref="MultipartSectionModelBinder"/>.
 	/// </summary>
 	public class FromMultipartSectionMetadataProvider : IDisplayMetadataProvider {
 		/// <summary>
