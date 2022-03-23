@@ -36,6 +36,7 @@ namespace SGL.Utilities.Backend.AspNetCore {
 	/// For <see cref="FromMultipartSectionAttribute.ContentTypePrefix"/> to be available to this model binder, a <see cref="FromMultipartSectionMetadataProvider"/> needs to be registered, usually done using <see cref="MvcOptionsMultipartSectionMetadataExtensions.AddMultipartSectionMetadata(MvcOptions)"/>.
 	///
 	/// Obtaining the value from the body content is done using the <see cref="IInputFormatter"/>s registered in <see cref="MvcOptions"/>.
+	/// In addition to the model binding, the actual content types of each bound section is made available in <see cref="HttpContext.Items"/> under a <see cref="MultipartSectionContentTypeKey"/> with the bound name as the dictionary key.
 	/// </summary>
 	public class MultipartSectionModelBinder : IModelBinder {
 		private readonly IList<IInputFormatter> formatters;
@@ -122,6 +123,7 @@ namespace SGL.Utilities.Backend.AspNetCore {
 				return;
 			}
 			if (result.IsModelSet) {
+				bindingContext.HttpContext.Items.Add(new MultipartSectionContentTypeKey(modelName), section.ContentType);
 				bindingContext.Result = ModelBindingResult.Success(result.Model);
 				return;
 			}
@@ -130,6 +132,30 @@ namespace SGL.Utilities.Backend.AspNetCore {
 				return;
 			}
 		}
+	}
+
+	/// <summary>
+	/// When <see cref="MultipartSectionModelBinder"/> binds a request body section to a model name, it also provides the actual content type of the section in <see cref="HttpContext.Items"/> with an object of this type as the dictionary key.
+	/// This type acts as a type-safe wrapper around the model name for this purpose.
+	/// </summary>
+	public class MultipartSectionContentTypeKey {
+		/// <summary>
+		/// Creates a key object wrapping the given model name.
+		/// </summary>
+		/// <param name="modelName">The model name to wrap.</param>
+		public MultipartSectionContentTypeKey(string modelName) {
+			ModelName = modelName;
+		}
+		/// <summary>
+		/// The bound model name, for which this object acts as a dictionary key.
+		/// </summary>
+		public string ModelName { get; }
+		/// <inheritdoc/>
+		public override bool Equals(object? obj) => obj is MultipartSectionContentTypeKey key && ModelName == key.ModelName;
+		/// <inheritdoc/>
+		public override int GetHashCode() => HashCode.Combine(ModelName);
+		/// <inheritdoc/>
+		public override string? ToString() => $"content type for model name '{ModelName}'";
 	}
 
 	/// <summary>
