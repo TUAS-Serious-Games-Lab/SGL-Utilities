@@ -108,13 +108,13 @@ namespace SGL.Utilities.Backend.AspNetCore {
 			SkippedSectionWithoutValidContentDispositionCallback = skippedSectionWithoutValidContentDispositionCallback;
 		}
 
-		private bool matchesSelector(string? name, string? contentType) =>
+		private bool matchesSelector(string? name, string? contentTypePrefix) =>
 			// false if we we aren't in a section with a valid content disposition:
 			Section != null && contentDisposition != null &&
 			// if name is given, must match name:
 			(name == null || contentDisposition.Name.Equals(name, StringComparison.OrdinalIgnoreCase)) &&
 			// if contentType is given, must match contentType:
-			(contentType == null || (Section.ContentType?.Equals(contentType, StringComparison.OrdinalIgnoreCase) ?? false));
+			(contentTypePrefix == null || (Section.ContentType?.StartsWith(contentTypePrefix, StringComparison.OrdinalIgnoreCase) ?? false));
 
 		/// <summary>
 		/// Asynchronously reads through the sections of the request, until the current <see cref="Section"/> satisfies any of the given <paramref name="selectors"/>.
@@ -129,7 +129,7 @@ namespace SGL.Utilities.Backend.AspNetCore {
 		/// A selector is satisfied all these conditions are met:
 		/// <list type="bullet">
 		/// <item><term><c>name</c></term><description>is either null, or matches the name specified in the section's content disposition (case-insensitive).</description></item>
-		/// <item><term><c>contentType</c></term><description>is either null, or matches the content type of the section (case-insensitive).</description></item>
+		/// <item><term><c>contentTypePrefix</c></term><description>is either null, or the content type of the section starts with this string (case-insensitive).</description></item>
 		/// </list>
 		/// Thus, the non-null values in the selectors must match the section's values.
 		/// Therefore, to read any section, a <c>(null,null)</c> selector must be given.
@@ -154,14 +154,14 @@ namespace SGL.Utilities.Backend.AspNetCore {
 		/// The pattern here is to read-until with the yet expected sections, and then check for the actually read section kind using a <see cref="IsCurrentSection(string?, string?)"/> for each yet expected section.
 		/// After handling the section, the cycle repeats with the (potentially fewer) remaining section kinds.
 		/// </remarks>
-		public async Task<bool> ReadUntilSection(CancellationToken ct, params (string? name, string? contentType)[] selectors) {
+		public async Task<bool> ReadUntilSection(CancellationToken ct, params (string? name, string? contentTypePrefix)[] selectors) {
 			if (selectors.Length == 0) {
 				throw new ArgumentException("No selectors given.", nameof(selectors));
 			}
 			Section = await reader.ReadNextSectionAsync(ct);
 			while (Section != null) {
 				if (ContentDispositionHeaderValue.TryParse(Section.ContentDisposition, out contentDisposition)) {
-					if (selectors.Any(s => matchesSelector(s.name, s.contentType))) {
+					if (selectors.Any(s => matchesSelector(s.name, s.contentTypePrefix))) {
 						return true;
 					}
 					SkippedUnexpectedSectionNameContentTypeCallback(contentDisposition.Name.ToString(), Section.ContentType);
@@ -177,13 +177,13 @@ namespace SGL.Utilities.Backend.AspNetCore {
 		/// <summary>
 		/// Checks if the current section is a section that satisfies the given selector values.
 		/// Like with the selector list used for reading, if a parameter is null it implicitly matches.
-		/// Thus, to only check for the <paramref name="name"/>, <paramref name="contentType"/> can simply be null and vice-versa.
+		/// Thus, to only check for the <paramref name="name"/>, <paramref name="contentTypePrefix"/> can simply be null and vice-versa.
 		/// If both parameters are null, this method just checks if there is a current section at all (with a valid content disposition).
 		/// Both checks are also done case insensitively as is the case with the selectors when reading.
 		/// </summary>
 		/// <param name="name">The name to match with the one specified in the current section's content disposition.</param>
-		/// <param name="contentType">The content type to match with the one of the current section.</param>
+		/// <param name="contentTypePrefix">The prefix for which to check the content type of the current section.</param>
 		/// <returns>Returns a <see cref="bool"/> indicating whether the current section satisfies the given selector values.</returns>
-		public bool IsCurrentSection(string? name, string? contentType) => matchesSelector(name, contentType);
+		public bool IsCurrentSection(string? name, string? contentTypePrefix) => matchesSelector(name, contentTypePrefix);
 	}
 }
