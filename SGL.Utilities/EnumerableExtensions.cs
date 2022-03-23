@@ -11,6 +11,14 @@ namespace SGL.Utilities {
 	/// Provides utility extension methods for working with enumerables.
 	/// </summary>
 	public static class EnumerableExtensions {
+		/// <summary>
+		/// Converts <paramref name="source"/> into an <see cref="IEnumerable{T}"/> of arrays that contain consecutive partitions of <paramref name="source"/> of the given <paramref name="batchSize"/>.
+		/// The last array is shorter if the element count of <paramref name="source"/> is not an integer multiple of <paramref name="batchSize"/>.
+		/// </summary>
+		/// <typeparam name="T">The type of the elements.</typeparam>
+		/// <param name="source">An enumerable containing the input elements.</param>
+		/// <param name="batchSize">The desired size for the batch arrays.</param>
+		/// <returns>An <see cref="IEnumerable{T}"/> of the batched arrays.</returns>
 		public static IEnumerable<T[]> AsArrayBatches<T>(this IEnumerable<T> source, int batchSize) {
 			while (source.Count() > 0) {
 				var batch = source.Take(batchSize).ToArray();
