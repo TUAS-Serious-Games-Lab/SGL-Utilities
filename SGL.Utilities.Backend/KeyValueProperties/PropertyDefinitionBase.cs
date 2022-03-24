@@ -7,10 +7,12 @@ using System.Threading.Tasks;
 namespace SGL.Utilities.Backend.KeyValueProperties {
 	public class PropertyDefinitionBase {
 		/// <summary>
-		/// The unique database id of the  property definition.
+		/// The unique database id of the property definition.
 		/// </summary>
 		public Guid Id { get; set; }
-
+		/// <summary>
+		/// The name of the property, must be unique within the owning entity.
+		/// </summary>
 		public string Name { get; set; }
 		/// <summary>
 		/// The data type of the property.
