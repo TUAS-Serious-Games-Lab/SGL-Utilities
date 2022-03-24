@@ -15,9 +15,9 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 		/// </summary>
 		public Guid DefinitionId { get; set; }
 		/// <summary>
-		/// The id of the user to which this instance belongs.
+		/// The id of the entity to which this instance belongs.
 		/// </summary>
-		public Guid UserId { get; set; }
+		public TInstanceOwnerId OwnerId { get; set; }
 		/// <summary>
 		/// The propery definition that this instance instantiates.
 		/// </summary>
