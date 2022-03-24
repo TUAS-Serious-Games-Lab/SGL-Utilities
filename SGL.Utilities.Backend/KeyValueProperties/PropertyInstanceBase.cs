@@ -23,7 +23,7 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 		/// </summary>
 		public TDefinition Definition { get; set; } = null!;
 		/// <summary>
-		/// The user to which this instance belongs.
+		/// The entity to which this instance belongs.
 		/// </summary>
 		public TInstanceOwner Owner { get; set; } = null!;
 		/// <summary>
