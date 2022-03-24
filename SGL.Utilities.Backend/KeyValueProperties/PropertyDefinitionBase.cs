@@ -22,7 +22,7 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 		public bool Required { get; set; }
 	}
 
-	public class PropertyDefinitionBase<TDefinitionOwner, TDefinitionOwnerId> : PropertyDefinitionBase where TDefinitionOwnerId : struct where TDefinitionOwner : class {
+	public class PropertyDefinitionBase<TDefinitionOwner, TDefinitionOwnerId> : PropertyDefinitionBase where TDefinitionOwnerId : struct where TDefinitionOwner : class, IPropertyOwner<TDefinitionOwnerId> {
 		/// <summary>
 		/// The id of the owning entity for which this property is defined.
 		/// </summary>
@@ -31,5 +31,19 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 		/// The owning entity for which this property is defined.
 		/// </summary>
 		public TDefinitionOwner Owner { get; set; } = null!;
+
+		/// <summary>
+		/// Creates a property definition for with the given name, type, and required flag for the given entity.
+		/// </summary>
+		/// <returns>The property definition object.</returns>
+		public static PropertyDefinitionBase<TDefinitionOwner, TDefinitionOwnerId> Create(TDefinitionOwner owner, string name, PropertyType type, bool required) =>
+			new PropertyDefinitionBase<TDefinitionOwner, TDefinitionOwnerId> {
+				Id = Guid.NewGuid(),
+				OwnerId = owner.Id,
+				Owner = owner,
+				Name = name,
+				Type = type,
+				Required = required
+			};
 	}
 }

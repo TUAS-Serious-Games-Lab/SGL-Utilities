@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
 
 namespace SGL.Utilities.Backend.KeyValueProperties {
-	public class PropertyInstanceBase<TInstanceOwner, TInstanceOwnerId, TDefinition> where TInstanceOwner : class where TInstanceOwnerId : struct where TDefinition : PropertyDefinitionBase {
+	public class PropertyInstanceBase<TInstanceOwner, TInstanceOwnerId, TDefinition> where TInstanceOwner : class, IPropertyOwner<TInstanceOwnerId> where TInstanceOwnerId : struct where TDefinition : PropertyDefinitionBase {
 		private static JsonSerializerOptions jsonOptions = new JsonSerializerOptions { Converters = { new ObjectDictionaryValueJsonConverter() } };
 
 		/// <summary>
@@ -132,6 +132,35 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 						throw new PropertyTypeDoesntMatchDefinitionException(Definition.Name, value.GetType(), Definition.Type);
 				}
 			}
+		}
+
+		/// <summary>
+		/// Creates a property instance for the given property definition and the entity owning the instance.
+		/// The value is initialized as empty and if the property is required, the value needs to be set using <see cref="Value"/> before the object is persisted.
+		/// </summary>
+		/// <param name="definition">The property definition to instantiate.</param>
+		/// <param name="owner">The owning entity for which it is instantiated.</param>
+		/// <returns>The created property instance object.</returns>
+		public static PropertyInstanceBase<TInstanceOwner, TInstanceOwnerId, TDefinition> Create(TDefinition definition, TInstanceOwner owner) =>
+			new PropertyInstanceBase<TInstanceOwner, TInstanceOwnerId, TDefinition> {
+				Id = Guid.NewGuid(),
+				DefinitionId = definition.Id,
+				Definition = definition,
+				OwnerId = owner.Id,
+				Owner = owner
+			};
+
+		/// <summary>
+		/// Creates a property instance for the given property definition and instance-owning entity with the given value.
+		/// </summary>
+		/// <param name="definition">The property definition to instantiate.</param>
+		/// <param name="owner">The owning entity for which it is instantiated.</param>
+		/// <param name="value">The value of the property for <paramref name="owner"/>. It is processed as if by setting it in <see cref="Value"/>.</param>
+		/// <returns>The created property instance object.</returns>
+		public static PropertyInstanceBase<TInstanceOwner, TInstanceOwnerId, TDefinition> Create(TDefinition definition, TInstanceOwner owner, object? value) {
+			var pi = Create(definition, owner);
+			pi.Value = value;
+			return pi;
 		}
 
 	}
