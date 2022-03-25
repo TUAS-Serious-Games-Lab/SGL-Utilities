@@ -113,11 +113,15 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 		/// <param name="instanceOwner">The owning entity, holding the property instance.</param>
 		/// <param name="name">The name of the property for which to get the value.</param>
 		/// <param name="getPropInsts">The delegate to get the collection of property instances from the owning entity.</param>
+		/// <param name="definitionHint">
+		/// Needs to a lambda referencing <see cref="PropertyInstanceBase{TInstanceOwner, TDefinition}"/> within <typeparamref name="TInstanceOwner"/>.
+		/// This is just needed as a workaround to make type parameter deduction work.
+		/// </param>
 		/// <returns>The value of the property.</returns>
 		/// <exception cref="PropertyNotFoundException">No property definition with the given name was found for the owning entity.</exception>
 		/// <exception cref="RequiredPropertyNullException">A <see langword="null"/> value was encountered for a property instance of a property that is defined as <see cref="PropertyDefinitionBase.Required"/>.</exception>
 		/// <exception cref="PropertyWithUnknownTypeException">An unknown property type was encountered.</exception>
-		public static object? GetKeyValueProperty<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner, string name, Func<TInstanceOwner, ICollection<TInstance>> getPropInsts)
+		public static object? GetKeyValueProperty<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner, string name, Func<TInstanceOwner, ICollection<TInstance>> getPropInsts, Func<TInstance, TDefinition> definitionHint)
 				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
 			var propInst = getPropInsts(instanceOwner).SingleOrDefault(p => p.Definition.Name == name);
 			if (propInst is null) {
@@ -155,8 +159,6 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 
 		/// <summary>
 		/// Returns the value of the application-specific property represented by the given definition for the owning entity.
-		/// Compared to <see cref="GetKeyValueProperty{TInstanceOwner, TInstance, TDefinition}(TInstanceOwner, string, Func{TInstanceOwner, ICollection{TInstance}})"/>,
-		/// this overload can avoid the cost of looking up the property definition.
 		/// </summary>
 		/// <typeparam name="TInstanceOwner">The instance-owning entity type.</typeparam>
 		/// <typeparam name="TInstance">The concrete type of the property instances.</typeparam>
@@ -170,7 +172,7 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 		/// <exception cref="PropertyWithUnknownTypeException">An unknown property type was encountered.</exception>
 		public static object? GetKeyValueProperty<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner, TDefinition propDef, Func<TInstanceOwner, ICollection<TInstance>> getPropInsts)
 				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
-			return GetKeyValueProperty<TInstanceOwner, TInstance, TDefinition>(instanceOwner, propDef.Name, getPropInsts);
+			return GetKeyValueProperty(instanceOwner, propDef.Name, getPropInsts, p => p.Definition);
 		}
 
 		/// <summary>
