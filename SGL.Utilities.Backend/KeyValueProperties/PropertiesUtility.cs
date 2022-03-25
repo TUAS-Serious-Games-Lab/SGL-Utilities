@@ -32,5 +32,41 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 				}
 			}
 		}
+		/// <summary>
+		/// Returns the value of the application-specific property with the given name for the owning entity.
+		/// </summary>
+		/// <param name="instanceOwner">The owning entity, holding the property instance.</param>
+		/// <param name="name">The name of the property for which to get the value.</param>
+		/// <param name="getPropInsts">The delegate to get the collection of property instances from the owning entity.</param>
+		/// <returns>The value of the property.</returns>
+		/// <exception cref="PropertyNotFoundException">No property definition with the given name was found for the owning entity.</exception>
+		/// <exception cref="RequiredPropertyNullException">A <see langword="null"/> value was encountered for a property instance of a property that is defined as <see cref="PropertyDefinitionBase.Required"/>.</exception>
+		/// <exception cref="PropertyWithUnknownTypeException">An unknown property type was encountered.</exception>
+		public static object? GetKeyValueProperty<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner, string name, Func<TInstanceOwner, ICollection<TInstance>> getPropInsts)
+				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
+			var propInst = getPropInsts(instanceOwner).SingleOrDefault(p => p.Definition.Name == name);
+			if (propInst is null) {
+				throw new PropertyNotFoundException(name);
+			}
+			return propInst.Value;
+		}
+
+		/// <summary>
+		/// Returns the value of the application-specific property represented by the given definition for the owning entity.
+		/// Compared to <see cref="GetKeyValueProperty{TInstanceOwner, TInstance, TDefinition}(TInstanceOwner, string, Func{TInstanceOwner, ICollection{TInstance}})"/>,
+		/// this overload can avoid the cost of looking up the property definition.
+		/// </summary>
+		/// <param name="instanceOwner">The owning entity, holding the property instance.</param>
+		/// <param name="propDef">The definition of the property to get.</param>
+		/// <param name="getPropInsts">The delegate to get the collection of property instances from the owning entity.</param>
+		/// <returns>The value of the property for the owning entity.</returns>
+		/// <exception cref="PropertyNotFoundException">No property definition with the given name was found for the owning entity.</exception>
+		/// <exception cref="RequiredPropertyNullException">A <see langword="null"/> value was encountered for a property instance of a property that is defined as <see cref="PropertyDefinitionBase.Required"/>.</exception>
+		/// <exception cref="PropertyWithUnknownTypeException">An unknown property type was encountered.</exception>
+		public static object? GetKeyValueProperty<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner, TDefinition propDef, Func<TInstanceOwner, ICollection<TInstance>> getPropInsts)
+				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
+			return GetKeyValueProperty<TInstanceOwner, TInstance, TDefinition>(instanceOwner, propDef.Name, getPropInsts);
+		}
+
 	}
 }
