@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
 
 namespace SGL.Utilities.Backend.KeyValueProperties {
-	public class PropertyInstanceBase<TInstanceOwner, TInstanceOwnerId, TDefinition> where TInstanceOwner : class, IPropertyOwner<TInstanceOwnerId> where TInstanceOwnerId : struct where TDefinition : PropertyDefinitionBase {
+	public class PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
 		private static JsonSerializerOptions jsonOptions = new JsonSerializerOptions { Converters = { new ObjectDictionaryValueJsonConverter() } };
 
 		/// <summary>
@@ -15,16 +15,15 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 		/// </summary>
 		public Guid DefinitionId { get; set; }
 		/// <summary>
-		/// The id of the entity to which this instance belongs.
-		/// </summary>
-		public TInstanceOwnerId OwnerId { get; set; }
-		/// <summary>
 		/// The propery definition that this instance instantiates.
 		/// </summary>
 		public TDefinition Definition { get; set; } = null!;
 		/// <summary>
 		/// The entity to which this instance belongs.
 		/// </summary>
+		/// <remarks>
+		/// The id is stored as a shadow property.
+		/// </remarks>
 		public TInstanceOwner Owner { get; set; } = null!;
 		/// <summary>
 		/// This property is public to be accessible for OR mapper and should not be used directly otherwise,
@@ -141,12 +140,11 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 		/// <param name="definition">The property definition to instantiate.</param>
 		/// <param name="owner">The owning entity for which it is instantiated.</param>
 		/// <returns>The created property instance object.</returns>
-		public static PropertyInstanceBase<TInstanceOwner, TInstanceOwnerId, TDefinition> Create(TDefinition definition, TInstanceOwner owner) =>
-			new PropertyInstanceBase<TInstanceOwner, TInstanceOwnerId, TDefinition> {
+		public static PropertyInstanceBase<TInstanceOwner, TDefinition> Create(TDefinition definition, TInstanceOwner owner) =>
+			new PropertyInstanceBase<TInstanceOwner, TDefinition> {
 				Id = Guid.NewGuid(),
 				DefinitionId = definition.Id,
 				Definition = definition,
-				OwnerId = owner.Id,
 				Owner = owner
 			};
 
@@ -157,7 +155,7 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 		/// <param name="owner">The owning entity for which it is instantiated.</param>
 		/// <param name="value">The value of the property for <paramref name="owner"/>. It is processed as if by setting it in <see cref="Value"/>.</param>
 		/// <returns>The created property instance object.</returns>
-		public static PropertyInstanceBase<TInstanceOwner, TInstanceOwnerId, TDefinition> Create(TDefinition definition, TInstanceOwner owner, object? value) {
+		public static PropertyInstanceBase<TInstanceOwner, TDefinition> Create(TDefinition definition, TInstanceOwner owner, object? value) {
 			var pi = Create(definition, owner);
 			pi.Value = value;
 			return pi;
