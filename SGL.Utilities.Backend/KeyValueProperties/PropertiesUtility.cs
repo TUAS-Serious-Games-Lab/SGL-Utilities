@@ -139,5 +139,18 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
 			return GetKeyValueProperty<TInstanceOwner, TInstance, TDefinition>(instanceOwner, propDef.Name, getPropInsts);
 		}
+
+		public static Dictionary<string, object?> ConvertKeyValuePropertiesToDictionary<TInstanceOwner, TInstance, TDefinition>(IEnumerable<TInstance> propertyInstances)
+				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
+			return propertyInstances.ToDictionary(p => p.Definition.Name, p => p.Value);
+		}
+
+		public static void SetKeyValuePropertiesFromDictionary<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner, IEnumerable<KeyValuePair<string, object?>> dictionary,
+				Func<TInstanceOwner, ICollection<TInstance>> getPropInsts, Func<TInstanceOwner, IEnumerable<TDefinition>> getPropDefs, Func<TDefinition, TInstanceOwner, TInstance> createInst)
+				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
+			foreach (var dictProp in dictionary) {
+				SetKeyValueProperty(instanceOwner, dictProp.Key, dictProp.Value, getPropInsts, getPropDefs, createInst);
+			}
+		}
 	}
 }
