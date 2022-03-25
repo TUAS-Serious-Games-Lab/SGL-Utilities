@@ -44,10 +44,11 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 				def.HasIndex(uniqueOwnerAndNameIndexPropNames).IsUnique();
 				def.Property(d => d.Name).HasMaxLength(nameLength);
 			});
-			instanceOwner.OwnsMany(instanceExpression, inst => {
-				var ownership = inst.WithOwner(pi => pi.Owner);
+
+			var instancesRel = instanceOwner.HasMany(instanceExpression).WithOne(pi => pi.Owner);
+			modelBuilder.Entity<TInstance>(inst => {
 				var defFK = inst.HasOne(pi => pi.Definition).WithMany();
-				var uniqueDefAndOwnerIndexPropNames = defFK.Metadata.Properties.Concat(ownership.Metadata.Properties).Select(p => p.Name).ToArray();
+				var uniqueDefAndOwnerIndexPropNames = defFK.Metadata.Properties.Concat(instancesRel.Metadata.Properties).Select(p => p.Name).ToArray();
 				inst.HasIndex(uniqueDefAndOwnerIndexPropNames).IsUnique();
 				inst.Property(pi => pi.IntegerValue);
 				inst.Property(pi => pi.FloatingPointValue);
