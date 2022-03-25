@@ -5,6 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SGL.Utilities.Backend.KeyValueProperties {
+	/// <summary>
+	/// A base class for <see cref="PropertyDefinitionBase{TDefinitionOwner}"/> containing only the data that is neutral to the owning entity type.
+	/// </summary>
 	public class PropertyDefinitionBase {
 		/// <summary>
 		/// The unique database id of the property definition.
@@ -24,6 +27,12 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 		public bool Required { get; set; }
 	}
 
+	/// <summary>
+	/// A generic base class for weak entity types that represent key-value property definitions.
+	/// The derived classes are usually only needed to make the weak entity types typesafe and give the weak entities a proper name for the data layer.
+	/// Thus, the derived classes usually don't need their own functionality.
+	/// </summary>
+	/// <typeparam name="TDefinitionOwner">The entity type that holds these property definitions.</typeparam>
 	public class PropertyDefinitionBase<TDefinitionOwner> : PropertyDefinitionBase where TDefinitionOwner : class {
 		/// <summary>
 		/// The owning entity for which this property is defined.
