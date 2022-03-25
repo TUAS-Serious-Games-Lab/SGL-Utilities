@@ -134,8 +134,9 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 		/// <param name="definition">The property definition to instantiate.</param>
 		/// <param name="owner">The owning entity for which it is instantiated.</param>
 		/// <returns>The created property instance object.</returns>
-		public static PropertyInstanceBase<TInstanceOwner, TDefinition> Create(TDefinition definition, TInstanceOwner owner) =>
-			new PropertyInstanceBase<TInstanceOwner, TDefinition> {
+		public static TInstance Create<TInstance>(TDefinition definition, TInstanceOwner owner)
+				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition>, new() =>
+			new TInstance {
 				Id = Guid.NewGuid(),
 				DefinitionId = definition.Id,
 				Definition = definition,
@@ -149,8 +150,9 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 		/// <param name="owner">The owning entity for which it is instantiated.</param>
 		/// <param name="value">The value of the property for <paramref name="owner"/>. It is processed as if by setting it in <see cref="Value"/>.</param>
 		/// <returns>The created property instance object.</returns>
-		public static PropertyInstanceBase<TInstanceOwner, TDefinition> Create(TDefinition definition, TInstanceOwner owner, object? value) {
-			var pi = Create(definition, owner);
+		public static TInstance Create<TInstance>(TDefinition definition, TInstanceOwner owner, object? value)
+				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition>, new() {
+			var pi = Create<TInstance>(definition, owner);
 			pi.Value = value;
 			return pi;
 		}

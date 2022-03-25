@@ -37,8 +37,9 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 		/// Creates a property definition for with the given name, type, and required flag for the given entity.
 		/// </summary>
 		/// <returns>The property definition object.</returns>
-		public static PropertyDefinitionBase<TDefinitionOwner> Create(TDefinitionOwner owner, string name, PropertyType type, bool required) =>
-			new PropertyDefinitionBase<TDefinitionOwner> {
+		public static TDefinition Create<TDefinition>(TDefinitionOwner owner, string name, PropertyType type, bool required)
+				where TDefinition : PropertyDefinitionBase<TDefinitionOwner>, new() =>
+			new TDefinition {
 				Id = Guid.NewGuid(),
 				Owner = owner,
 				Name = name,
