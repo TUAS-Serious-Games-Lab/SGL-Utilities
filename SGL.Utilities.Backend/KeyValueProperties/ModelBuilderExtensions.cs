@@ -37,9 +37,10 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 			modelBuilder.Ignore<PropertyDefinitionBase>();
 			modelBuilder.Ignore<PropertyDefinitionBase<TDefinitionOwner>>();
 			modelBuilder.Ignore<PropertyInstanceBase<TInstanceOwner, TDefinition>>();
-			definitionOwner.OwnsMany(definitionExpression, def => {
-				var ownership = def.WithOwner(d => d.Owner);
-				var uniqueOwnerAndNameIndexPropNames = ownership.Metadata.Properties.Select(p => p.Name).Append(nameof(PropertyDefinitionBase.Name)).ToArray();
+			var definitionsRel = definitionOwner.HasMany(definitionExpression).WithOne(pd => pd.Owner);
+			definitionOwner.Navigation(definitionExpression).AutoInclude(true);
+			modelBuilder.Entity<TDefinition>(def => {
+				var uniqueOwnerAndNameIndexPropNames = definitionsRel.Metadata.Properties.Select(p => p.Name).Append(nameof(PropertyDefinitionBase.Name)).ToArray();
 				def.HasIndex(uniqueOwnerAndNameIndexPropNames).IsUnique();
 				def.Property(d => d.Name).HasMaxLength(nameLength);
 			});
