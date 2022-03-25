@@ -26,41 +26,35 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 		/// </remarks>
 		public TInstanceOwner Owner { get; set; } = null!;
 		/// <summary>
-		/// This property is public to be accessible for OR mapper and should not be used directly otherwise,
-		/// use <see cref="Value"/> instead.
-		/// It contains the value of the property instance if it is <see cref="PropertyType.Integer"/>-typed.
+		/// This property is intended to store the backing value of <see cref="Value"/> if it is <see cref="PropertyType.Integer"/>-typed.
+		/// It should normally not be accessed directly.
 		/// </summary>
-		public int? IntegerValue { get; set; }
+		protected internal int? IntegerValue { get; set; }
 		/// <summary>
-		/// This property is public to be accessible for OR mapper and should not be used directly otherwise,
-		/// use <see cref="Value"/> instead.
-		/// It contains the value of the property instance if it is <see cref="PropertyType.FloatingPoint"/>-typed.
+		/// This property is intended to store the backing value of <see cref="Value"/> if it is <see cref="PropertyType.FloatingPoint"/>-typed.
+		/// It should normally not be accessed directly.
 		/// </summary>
-		public double? FloatingPointValue { get; set; }
+		protected internal double? FloatingPointValue { get; set; }
 		/// <summary>
-		/// This property is public to be accessible for OR mapper and should not be used directly otherwise,
-		/// use <see cref="Value"/> instead.
-		/// It contains the value of the property instance if it is <see cref="PropertyType.String"/>-typed.
+		/// This property is intended to store the backing value of <see cref="Value"/> if it is <see cref="PropertyType.String"/>-typed.
+		/// It should normally not be accessed directly.
 		/// </summary>
-		public string? StringValue { get; set; }
+		protected internal string? StringValue { get; set; }
 		/// <summary>
-		/// This property is public to be accessible for OR mapper and should not be used directly otherwise,
-		/// use <see cref="Value"/> instead.
-		/// It contains the value of the property instance if it is <see cref="PropertyType.DateTime"/>-typed.
+		/// This property is intended to store the backing value of <see cref="Value"/> if it is <see cref="PropertyType.DateTime"/>-typed.
+		/// It should normally not be accessed directly.
 		/// </summary>
-		public DateTime? DateTimeValue { get; set; }
+		protected internal DateTime? DateTimeValue { get; set; }
 		/// <summary>
-		/// This property is public to be accessible for OR mapper and should not be used directly otherwise,
-		/// use <see cref="Value"/> instead.
-		/// It contains the value of the property instance if it is <see cref="PropertyType.Guid"/>-typed.
+		/// This property is intended to store the backing value of <see cref="Value"/> if it is <see cref="PropertyType.Guid"/>-typed.
+		/// It should normally not be accessed directly.
 		/// </summary>
-		public Guid? GuidValue { get; set; }
+		protected internal Guid? GuidValue { get; set; }
 		/// <summary>
-		/// This property is public to be accessible for OR mapper and should not be used directly otherwise,
-		/// use <see cref="Value"/> instead.
-		/// It contains a string representation of the value of the property instance if it is <see cref="PropertyType.Json"/>-typed.
+		/// This property is intended to store the backing value of <see cref="Value"/> if it is <see cref="PropertyType.Json"/>-typed.
+		/// It contains a string representation of the value of the property instance and should normally not be accessed directly.
 		/// </summary>
-		public string? JsonValue { get; set; }
+		protected internal string? JsonValue { get; set; }
 
 		/// <summary>
 		/// Indicates whether the value represents an empty state.

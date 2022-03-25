@@ -28,7 +28,12 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 				var defFK = inst.HasOne(pi => pi.Definition).WithMany();
 				var uniqueDefAndOwnerIndexPropNames = defFK.Metadata.Properties.Concat(ownership.Metadata.Properties).Select(p => p.Name).ToArray();
 				inst.HasIndex(uniqueDefAndOwnerIndexPropNames).IsUnique();
+				inst.Property(pi => pi.IntegerValue);
+				inst.Property(pi => pi.FloatingPointValue);
+				inst.Property(pi => pi.StringValue);
 				inst.Property(pi => pi.DateTimeValue).IsStoredInUtc();
+				inst.Property(pi => pi.GuidValue);
+				inst.Property(pi => pi.JsonValue);
 				inst.Ignore(pi => pi.Value);
 			});
 			instanceOwner.Navigation(instanceExpression).AutoInclude(false);
