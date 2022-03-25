@@ -13,7 +13,7 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 		/// <summary>
 		/// The name of the property, must be unique within the owning entity.
 		/// </summary>
-		public string Name { get; set; }
+		public string Name { get; set; } = "";
 		/// <summary>
 		/// The data type of the property.
 		/// </summary>
