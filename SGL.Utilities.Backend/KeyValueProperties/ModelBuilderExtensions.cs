@@ -22,7 +22,6 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 				def.HasIndex(uniqueOwnerAndNameIndexPropNames).IsUnique();
 				def.Property(d => d.Name).HasMaxLength(nameLength);
 			});
-			definitionOwner.Navigation(definitionExpression).AutoInclude(false);
 			instanceOwner.OwnsMany(instanceExpression, inst => {
 				var ownership = inst.WithOwner(pi => pi.Owner);
 				var defFK = inst.HasOne(pi => pi.Definition).WithMany();
@@ -35,7 +34,11 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 				inst.Property(pi => pi.GuidValue);
 				inst.Property(pi => pi.JsonValue);
 				inst.Ignore(pi => pi.Value);
+				// Loading the instance without the definition is not very useful. Thus, enable auto-loading for that reference:
+				inst.Navigation(pi => pi.Definition).AutoInclude(true);
 			});
+			// Don't automatically load key-value-properties to avoid imposing the cost if the properties are not needed:
+			definitionOwner.Navigation(definitionExpression).AutoInclude(false);
 			instanceOwner.Navigation(instanceExpression).AutoInclude(false);
 			return modelBuilder;
 		}
