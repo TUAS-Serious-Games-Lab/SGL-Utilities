@@ -5,7 +5,27 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SGL.Utilities.Backend.KeyValueProperties {
+	/// <summary>
+	/// Provides utility methods for working with key-value properties.
+	/// </summary>
 	public static class PropertiesUtility {
+		/// <summary>
+		/// Validates the key-value property instances for the instance-owning entity against the defined property definitions of the definition-owning entity with which the instance-owning entity is associated.
+		/// </summary>
+		/// <typeparam name="TInstanceOwner">The instance-owning entity type.</typeparam>
+		/// <typeparam name="TInstance">The concrete type of the property instances.</typeparam>
+		/// <typeparam name="TDefinition">The concrete type of the property definitions.</typeparam>
+		/// <param name="instanceOwner">The entity, holding the property instances.</param>
+		/// <param name="instancesGetter">The delegate to get the collection of property instances from the owning entity.</param>
+		/// <param name="definitionsGetter">
+		/// The delegate to get the collection of property definitions from the entity that owns the instances.
+		/// This is usually implemented by navigating from the instance-owning entity to the definition-owning entity and then obtaining the collection of definitions from there.
+		/// </param>
+		/// <exception cref="RequiredPropertyMissingException">If no instance was present for a required property.</exception>
+		/// <exception cref="RequiredPropertyNullException">If the instance for a required property contained an empty value.</exception>
+		/// <exception cref="UndefinedPropertyException">If a property instance references a property instance that is not correctly associated with the definition-owning entity
+		/// associated with the instance-owning entity.</exception>
+		/// <exception cref="ConflictingPropertyInstanceException">If multiple instances for the same property are present.</exception>
 		public static void ValidateProperties<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner, Func<TInstanceOwner, IEnumerable<TInstance>> instancesGetter,
 				Func<TInstanceOwner, IEnumerable<TDefinition>> definitionsGetter)
 				where TInstanceOwner : class where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TDefinition : PropertyDefinitionBase {
@@ -51,6 +71,9 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 		/// Sets the property with the given name for this owner entity to the given value.
 		/// This either updates the value of an existing instance object, or, if no instance exists for this property for the entity, creates such an instance with the given value.
 		/// </summary>
+		/// <typeparam name="TInstanceOwner">The instance-owning entity type.</typeparam>
+		/// <typeparam name="TInstance">The concrete type of the property instances.</typeparam>
+		/// <typeparam name="TDefinition">The concrete type of the property definitions.</typeparam>
 		/// <param name="instanceOwner">The owning entity for which to set the property.</param>
 		/// <param name="name">The name of the property to set.</param>
 		/// <param name="value">The value to which the property shall be set.</param>
@@ -84,6 +107,9 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 		/// <summary>
 		/// Returns the value of the application-specific property with the given name for the owning entity.
 		/// </summary>
+		/// <typeparam name="TInstanceOwner">The instance-owning entity type.</typeparam>
+		/// <typeparam name="TInstance">The concrete type of the property instances.</typeparam>
+		/// <typeparam name="TDefinition">The concrete type of the property definitions.</typeparam>
 		/// <param name="instanceOwner">The owning entity, holding the property instance.</param>
 		/// <param name="name">The name of the property for which to get the value.</param>
 		/// <param name="getPropInsts">The delegate to get the collection of property instances from the owning entity.</param>
@@ -103,9 +129,13 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 		/// <summary>
 		/// Sets the property represented by the given property definition for this owning entity to the given value.
 		/// This either updates the value of an existing instance object, or, if no instance exists for this property for the owning entity, creates such an instance with the given value.
-		/// Compared to <see cref="SetKeyValueProperty{TInstanceOwner, TInstance, TDefinition}(TInstanceOwner, string, object?, Func{TInstanceOwner, ICollection{TInstance}}, Func{TInstanceOwner, IEnumerable{TDefinition}}, Func{TDefinition, TInstanceOwner, TInstance})"/>,
+		/// Compared to <see cref="SetKeyValueProperty{TInstanceOwner, TInstance, TDefinition}(TInstanceOwner, string, object?, Func{TInstanceOwner, ICollection{TInstance}},
+		/// Func{TInstanceOwner, IEnumerable{TDefinition}}, Func{TDefinition, TInstanceOwner, TInstance})"/>,
 		/// this overload can avoid the cost of looking up the property definition and avoids <see cref="UndefinedPropertyException"/> because the property definition is already given.
 		/// </summary>
+		/// <typeparam name="TInstanceOwner">The instance-owning entity type.</typeparam>
+		/// <typeparam name="TInstance">The concrete type of the property instances.</typeparam>
+		/// <typeparam name="TDefinition">The concrete type of the property definitions.</typeparam>
 		/// <param name="instanceOwner">The owning entity for which to set the property.</param>
 		/// <param name="propDef">The definition of the property to set.</param>
 		/// <param name="value">The value to which the property shall be set.</param>
@@ -128,6 +158,9 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 		/// Compared to <see cref="GetKeyValueProperty{TInstanceOwner, TInstance, TDefinition}(TInstanceOwner, string, Func{TInstanceOwner, ICollection{TInstance}})"/>,
 		/// this overload can avoid the cost of looking up the property definition.
 		/// </summary>
+		/// <typeparam name="TInstanceOwner">The instance-owning entity type.</typeparam>
+		/// <typeparam name="TInstance">The concrete type of the property instances.</typeparam>
+		/// <typeparam name="TDefinition">The concrete type of the property definitions.</typeparam>
 		/// <param name="instanceOwner">The owning entity, holding the property instance.</param>
 		/// <param name="propDef">The definition of the property to get.</param>
 		/// <param name="getPropInsts">The delegate to get the collection of property instances from the owning entity.</param>
@@ -140,11 +173,36 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 			return GetKeyValueProperty<TInstanceOwner, TInstance, TDefinition>(instanceOwner, propDef.Name, getPropInsts);
 		}
 
+		/// <summary>
+		/// Converts a collection of key-value property instances to a dictionary.
+		/// </summary>
+		/// <typeparam name="TInstanceOwner">The instance-owning entity type.</typeparam>
+		/// <typeparam name="TInstance">The concrete type of the property instances.</typeparam>
+		/// <typeparam name="TDefinition">The concrete type of the property definitions.</typeparam>
+		/// <param name="propertyInstances">The collection of property instances to convert to a dictionary.</param>
+		/// <returns>A dictionary containing the names of the provided properties associated with their corresponding values.</returns>
 		public static Dictionary<string, object?> ConvertKeyValuePropertiesToDictionary<TInstanceOwner, TInstance, TDefinition>(IEnumerable<TInstance> propertyInstances)
 				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
 			return propertyInstances.ToDictionary(p => p.Definition.Name, p => p.Value);
 		}
 
+		/// <summary>
+		/// Sets the key-value pairs from the given dictionary-like enumerable in the key-value properties of the given property-owning entity.
+		/// </summary>
+		/// <typeparam name="TInstanceOwner">The instance-owning entity type.</typeparam>
+		/// <typeparam name="TInstance">The concrete type of the property instances.</typeparam>
+		/// <typeparam name="TDefinition">The concrete type of the property definitions.</typeparam>
+		/// <param name="instanceOwner">The owning entity, holding property instances.</param>
+		/// <param name="dictionary">The source data to convert.</param>
+		/// <param name="getPropInsts">The delegate to get the collection of property instances from the owning entity.</param>
+		/// <param name="getPropDefs">
+		/// The delegate to get the collection of property definitions from the entity that owns the instances.
+		/// This is usually implemented by navigating from the instance-owning entity to the definition-owning entity and then obtaining the collection of definitions from there.
+		/// </param>
+		/// <param name="createInst">
+		/// The delegate to create a new property instance for a given property definition and owning entity.
+		/// It is used when the property doesn't exist yet for the owning entity.
+		/// </param>
 		public static void SetKeyValuePropertiesFromDictionary<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner, IEnumerable<KeyValuePair<string, object?>> dictionary,
 				Func<TInstanceOwner, ICollection<TInstance>> getPropInsts, Func<TInstanceOwner, IEnumerable<TDefinition>> getPropDefs, Func<TDefinition, TInstanceOwner, TInstance> createInst)
 				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
