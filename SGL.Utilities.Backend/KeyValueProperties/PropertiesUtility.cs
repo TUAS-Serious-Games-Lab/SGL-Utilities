@@ -32,6 +32,55 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 				}
 			}
 		}
+
+
+		private static TInstance setPropertyImpl<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner, string name, object? value,
+				Func<TInstanceOwner, ICollection<TInstance>> getPropInsts, Func<string, TDefinition> getPropDef, Func<TDefinition, TInstanceOwner, TInstance> createInst)
+				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
+			ICollection<TInstance> instances = getPropInsts(instanceOwner);
+			var propInst = instances.SingleOrDefault(p => p.Definition.Name == name);
+			if (propInst is null) {
+				propInst = createInst(getPropDef(name), instanceOwner);
+				instances.Add(propInst);
+			}
+			propInst.Value = value;
+			return propInst;
+		}
+
+		/// <summary>
+		/// Sets the property with the given name for this owner entity to the given value.
+		/// This either updates the value of an existing instance object, or, if no instance exists for this property for the entity, creates such an instance with the given value.
+		/// </summary>
+		/// <param name="instanceOwner">The owning entity for which to set the property.</param>
+		/// <param name="name">The name of the property to set.</param>
+		/// <param name="value">The value to which the property shall be set.</param>
+		/// <param name="getPropInsts">The delegate to get the collection of property instances from the owning entity.</param>
+		/// <param name="getPropDefs">
+		/// The delegate to get the collection of property definitions from the entity that owns the instances.
+		/// This is usually implemented by navigating from the instance-owning entity to the definition-owning entity and then obtaining the collection of definitions from there.
+		/// </param>
+		/// <param name="createInst">
+		/// The delegate to create a new property instance for a given property definition and owning entity.
+		/// It is used when the property doesn't exist yet for the owning entity.
+		/// </param>
+		/// <returns>The property instance object with the given name for the entity.</returns>
+		/// <exception cref="UndefinedPropertyException">A property with the given name is not defined for the definition-owning entity with which the instance-owning entity is associated.</exception>
+		/// <exception cref="RequiredPropertyNullException">A <see langword="null"/> value was given for a property instance of a property that is defined as <see cref="PropertyDefinitionBase.Required"/>.</exception>
+		/// <exception cref="PropertyTypeDoesntMatchDefinitionException">The type of the value given doesn't match the data type specified in the property definition.</exception>
+		public static TInstance SetKeyValueProperty<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner, string name, object? value,
+				Func<TInstanceOwner, ICollection<TInstance>> getPropInsts, Func<TInstanceOwner, IEnumerable<TDefinition>> getPropDefs, Func<TDefinition, TInstanceOwner, TInstance> createInst)
+				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
+			return setPropertyImpl(instanceOwner, name, value,
+				getPropInsts,
+				name => {
+					var propDef = getPropDefs(instanceOwner).SingleOrDefault(p => p.Name == name);
+					if (propDef is null) {
+						throw new UndefinedPropertyException(name);
+					}
+					return propDef;
+				}, createInst);
+		}
+
 		/// <summary>
 		/// Returns the value of the application-specific property with the given name for the owning entity.
 		/// </summary>
@@ -52,6 +101,29 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 		}
 
 		/// <summary>
+		/// Sets the property represented by the given property definition for this owning entity to the given value.
+		/// This either updates the value of an existing instance object, or, if no instance exists for this property for the owning entity, creates such an instance with the given value.
+		/// Compared to <see cref="SetKeyValueProperty{TInstanceOwner, TInstance, TDefinition}(TInstanceOwner, string, object?, Func{TInstanceOwner, ICollection{TInstance}}, Func{TInstanceOwner, IEnumerable{TDefinition}}, Func{TDefinition, TInstanceOwner, TInstance})"/>,
+		/// this overload can avoid the cost of looking up the property definition and avoids <see cref="UndefinedPropertyException"/> because the property definition is already given.
+		/// </summary>
+		/// <param name="instanceOwner">The owning entity for which to set the property.</param>
+		/// <param name="propDef">The definition of the property to set.</param>
+		/// <param name="value">The value to which the property shall be set.</param>
+		/// <param name="getPropInsts">The delegate to get the collection of property instances from the owning entity.</param>
+		/// <param name="createInst">
+		/// The delegate to create a new property instance for a given property definition and owning entity.
+		/// It is used when the property doesn't exist yet for the owning entity.
+		/// </param>
+		/// <returns>The relevant property instance for the user.</returns>
+		/// <exception cref="RequiredPropertyNullException">A <see langword="null"/> value was given for a property instance of a property that is defined as <see cref="PropertyDefinitionBase.Required"/>.</exception>
+		/// <exception cref="PropertyTypeDoesntMatchDefinitionException">The type of the value given doesn't match the data type specified in the property definition.</exception>
+		public static TInstance SetKeyValueProperty<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner, TDefinition propDef, object? value,
+				Func<TInstanceOwner, ICollection<TInstance>> getPropInsts, Func<TDefinition, TInstanceOwner, TInstance> createInst)
+				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
+			return setPropertyImpl(instanceOwner, propDef.Name, value, getPropInsts, name => propDef, createInst);
+		}
+
+		/// <summary>
 		/// Returns the value of the application-specific property represented by the given definition for the owning entity.
 		/// Compared to <see cref="GetKeyValueProperty{TInstanceOwner, TInstance, TDefinition}(TInstanceOwner, string, Func{TInstanceOwner, ICollection{TInstance}})"/>,
 		/// this overload can avoid the cost of looking up the property definition.
@@ -67,6 +139,5 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
 			return GetKeyValueProperty<TInstanceOwner, TInstance, TDefinition>(instanceOwner, propDef.Name, getPropInsts);
 		}
-
 	}
 }
