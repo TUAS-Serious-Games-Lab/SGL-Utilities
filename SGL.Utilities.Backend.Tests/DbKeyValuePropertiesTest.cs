@@ -198,5 +198,39 @@ namespace SGL.Utilities.Backend.Tests {
 			}
 		}
 
+		[Fact]
+		public async Task DictionaryKeyValueMappingCorrectlyRoundTrips() {
+			var agg = Aggregate.Create("test");
+			agg.AddProperty("Number", PropertyType.Json);
+			agg.AddProperty("String", PropertyType.Json);
+			agg.AddProperty("Date", PropertyType.Json);
+			agg.AddProperty("Guid", PropertyType.Json);
+
+			var part = Part.Create(agg, "Part 1");
+			var date = DateTime.Today;
+			var guid = Guid.NewGuid();
+			var dict = new Dictionary<string, object?>() {
+				["Number"] = 1234,
+				["String"] = "Hello World",
+				["Date"] = date,
+				["Guid"] = guid
+			};
+			part.ValidateProperties();
+			part.SetProperties(dict);
+			using (var context = createContext()) {
+				context.Aggregates.Add(agg);
+				context.Parts.Add(part);
+				await context.SaveChangesAsync();
+			}
+
+			using (var context = createContext()) {
+				var readPart = await context.Parts.Where(p => p.Label == "Part 1").Include(p => p.Properties).SingleOrDefaultAsync();
+				IDictionary<string, object?> props = readPart.GetProperties();
+				Assert.Equal(1234, Assert.Contains("Number", props));
+				Assert.Equal("Hello World", Assert.Contains("String", props));
+				Assert.Equal(date.ToUniversalTime(), (Assert.Contains("Date", props) as DateTime?)?.ToUniversalTime());
+				Assert.Equal(guid, Assert.Contains("Guid", props) as Guid?);
+			}
+		}
 	}
 }
