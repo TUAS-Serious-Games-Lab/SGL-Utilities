@@ -26,7 +26,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\SGL.Utilities.Crypto\SGL.Utilities.Crypto.csproj" />
+		<ProjectReference Include="..\SGL.Utilities.Crypto.Abstractions\SGL.Utilities.Crypto.Abstractions.csproj" />
 	</ItemGroup>
 
 </Project>
