@@ -14,7 +14,7 @@ namespace SGL.Utilities.Backend.Tests {
 	namespace PropTest {
 		public class Aggregate {
 			public Guid Id { get; set; }
-			public string Label { get; set; }
+			public string Label { get; set; } = "";
 			public ICollection<Part> Parts { get; set; } = null!;
 			public ICollection<PropDef> Properties { get; set; } = null!;
 
@@ -32,7 +32,7 @@ namespace SGL.Utilities.Backend.Tests {
 
 		public class Part {
 			public Guid Id { get; set; }
-			public string Label { get; set; }
+			public string Label { get; set; } = "";
 			public Aggregate Aggregate { get; set; } = null!;
 			public ICollection<PropInst> Properties { get; set; } = null!;
 
@@ -48,6 +48,11 @@ namespace SGL.Utilities.Backend.Tests {
 					io => io.Properties, (def, owner) => PropInst.Create<PropInst>(def, owner));
 			public object? GetProperty(PropDef propDef) => PropertiesUtility.GetKeyValueProperty(this, propDef, io => io.Properties);
 			public object? GetProperty(string name) => PropertiesUtility.GetKeyValueProperty(this, name, io => io.Properties, p => p.Definition);
+
+			public void SetProperties(IDictionary<string, object?> dict) =>
+				PropertiesUtility.SetKeyValuePropertiesFromDictionary(this, dict, io => io.Properties, io => io.Aggregate.Properties, (def, owner) => PropInst.Create<PropInst>(def, owner));
+
+			public IDictionary<string, object?> GetProperties() => PropertiesUtility.ConvertKeyValuePropertiesToDictionary(this, io => io.Properties, pi => pi.Definition);
 		}
 
 		public class PropDef : PropertyDefinitionBase<Aggregate> { }
@@ -122,5 +127,46 @@ namespace SGL.Utilities.Backend.Tests {
 				Assert.All(mapping, kvp => Assert.Equal(kvp.Value, Assert.Contains(kvp.Key, mappingRead)));
 			}
 		}
+
+		[Fact]
+		public void AttemptToSetNonExistentPropertyThrowsCorrectException() {
+			var agg = Aggregate.Create("test");
+			agg.AddProperty("Number", PropertyType.Integer);
+
+			var part = Part.Create(agg, "Part 1");
+			part.SetProperty("Number", 1234);
+
+			Assert.Equal("DoesNotExist", (Assert.Throws<UndefinedPropertyException>(() => part.SetProperty("DoesNotExist", "Hello World"))).UndefinedPropertyName);
+		}
+
+		[Fact]
+		public void AttemptToSetPropertyOfIncorrectTypeThrowsCorrectException() {
+			var agg = Aggregate.Create("test");
+			agg.AddProperty("Message", PropertyType.String);
+			var part = Part.Create(agg, "Part 1");
+			Assert.Equal("Message", (Assert.Throws<PropertyTypeDoesntMatchDefinitionException>(() => part.SetProperty("Message", 42))).InvalidPropertyName);
+		}
+
+		[Fact]
+		public async Task MissingRequiredPropertyThrowsCorrectExceptionOnValidation() {
+			var agg = Aggregate.Create("test");
+			agg.AddProperty("Number", PropertyType.Integer, true);
+			agg.AddProperty("GreetingMessage", PropertyType.String, true);
+			var part = Part.Create(agg, "Part 1");
+			part.SetProperty("Number", 42);
+			// Note: No GreetingMessage
+			Assert.Equal("GreetingMessage", (Assert.Throws<RequiredPropertyMissingException>(() => part.ValidateProperties())).MissingPropertyName);
+		}
+
+		[Fact]
+		public async Task RequiredPropertyNullThrowsCorrectExceptionOnValidation() {
+			var agg = Aggregate.Create("test");
+			agg.AddProperty("Number", PropertyType.Integer, true);
+			agg.AddProperty("GreetingMessage", PropertyType.String, true);
+			var part = Part.Create(agg, "Part 1");
+			part.SetProperty("Number", 42);
+			Assert.Equal("GreetingMessage", (Assert.Throws<RequiredPropertyNullException>(() => part.SetProperty("GreetingMessage", null))).InvalidPropertyName);
+		}
+
 	}
 }
