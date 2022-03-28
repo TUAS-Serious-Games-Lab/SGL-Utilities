@@ -121,7 +121,8 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 		/// <exception cref="PropertyNotFoundException">No property definition with the given name was found for the owning entity.</exception>
 		/// <exception cref="RequiredPropertyNullException">A <see langword="null"/> value was encountered for a property instance of a property that is defined as <see cref="PropertyDefinitionBase.Required"/>.</exception>
 		/// <exception cref="PropertyWithUnknownTypeException">An unknown property type was encountered.</exception>
-		public static object? GetKeyValueProperty<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner, string name, Func<TInstanceOwner, ICollection<TInstance>> getPropInsts, Func<TInstance, TDefinition> definitionHint)
+		public static object? GetKeyValueProperty<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner, string name,
+			Func<TInstanceOwner, ICollection<TInstance>> getPropInsts, Func<TInstance, TDefinition> definitionHint)
 				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
 			var propInst = getPropInsts(instanceOwner).SingleOrDefault(p => p.Definition.Name == name);
 			if (propInst is null) {
@@ -181,11 +182,17 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 		/// <typeparam name="TInstanceOwner">The instance-owning entity type.</typeparam>
 		/// <typeparam name="TInstance">The concrete type of the property instances.</typeparam>
 		/// <typeparam name="TDefinition">The concrete type of the property definitions.</typeparam>
-		/// <param name="propertyInstances">The collection of property instances to convert to a dictionary.</param>
+		/// <param name="instanceOwner">The owning entity, holding property instances.</param>
+		/// <param name="getPropInsts">The delegate to get the collection of property instances from the owning entity.</param>
+		/// <param name="definitionHint">
+		/// Needs to a lambda referencing <see cref="PropertyInstanceBase{TInstanceOwner, TDefinition}"/> within <typeparamref name="TInstanceOwner"/>.
+		/// This is just needed as a workaround to make type parameter deduction work.
+		/// </param>
 		/// <returns>A dictionary containing the names of the provided properties associated with their corresponding values.</returns>
-		public static Dictionary<string, object?> ConvertKeyValuePropertiesToDictionary<TInstanceOwner, TInstance, TDefinition>(IEnumerable<TInstance> propertyInstances)
+		public static Dictionary<string, object?> ConvertKeyValuePropertiesToDictionary<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner,
+			Func<TInstanceOwner, ICollection<TInstance>> getPropInsts, Func<TInstance, TDefinition> definitionHint)
 				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
-			return propertyInstances.ToDictionary(p => p.Definition.Name, p => p.Value);
+			return getPropInsts(instanceOwner).ToDictionary(p => p.Definition.Name, p => p.Value);
 		}
 
 		/// <summary>
