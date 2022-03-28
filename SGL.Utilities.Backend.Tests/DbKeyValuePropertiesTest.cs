@@ -168,5 +168,35 @@ namespace SGL.Utilities.Backend.Tests {
 			Assert.Equal("GreetingMessage", (Assert.Throws<RequiredPropertyNullException>(() => part.SetProperty("GreetingMessage", null))).InvalidPropertyName);
 		}
 
+		[Fact]
+		public async Task PropertiesWithJsonTypeCorrectlyRoundTripForOtherTypes() {
+			var agg = Aggregate.Create("test");
+			agg.AddProperty("Number", PropertyType.Json);
+			agg.AddProperty("String", PropertyType.Json);
+			agg.AddProperty("Date", PropertyType.Json);
+			agg.AddProperty("Guid", PropertyType.Json);
+
+			var date = DateTime.Today;
+			var guid = Guid.NewGuid();
+			var part = Part.Create(agg, "Part 1");
+			part.SetProperty("Number", 1234);
+			part.SetProperty("String", "Hello World");
+			part.SetProperty("Date", date);
+			part.SetProperty("Guid", guid);
+
+			using (var context = createContext()) {
+				context.Aggregates.Add(agg);
+				context.Parts.Add(part);
+				await context.SaveChangesAsync();
+			}
+			using (var context = createContext()) {
+				var readPart = await context.Parts.Where(p => p.Label == "Part 1").Include(p => p.Properties).SingleOrDefaultAsync();
+				Assert.Equal(1234, readPart.GetProperty("Number"));
+				Assert.Equal("Hello World", readPart.GetProperty("String"));
+				Assert.Equal(date.ToUniversalTime(), (readPart.GetProperty("Date") as DateTime?)?.ToUniversalTime());
+				Assert.Equal(guid, readPart.GetProperty("Guid") as Guid?);
+			}
+		}
+
 	}
 }
