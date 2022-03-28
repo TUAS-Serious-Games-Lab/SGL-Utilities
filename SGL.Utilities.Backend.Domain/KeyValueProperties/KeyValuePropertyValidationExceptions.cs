@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SGL.Utilities.Backend.KeyValueProperties {
+namespace SGL.Utilities.Backend.Domain.KeyValueProperties {
 	/// <summary>
 	/// The base class for exceptions thrown when an invalid property is encountered with key-value properties
 	/// represented by <see cref="PropertyDefinitionBase{TDefinitionOwner}"/> and <see cref="PropertyInstanceBase{TInstanceOwner, TDefinition}"/>.

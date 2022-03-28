@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SGL.Utilities.Backend.KeyValueProperties {
+﻿namespace SGL.Utilities.Backend.Domain.KeyValueProperties {
 	/// <summary>
 	/// Represents the data type of the <see cref="PropertyInstanceBase{TInstanceOwner, TDefinition}.Value"/> for a property in its <see cref="PropertyDefinitionBase.Type"/>.
 	/// </summary>

@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SGL.Utilities.Backend.KeyValueProperties {
+namespace SGL.Utilities.Backend.Domain.KeyValueProperties {
 	/// <summary>
 	/// A base class for <see cref="PropertyDefinitionBase{TDefinitionOwner}"/> containing only the data that is neutral to the owning entity type.
 	/// </summary>

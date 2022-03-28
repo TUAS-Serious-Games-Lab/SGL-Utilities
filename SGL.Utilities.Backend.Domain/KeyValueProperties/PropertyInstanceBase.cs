@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
 
-namespace SGL.Utilities.Backend.KeyValueProperties {
+namespace SGL.Utilities.Backend.Domain.KeyValueProperties {
 	/// <summary>
 	/// A generic base class for weak entity types that represent key-value property instances.
 	/// The derived classes are usually only needed to make the weak entity types typesafe and give the weak entities a proper name for the data layer.

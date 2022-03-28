@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SGL.Utilities.Backend.Domain.KeyValueProperties;
 using SGL.Utilities.Backend.KeyValueProperties;
 using SGL.Utilities.Backend.Tests.PropTest;
 using SGL.Utilities.Backend.TestUtilities;

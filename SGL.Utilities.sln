@@ -53,7 +53,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SGL.Utilities.Backend.Abstr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SGL.Utilities.Backend.AspNetCore.Tests", "SGL.Utilities.Backend.AspNetCore.Tests\SGL.Utilities.Backend.AspNetCore.Tests.csproj", "{8FFA6679-6CCF-4320-8C90-9E662DF3BD46}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SGL.Utilities.Crypto.Abstractions", "SGL.Utilities.Crypto.Abstractions\SGL.Utilities.Crypto.Abstractions.csproj", "{6FE2D7BF-8A69-4AC2-9FCE-066C13CC8B7E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SGL.Utilities.Crypto.Abstractions", "SGL.Utilities.Crypto.Abstractions\SGL.Utilities.Crypto.Abstractions.csproj", "{6FE2D7BF-8A69-4AC2-9FCE-066C13CC8B7E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SGL.Utilities.Backend.Domain", "SGL.Utilities.Backend.Domain\SGL.Utilities.Backend.Domain.csproj", "{2A943276-D6C0-41F5-8B05-E2D9DABB1930}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -317,6 +319,18 @@ Global
 		{6FE2D7BF-8A69-4AC2-9FCE-066C13CC8B7E}.Release|x64.Build.0 = Release|Any CPU
 		{6FE2D7BF-8A69-4AC2-9FCE-066C13CC8B7E}.Release|x86.ActiveCfg = Release|Any CPU
 		{6FE2D7BF-8A69-4AC2-9FCE-066C13CC8B7E}.Release|x86.Build.0 = Release|Any CPU
+		{2A943276-D6C0-41F5-8B05-E2D9DABB1930}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A943276-D6C0-41F5-8B05-E2D9DABB1930}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A943276-D6C0-41F5-8B05-E2D9DABB1930}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2A943276-D6C0-41F5-8B05-E2D9DABB1930}.Debug|x64.Build.0 = Debug|Any CPU
+		{2A943276-D6C0-41F5-8B05-E2D9DABB1930}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2A943276-D6C0-41F5-8B05-E2D9DABB1930}.Debug|x86.Build.0 = Debug|Any CPU
+		{2A943276-D6C0-41F5-8B05-E2D9DABB1930}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A943276-D6C0-41F5-8B05-E2D9DABB1930}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A943276-D6C0-41F5-8B05-E2D9DABB1930}.Release|x64.ActiveCfg = Release|Any CPU
+		{2A943276-D6C0-41F5-8B05-E2D9DABB1930}.Release|x64.Build.0 = Release|Any CPU
+		{2A943276-D6C0-41F5-8B05-E2D9DABB1930}.Release|x86.ActiveCfg = Release|Any CPU
+		{2A943276-D6C0-41F5-8B05-E2D9DABB1930}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
