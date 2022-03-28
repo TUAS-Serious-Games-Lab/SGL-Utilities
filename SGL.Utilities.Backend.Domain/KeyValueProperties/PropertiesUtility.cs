@@ -1,11 +1,8 @@
-﻿using SGL.Utilities.Backend.Domain.KeyValueProperties;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SGL.Utilities.Backend.KeyValueProperties {
+namespace SGL.Utilities.Backend.Domain.KeyValueProperties {
 	/// <summary>
 	/// Provides utility methods for working with key-value properties.
 	/// </summary>
