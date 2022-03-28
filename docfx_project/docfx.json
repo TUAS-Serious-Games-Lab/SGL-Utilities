@@ -6,6 +6,7 @@
           "files": [
             "SGL.Utilities/bin/Debug/*/SGL.Utilities.dll",
             "SGL.Utilities.Backend/bin/Debug/*/SGL.Utilities.Backend.dll",
+            "SGL.Utilities.Backend.Domain/bin/Debug/*/SGL.Utilities.Backend.Domain.dll",
             "SGL.Utilities.Backend.Abstractions/bin/Debug/*/SGL.Utilities.Backend.Abstractions.dll",
             "SGL.Utilities.Backend.AspNetCore/bin/Debug/*/SGL.Utilities.Backend.AspNetCore.dll",
             "SGL.Utilities.Backend.BlobStore/bin/Debug/*/SGL.Utilities.Backend.BlobStore.dll",

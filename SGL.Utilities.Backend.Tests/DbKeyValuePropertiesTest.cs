@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SGL.Utilities.Backend.Domain.KeyValueProperties;
 using SGL.Utilities.Backend.KeyValueProperties;
 using SGL.Utilities.Backend.Tests.PropTest;
 using SGL.Utilities.Backend.TestUtilities;
@@ -148,7 +149,7 @@ namespace SGL.Utilities.Backend.Tests {
 		}
 
 		[Fact]
-		public async Task MissingRequiredPropertyThrowsCorrectExceptionOnValidation() {
+		public void MissingRequiredPropertyThrowsCorrectExceptionOnValidation() {
 			var agg = Aggregate.Create("test");
 			agg.AddProperty("Number", PropertyType.Integer, true);
 			agg.AddProperty("GreetingMessage", PropertyType.String, true);
@@ -159,7 +160,7 @@ namespace SGL.Utilities.Backend.Tests {
 		}
 
 		[Fact]
-		public async Task RequiredPropertyNullThrowsCorrectExceptionOnValidation() {
+		public void RequiredPropertyNullThrowsCorrectExceptionOnValidation() {
 			var agg = Aggregate.Create("test");
 			agg.AddProperty("Number", PropertyType.Integer, true);
 			agg.AddProperty("GreetingMessage", PropertyType.String, true);
