@@ -59,6 +59,7 @@ namespace SGL.Utilities.Crypto {
 
 		/// <summary>
 		/// Derives a given amount of secret bytes from the given input <paramref name="secret"/> and <paramref name="salt"/>, using the given <paramref name="digest"/> algorithm.
+		/// This overload acts as a convenience shortcut for <see cref="DeriveBytes(byte[], byte[], int, Digest)"/>, where <paramref name="secret"/> and <paramref name="salt"/> are encoded using UTF8.
 		/// </summary>
 		/// <param name="secret">The input secret value of arbitrary length. This can be provided by the user or from the system environment, or can be obtained from a key aggreement algorithm.</param>
 		/// <param name="salt">A salt parameter to modify the derivation with. Using different salts with equal <paramref name="secret"/>s  allows deriving different secret values from the same source value.</param>
@@ -70,6 +71,7 @@ namespace SGL.Utilities.Crypto {
 
 		/// <summary>
 		/// Derives a given amount of secret bytes from the given input <paramref name="secret"/> and <paramref name="salt"/>, using the given <paramref name="digest"/> algorithm.
+		/// This overload acts as a convenience shortcut for <see cref="DeriveBytes(byte[], byte[], int, Digest)"/>, where <paramref name="secret"/> and <paramref name="salt"/> are encoded using UTF8.
 		/// </summary>
 		/// <param name="secret">The input secret value of arbitrary length. This can be provided by the user or from the system environment, or can be obtained from a key aggreement algorithm.</param>
 		/// <param name="salt">A salt parameter to modify the derivation with. Using different salts with equal <paramref name="secret"/>s  allows deriving different secret values from the same source value.</param>
