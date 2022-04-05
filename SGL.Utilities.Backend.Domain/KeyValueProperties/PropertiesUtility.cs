@@ -24,6 +24,8 @@ namespace SGL.Utilities.Backend.Domain.KeyValueProperties {
 		/// <exception cref="UndefinedPropertyException">If a property instance references a property instance that is not correctly associated with the definition-owning entity
 		/// associated with the instance-owning entity.</exception>
 		/// <exception cref="ConflictingPropertyInstanceException">If multiple instances for the same property are present.</exception>
+		/// <exception cref="PropertyDefinitionsCollectionMissing">If the properties could not be validated because the definitions collection was not present.</exception>
+		/// <exception cref="PropertyInstancesCollectionMissing">If the properties could not be validated because the instances collection was not present.</exception>
 		public static void ValidateProperties<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner, Func<TInstanceOwner, IEnumerable<TInstance>> instancesGetter,
 				Func<TInstanceOwner, IEnumerable<TDefinition>> definitionsGetter)
 				where TInstanceOwner : class where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TDefinition : PropertyDefinitionBase {
@@ -93,6 +95,8 @@ namespace SGL.Utilities.Backend.Domain.KeyValueProperties {
 		/// <exception cref="UndefinedPropertyException">A property with the given name is not defined for the definition-owning entity with which the instance-owning entity is associated.</exception>
 		/// <exception cref="RequiredPropertyNullException">A <see langword="null"/> value was given for a property instance of a property that is defined as <see cref="PropertyDefinitionBase.Required"/>.</exception>
 		/// <exception cref="PropertyTypeDoesntMatchDefinitionException">The type of the value given doesn't match the data type specified in the property definition.</exception>
+		/// <exception cref="PropertyDefinitionsCollectionMissing">If the property could not be set because the definitions collection was not present.</exception>
+		/// <exception cref="PropertyInstancesCollectionMissing">If the property could not be set because the instances collection was not present.</exception>
 		public static TInstance SetKeyValueProperty<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner, string name, object? value,
 				Func<TInstanceOwner, ICollection<TInstance>> getPropInsts, Func<TInstanceOwner, IEnumerable<TDefinition>> getPropDefs, Func<TDefinition, TInstanceOwner, TInstance> createInst)
 				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
@@ -124,6 +128,7 @@ namespace SGL.Utilities.Backend.Domain.KeyValueProperties {
 		/// <exception cref="PropertyNotFoundException">No property definition with the given name was found for the owning entity.</exception>
 		/// <exception cref="RequiredPropertyNullException">A <see langword="null"/> value was encountered for a property instance of a property that is defined as <see cref="PropertyDefinitionBase.Required"/>.</exception>
 		/// <exception cref="PropertyWithUnknownTypeException">An unknown property type was encountered.</exception>
+		/// <exception cref="PropertyInstancesCollectionMissing">If the property could not be read because the instances collection was not present.</exception>
 		public static object? GetKeyValueProperty<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner, string name,
 			Func<TInstanceOwner, ICollection<TInstance>> getPropInsts, Func<TInstance, TDefinition> definitionHint)
 				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
@@ -155,6 +160,8 @@ namespace SGL.Utilities.Backend.Domain.KeyValueProperties {
 		/// <returns>The relevant property instance for the user.</returns>
 		/// <exception cref="RequiredPropertyNullException">A <see langword="null"/> value was given for a property instance of a property that is defined as <see cref="PropertyDefinitionBase.Required"/>.</exception>
 		/// <exception cref="PropertyTypeDoesntMatchDefinitionException">The type of the value given doesn't match the data type specified in the property definition.</exception>
+		/// <exception cref="PropertyDefinitionsCollectionMissing">If the property could not be set because the definitions collection was not present.</exception>
+		/// <exception cref="PropertyInstancesCollectionMissing">If the property could not be set because the instances collection was not present.</exception>
 		public static TInstance SetKeyValueProperty<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner, TDefinition propDef, object? value,
 				Func<TInstanceOwner, ICollection<TInstance>> getPropInsts, Func<TDefinition, TInstanceOwner, TInstance> createInst)
 				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
@@ -174,6 +181,7 @@ namespace SGL.Utilities.Backend.Domain.KeyValueProperties {
 		/// <exception cref="PropertyNotFoundException">No property definition with the given name was found for the owning entity.</exception>
 		/// <exception cref="RequiredPropertyNullException">A <see langword="null"/> value was encountered for a property instance of a property that is defined as <see cref="PropertyDefinitionBase.Required"/>.</exception>
 		/// <exception cref="PropertyWithUnknownTypeException">An unknown property type was encountered.</exception>
+		/// <exception cref="PropertyInstancesCollectionMissing">If the property could not be read because the instances collection was not present.</exception>
 		public static object? GetKeyValueProperty<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner, TDefinition propDef, Func<TInstanceOwner, ICollection<TInstance>> getPropInsts)
 				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
 			return GetKeyValueProperty(instanceOwner, propDef.Name, getPropInsts, p => p.Definition);
@@ -192,6 +200,9 @@ namespace SGL.Utilities.Backend.Domain.KeyValueProperties {
 		/// This is just needed as a workaround to make type parameter deduction work.
 		/// </param>
 		/// <returns>A dictionary containing the names of the provided properties associated with their corresponding values.</returns>
+		/// <exception cref="RequiredPropertyNullException">A <see langword="null"/> value was encountered for a property instance of a property that is defined as <see cref="PropertyDefinitionBase.Required"/>.</exception>
+		/// <exception cref="PropertyWithUnknownTypeException">An unknown property type was encountered.</exception>
+		/// <exception cref="PropertyInstancesCollectionMissing">If the properties could not be read because the instances collection was not present.</exception>
 		public static Dictionary<string, object?> ConvertKeyValuePropertiesToDictionary<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner,
 			Func<TInstanceOwner, ICollection<TInstance>> getPropInsts, Func<TInstance, TDefinition> definitionHint)
 				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
@@ -215,6 +226,11 @@ namespace SGL.Utilities.Backend.Domain.KeyValueProperties {
 		/// The delegate to create a new property instance for a given property definition and owning entity.
 		/// It is used when the property doesn't exist yet for the owning entity.
 		/// </param>
+		/// <exception cref="UndefinedPropertyException">A property with the given name is not defined for the definition-owning entity with which the instance-owning entity is associated.</exception>
+		/// <exception cref="RequiredPropertyNullException">A <see langword="null"/> value was given for a property instance of a property that is defined as <see cref="PropertyDefinitionBase.Required"/>.</exception>
+		/// <exception cref="PropertyTypeDoesntMatchDefinitionException">The type of a value given doesn't match the data type specified in the property definition.</exception>
+		/// <exception cref="PropertyDefinitionsCollectionMissing">If the properties could not be set because the definitions collection was not present.</exception>
+		/// <exception cref="PropertyInstancesCollectionMissing">If the properties could not be set because the instances collection was not present.</exception>
 		public static void SetKeyValuePropertiesFromDictionary<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner, IEnumerable<KeyValuePair<string, object?>> dictionary,
 				Func<TInstanceOwner, ICollection<TInstance>> getPropInsts, Func<TInstanceOwner, IEnumerable<TDefinition>> getPropDefs, Func<TDefinition, TInstanceOwner, TInstance> createInst)
 				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
