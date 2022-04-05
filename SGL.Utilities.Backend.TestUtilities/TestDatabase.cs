@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Data.Common;
 
@@ -23,10 +24,16 @@ namespace SGL.Utilities.Backend.TestUtilities {
 		/// <summary>
 		/// Creates an sqlite in-memory database and applies the schema specified by the database context type to it.
 		/// </summary>
-		public TestDatabase() {
+		/// <param name="loggerFactory">Optionally specifies a logger factory to use for logging in the database contexts created using <see cref="ContextOptions"/>.</param>
+		public TestDatabase(ILoggerFactory? loggerFactory = null) {
 			Connection = new SqliteConnection("Filename=:memory:");
 			Connection.Open();
-			ContextOptions = new DbContextOptionsBuilder<TContext>().UseSqlite(Connection).Options;
+			var optionsBuilder = new DbContextOptionsBuilder<TContext>();
+			optionsBuilder.UseSqlite(Connection);
+			if (loggerFactory != null) {
+				optionsBuilder.UseLoggerFactory(loggerFactory);
+			}
+			ContextOptions = optionsBuilder.Options;
 			using (var context = Activator.CreateInstance(typeof(TContext), ContextOptions) as TContext ?? throw new InvalidOperationException()) {
 				context.Database.EnsureCreated();
 			}
