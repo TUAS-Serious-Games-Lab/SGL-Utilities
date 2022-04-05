@@ -27,9 +27,9 @@ namespace SGL.Utilities.Backend.Domain.KeyValueProperties {
 		public static void ValidateProperties<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner, Func<TInstanceOwner, IEnumerable<TInstance>> instancesGetter,
 				Func<TInstanceOwner, IEnumerable<TDefinition>> definitionsGetter)
 				where TInstanceOwner : class where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TDefinition : PropertyDefinitionBase {
-			var definitions = definitionsGetter(instanceOwner).ToList();
+			var definitions = definitionsGetter(instanceOwner)?.ToList() ?? throw new PropertyDefinitionsCollectionMissing();
 			var requiredDefinitions = definitions.Where(p => p.Required).ToList();
-			var instances = instancesGetter(instanceOwner);
+			var instances = instancesGetter(instanceOwner)?.ToList() ?? throw new PropertyInstancesCollectionMissing();
 			// TODO: If this method becomes a bottleneck, maybe use temporary Dictionaries / Sets to avoid O(n^2) runtime.
 			// However, the involved 'n's should be quite low and this happens in-memory, just before we access the database, which should dwarf this overhead.
 			foreach (var propInst in instances) {
@@ -55,10 +55,15 @@ namespace SGL.Utilities.Backend.Domain.KeyValueProperties {
 		private static TInstance setPropertyImpl<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner, string name, object? value,
 				Func<TInstanceOwner, ICollection<TInstance>> getPropInsts, Func<string, TDefinition> getPropDef, Func<TDefinition, TInstanceOwner, TInstance> createInst)
 				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
-			ICollection<TInstance> instances = getPropInsts(instanceOwner);
+			ICollection<TInstance> instances = getPropInsts(instanceOwner) ?? throw new PropertyInstancesCollectionMissing();
 			var propInst = instances.SingleOrDefault(p => p.Definition.Name == name);
 			if (propInst is null) {
-				propInst = createInst(getPropDef(name), instanceOwner);
+				try {
+					propInst = createInst(getPropDef(name), instanceOwner);
+				}
+				catch (NullReferenceException ex) {
+					throw new PropertyDefinitionsCollectionMissing(ex);
+				}
 				instances.Add(propInst);
 			}
 			propInst.Value = value;
@@ -94,7 +99,7 @@ namespace SGL.Utilities.Backend.Domain.KeyValueProperties {
 			return setPropertyImpl(instanceOwner, name, value,
 				getPropInsts,
 				name => {
-					var propDef = getPropDefs(instanceOwner).SingleOrDefault(p => p.Name == name);
+					var propDef = (getPropDefs(instanceOwner) ?? throw new PropertyDefinitionsCollectionMissing()).SingleOrDefault(p => p.Name == name);
 					if (propDef is null) {
 						throw new UndefinedPropertyException(name);
 					}
@@ -122,7 +127,7 @@ namespace SGL.Utilities.Backend.Domain.KeyValueProperties {
 		public static object? GetKeyValueProperty<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner, string name,
 			Func<TInstanceOwner, ICollection<TInstance>> getPropInsts, Func<TInstance, TDefinition> definitionHint)
 				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
-			var propInst = getPropInsts(instanceOwner).SingleOrDefault(p => p.Definition.Name == name);
+			var propInst = (getPropInsts(instanceOwner) ?? throw new PropertyInstancesCollectionMissing()).SingleOrDefault(p => p.Definition.Name == name);
 			if (propInst is null) {
 				throw new PropertyNotFoundException(name);
 			}
@@ -190,7 +195,7 @@ namespace SGL.Utilities.Backend.Domain.KeyValueProperties {
 		public static Dictionary<string, object?> ConvertKeyValuePropertiesToDictionary<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner,
 			Func<TInstanceOwner, ICollection<TInstance>> getPropInsts, Func<TInstance, TDefinition> definitionHint)
 				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
-			return getPropInsts(instanceOwner).ToDictionary(p => p.Definition.Name, p => p.Value);
+			return (getPropInsts(instanceOwner) ?? throw new PropertyInstancesCollectionMissing()).ToDictionary(p => p.Definition.Name, p => p.Value);
 		}
 
 		/// <summary>

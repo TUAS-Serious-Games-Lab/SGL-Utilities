@@ -18,6 +18,37 @@ namespace SGL.Utilities.Backend.Domain.KeyValueProperties {
 	}
 
 	/// <summary>
+	/// The base class for exceptions thrown when property access or validation fails because a property definition or instance collection is missing.
+	/// </summary>
+	public abstract class PropertyCollectionMissingException : Exception {
+		/// <summary>
+		/// Creates a new exception object with the given mesage and inner exception.
+		/// </summary>
+		protected PropertyCollectionMissingException(string? message, Exception? innerException) : base(message, innerException) { }
+	}
+
+	/// <summary>
+	/// The exception type thrown when property access or validation fails because a property definition collection is missing.
+	/// </summary>
+	public class PropertyDefinitionsCollectionMissing : PropertyCollectionMissingException {
+		/// <summary>
+		/// Creates a new exception object with the given inner exception.
+		/// </summary>
+		public PropertyDefinitionsCollectionMissing(Exception? innerException = null) :
+			base("Could not validate / set properties because the definitions collection is missing.", innerException) { }
+	}
+	/// <summary>
+	/// The exception type thrown when property access or validation fails because a property instance collection is missing.
+	/// </summary>
+	public class PropertyInstancesCollectionMissing : PropertyCollectionMissingException {
+		/// <summary>
+		/// Creates a new exception object with the given inner exception.
+		/// </summary>
+		public PropertyInstancesCollectionMissing(Exception? innerException = null) :
+			base("Could not validate / set / get properties because the instances collection is missing.", innerException) { }
+	}
+
+	/// <summary>
 	/// The exception type thrown when an empty value is given for a required property.
 	/// </summary>
 	public class RequiredPropertyNullException : KeyValuePropertyValidationException {
