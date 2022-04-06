@@ -144,7 +144,7 @@ namespace SGL.Utilities.Backend.Domain.KeyValueProperties {
 		public static TInstance Create<TInstance>(TDefinition definition, TInstanceOwner owner)
 				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition>, new() =>
 			new TInstance {
-				Id = Guid.NewGuid(),
+				Id = Guid.Empty,
 				DefinitionId = definition.Id,
 				Definition = definition,
 				Owner = owner

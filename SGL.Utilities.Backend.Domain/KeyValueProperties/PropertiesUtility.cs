@@ -35,15 +35,15 @@ namespace SGL.Utilities.Backend.Domain.KeyValueProperties {
 			// TODO: If this method becomes a bottleneck, maybe use temporary Dictionaries / Sets to avoid O(n^2) runtime.
 			// However, the involved 'n's should be quite low and this happens in-memory, just before we access the database, which should dwarf this overhead.
 			foreach (var propInst in instances) {
-				if (!definitions.Any(pd => pd.Id == propInst.DefinitionId)) {
-					throw new UndefinedPropertyException(propInst.Definition.Name);
+				if (propInst.Definition == null || (!definitions.Any(def => def == propInst.Definition) && !definitions.Any(def => def.Name == propInst.Definition.Name))) {
+					throw new UndefinedPropertyException(propInst.Definition?.Name ?? "[null]");
 				}
-				if (instances.Count(p => p.Definition.Name == propInst.Definition.Name) > 1) {
+				if (instances.Count(p => p.Definition == propInst.Definition || p.Definition.Name == propInst.Definition.Name) > 1) {
 					throw new ConflictingPropertyInstanceException(propInst.Definition.Name);
 				}
 			}
 			foreach (var propDef in requiredDefinitions) {
-				var propInst = instances.SingleOrDefault(pi => pi.DefinitionId == propDef.Id);
+				var propInst = instances.SingleOrDefault(pi => pi.Definition == propDef) ?? instances.SingleOrDefault(pi => pi.Definition.Name == propDef.Name);
 				if (propInst == null) {
 					throw new RequiredPropertyMissingException(propDef.Name);
 				}

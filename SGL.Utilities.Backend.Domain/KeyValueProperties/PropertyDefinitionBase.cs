@@ -45,7 +45,7 @@ namespace SGL.Utilities.Backend.Domain.KeyValueProperties {
 		public static TDefinition Create<TDefinition>(TDefinitionOwner owner, string name, PropertyType type, bool required)
 				where TDefinition : PropertyDefinitionBase<TDefinitionOwner>, new() =>
 			new TDefinition {
-				Id = Guid.NewGuid(),
+				Id = Guid.Empty,
 				Owner = owner,
 				Name = name,
 				Type = type,
