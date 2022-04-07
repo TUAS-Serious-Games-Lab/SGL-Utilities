@@ -67,7 +67,7 @@ namespace SGL.Utilities.Crypto.Keys {
 		/// Tests <paramref name="left"/> and <paramref name="right"/> for value equality, i.e. if both objects represent the same key id.
 		/// </summary>
 		public static bool operator ==(KeyId left, KeyId right) {
-			if (left == right) {
+			if (ReferenceEquals(left, right)) {
 				return true;
 			}
 			return left?.Equals(right) ?? false;
