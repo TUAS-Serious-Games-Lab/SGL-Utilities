@@ -66,11 +66,16 @@ namespace SGL.Utilities.Crypto.Keys {
 		/// <summary>
 		/// Tests <paramref name="left"/> and <paramref name="right"/> for value equality, i.e. if both objects represent the same key id.
 		/// </summary>
-		public static bool operator ==(KeyId left, KeyId right) => left.Equals(right);
+		public static bool operator ==(KeyId left, KeyId right) {
+			if (left == right) {
+				return true;
+			}
+			return left?.Equals(right) ?? false;
+		}
 		/// <summary>
 		/// Tests <paramref name="left"/> and <paramref name="right"/> for value inequality, i.e. if both objects represent the different key ids.
 		/// </summary>
-		public static bool operator !=(KeyId left, KeyId right) => !left.Equals(right);
+		public static bool operator !=(KeyId left, KeyId right) => !(left == right);
 
 		/// <summary>
 		/// Formats the key id in a human-friendly, yet easily parsable format, where the bytes are printed in hexadecimal,
