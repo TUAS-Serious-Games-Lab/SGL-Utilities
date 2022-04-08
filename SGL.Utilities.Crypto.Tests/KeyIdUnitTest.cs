@@ -60,5 +60,25 @@ namespace SGL.Utilities.Crypto.Tests {
 			var keyId2 = loadedPubKey.CalculateId();
 			Assert.Equal(keyId1, keyId2);
 		}
+
+		[Fact]
+		public void KeyIdsFromSameKeyAreEqual() {
+			var keyPair = KeyPair.GenerateEllipticCurves(random, 521);
+			var keyId1 = keyPair.Public.CalculateId();
+			var keyId2 = keyPair.Public.CalculateId();
+			Assert.Equal(keyId1, keyId2);
+			Assert.True(keyId1 == keyId2);
+		}
+
+		[Fact]
+		public void KeyIdsFromDifferentKeysAreNotEqual() {
+			var keyPair1 = KeyPair.GenerateEllipticCurves(random, 521);
+			var keyPair2 = KeyPair.GenerateEllipticCurves(random, 521);
+			var keyId1 = keyPair1.Public.CalculateId();
+			var keyId2 = keyPair2.Public.CalculateId();
+			Assert.NotEqual(keyId1, keyId2);
+			Assert.True(keyId1 != keyId2);
+		}
+
 	}
 }

@@ -7,7 +7,7 @@ namespace SGL.Utilities.Validation {
 	/// </summary>
 	public class PlainNameAttribute : ValidationAttribute {
 		/// <summary>
-		/// Wheter brackets (round, square, curly) are allowed in the name.
+		/// Whether brackets (round, square, curly) are allowed in the name.
 		/// </summary>
 		public bool AllowBrackets { get; }
 

@@ -1,4 +1,4 @@
-﻿namespace SGL.Utilities.Crypto.Certificates {
+﻿namespace SGL.Utilities.Crypto.Keys {
 	/// <summary>
 	/// Represents the encryption mode to use for encrypting private keys using a password-derived key when writing them to a PEM writer (e.g. a .pem file).
 	/// </summary>
