@@ -141,5 +141,18 @@ namespace SGL.Utilities {
 			if (enumerator.MoveNext()) return default;
 			return value;
 		}
+
+		/// <summary>
+		/// Takes a key-value-pair collection and generates a new dictionary with the same keys as the input and values that are projected from the original values.
+		/// </summary>
+		/// <typeparam name="TKey">The type of the keys.</typeparam>
+		/// <typeparam name="TInValue">The type of the projected values.</typeparam>
+		/// <typeparam name="TOutValue">The type of the original values.</typeparam>
+		/// <param name="dict">The input dictionary.</param>
+		/// <param name="projection">The projection function to apply to the input values.</param>
+		/// <returns>The projected dictionary.</returns>
+		public static Dictionary<TKey, TOutValue> ToProjectedDictionary<TKey, TInValue, TOutValue>(this IEnumerable<KeyValuePair<TKey, TInValue>> dict, Func<TInValue, TOutValue> projection) where TKey : notnull {
+			return dict.ToDictionary(kvp => kvp.Key, kvp => projection(kvp.Value));
+		}
 	}
 }
