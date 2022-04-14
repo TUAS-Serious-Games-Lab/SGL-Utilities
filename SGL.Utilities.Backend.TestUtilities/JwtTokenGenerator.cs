@@ -50,5 +50,23 @@ namespace SGL.Utilities.Backend.TestUtilities {
 			var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 			return tokenString;
 		}
+		/// <summary>
+		/// Generates a JWT bearer token with the given parameters.
+		/// </summary>
+		/// <param name="expirationTime">The time until the token expires.</param>
+		/// <param name="claims">The claims put into the token.</param>
+		/// <returns>A string containing the encoded token.</returns>
+		public string GenerateToken(TimeSpan expirationTime, params (string ClaimType, string ClaimValue)[] claims) {
+			var claimObjs = claims.Select(c => new Claim(c.ClaimType, c.ClaimValue)).ToArray();
+			var token = new JwtSecurityToken(
+				issuer: issuer,
+				audience: audience,
+				claims: claimObjs,
+				expires: DateTime.UtcNow.Add(expirationTime),
+				signingCredentials: signingCredentials
+			);
+			var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+			return tokenString;
+		}
 	}
 }
