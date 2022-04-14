@@ -36,7 +36,7 @@ namespace SGL.Utilities.Backend.TestUtilities {
 		/// <param name="userId">The user id of the user that is authenticated by the token.</param>
 		/// <param name="expirationTime">The time until the token expires.</param>
 		/// <param name="additionalClaims">Additional claims to add to the token besides the user id.</param>
-		/// <returns></returns>
+		/// <returns>A string containing the encoded token.</returns>
 		public string GenerateToken(Guid userId, TimeSpan expirationTime, params (string ClaimType, string ClaimValue)[] additionalClaims) {
 			var claims = additionalClaims.Select(c => new Claim(c.ClaimType, c.ClaimValue))
 				.Prepend(new Claim("userid", userId.ToString() ?? "")).ToArray();
