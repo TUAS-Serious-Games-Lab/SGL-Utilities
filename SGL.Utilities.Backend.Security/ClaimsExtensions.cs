@@ -63,6 +63,15 @@ namespace SGL.Utilities.Backend.Security {
 		public delegate bool TryParser<T>(string claimValue, out T parsedValue);
 
 		/// <summary>
+		/// Looks for a claim with the given type / name in the claims sequence and returns the value of the first one as a string, or null if no such claim was present.
+		/// </summary>
+		/// <param name="claims">A sequence of claims to search.</param>
+		/// <param name="claimType">The claim type to look for.</param>
+		/// <returns>The value of the first claim of the given type, or null if no such claim was present.</returns>
+		public static string? GetClaimOrNull(this IEnumerable<Claim> claims, string claimType) =>
+			claims.FirstOrDefault(c => c.Type.Equals(claimType, StringComparison.OrdinalIgnoreCase))?.Value;
+
+		/// <summary>
 		/// Looks for a claim with the given type / name in the claims sequence and returns the value of the first one as a string.
 		/// </summary>
 		/// <param name="claims">A sequence of claims to search.</param>
@@ -70,14 +79,15 @@ namespace SGL.Utilities.Backend.Security {
 		/// <returns>The value of the first claim of the given type.</returns>
 		/// <exception cref="ClaimNotFoundException">When no such claim is present.</exception>
 		public static string GetClaim(this IEnumerable<Claim> claims, string claimType) {
-			var claim = claims.FirstOrDefault(c => c.Type.Equals(claimType, StringComparison.OrdinalIgnoreCase));
+			var claim = claims.GetClaimOrNull(claimType);
 			if (claim is null) {
 				throw new ClaimNotFoundException(claimType);
 			}
 			else {
-				return claim.Value;
+				return claim;
 			}
 		}
+
 		/// <summary>
 		/// Looks for a claim with the given type / name in the claims sequence, and returns its value parsed as <c>T</c>.
 		/// </summary>
@@ -98,6 +108,34 @@ namespace SGL.Utilities.Backend.Security {
 			}
 		}
 		/// <summary>
+		/// Looks for a claim with the given type / name in the claims sequence, and returns its value parsed as <c>T</c>,
+		/// or the default value of <c>T</c> if no such claim was present or the claim could not be parsed.
+		/// </summary>
+		/// <typeparam name="T">The type as which the value is parsed.</typeparam>
+		/// <param name="claims">A sequence of claims to search.</param>
+		/// <param name="claimType">The claim type to look for.</param>
+		/// <param name="tryParser">The delegate to be used for attempting to parse the value.</param>
+		/// <returns>The parsed value of the first claim of the given type, or the default value of <c>T</c> if no such claim was present or the claim could not be parsed.</returns>
+		public static T? GetClaimOrDefault<T>(this IEnumerable<Claim> claims, string claimType, TryParser<T> tryParser) {
+			var value = claims.GetClaimOrNull(claimType);
+			if (value == null) {
+				return default;
+			}
+			if (tryParser(value, out var parsedValue)) {
+				return parsedValue;
+			}
+			else {
+				return default;
+			}
+		}
+
+		/// <summary>
+		/// A convenience method to apply <see cref="GetClaimOrNull(IEnumerable{Claim}, string)"/> to the claims of a <see cref="ClaimsPrincipal"/>.
+		/// </summary>
+		public static string? GetClaimOrNull(this ClaimsPrincipal principal, string claimType) {
+			return principal.Claims.GetClaimOrNull(claimType);
+		}
+		/// <summary>
 		/// A convenience method to apply <see cref="GetClaim(IEnumerable{Claim}, string)"/> to the claims of a <see cref="ClaimsPrincipal"/>.
 		/// </summary>
 		public static string GetClaim(this ClaimsPrincipal principal, string claimType) {
@@ -108,6 +146,12 @@ namespace SGL.Utilities.Backend.Security {
 		/// </summary>
 		public static T GetClaim<T>(this ClaimsPrincipal principal, string claimType, TryParser<T> tryParser) {
 			return principal.Claims.GetClaim(claimType, tryParser);
+		}
+		/// <summary>
+		/// A convenience method to apply <see cref="GetClaimOrDefault{T}(IEnumerable{Claim}, string, TryParser{T})"/> to the claims of a <see cref="ClaimsPrincipal"/>.
+		/// </summary>
+		public static T? GetClaimOrDefault<T>(this ClaimsPrincipal principal, string claimType, TryParser<T> tryParser) {
+			return principal.Claims.GetClaimOrDefault(claimType, tryParser);
 		}
 	}
 }
