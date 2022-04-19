@@ -110,6 +110,27 @@ namespace SGL.Utilities.Crypto.Keys {
 			if (id[0] < 1 || id[0] > 2) throw new ArgumentException("Given KeyId uses unknown type identifier.");
 			return new KeyId(id);
 		}
+
+		/// <summary>
+		/// Attempts to parse a string representation as produced by <see cref="ToString"/> back into a <see cref="KeyId"/> object.
+		/// If successful, <paramref name="result"/> contains the object and true is returned.
+		/// Otherwise, <paramref name="result"/> contains null and false is returned.
+		/// </summary>
+		/// <param name="str">The input string to parse.</param>
+		/// <param name="result">Is assigned to the parsed object or null.</param>
+		/// <returns>true if successful, false otherwise</returns>
+		public static bool TryParse(string str, out KeyId? result) {
+			result = null;
+			var otherChars = str.Where(c => !Uri.IsHexDigit(c));
+			if (otherChars.Any(c => c != ':')) return false;
+			if (otherChars.Count() != 8) return false;
+			var digits = str.Where(c => Uri.IsHexDigit(c)).ToArray();
+			if (digits.Length != 33 /*bytes in id*/ * 2 /*hex per byte*/) return false;
+			var id = Convert.FromHexString(digits);
+			if (id[0] < 1 || id[0] > 2) return false;
+			result = new KeyId(id);
+			return true;
+		}
 	}
 
 	/// <summary>
