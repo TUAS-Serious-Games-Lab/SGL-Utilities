@@ -16,7 +16,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 	/// These streams are identified using an index within the data object and have their own initialization vector for each stream.
 	/// </summary>
 	public class DataDecryptor {
-		private List<byte[]> ivs;
+		private IList<byte[]> ivs;
 		private byte[] dataKey;
 
 		/// <summary>
@@ -30,7 +30,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <param name="dataMode">The encryption mode to use for the decryption. Currently, only <see cref="DataEncryptionMode.AES_256_CCM"/> is supported.</param>
 		/// <param name="ivs">The initialization vectors of the data object's streams, on for each stream.</param>
 		/// <param name="dataKey">The data key for the data object.</param>
-		public DataDecryptor(DataEncryptionMode dataMode, List<byte[]> ivs, byte[] dataKey) {
+		public DataDecryptor(DataEncryptionMode dataMode, IList<byte[]> ivs, byte[] dataKey) {
 			if (dataMode != DataEncryptionMode.AES_256_CCM) {
 				throw new DecryptionException("Unsupported data encryption mode.");
 			}
