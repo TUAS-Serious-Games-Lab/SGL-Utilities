@@ -11,7 +11,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 	/// <summary>
 	/// Provides the functionality to decrypt the content of a data object using a data key obtained from the encrypted data object's metadata.
 	/// Each data object requires a separate DataEncryptor object.
-	/// The data key and the initialization vectors can either be specified directly using <see cref="DataDecryptor(DataEncryptionMode, List{byte[]}, byte[])"/> or can be obtained from an <see cref="EncryptionInfo"/> representing the key material for the data object using a <see cref="KeyDecryptor"/>.
+	/// The data key and the initialization vectors can either be specified directly using <see cref="DataDecryptor(DataEncryptionMode, IList{byte[]}, byte[])"/> or can be obtained from an <see cref="EncryptionInfo"/> representing the key material for the data object using a <see cref="KeyDecryptor"/>.
 	/// A data object can consist of multiple streams that are encrypted with the same data key, e.g. a message with attachments where the message text and the attachments each have their own stream.
 	/// These streams are identified using an index within the data object and have their own initialization vector for each stream.
 	/// </summary>
