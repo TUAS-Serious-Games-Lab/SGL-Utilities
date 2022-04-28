@@ -29,7 +29,7 @@ namespace SGL.Utilities.Crypto.Tests {
 		private readonly RandomGenerator random = new RandomGenerator();
 
 		[Fact]
-		public async Task DataEncryptorAndDecryptorCorrectlyRoundTripDataEncryptionForSingleStream() {
+		public async Task DataEncryptorAndDecryptorCorrectlyRoundTripStreamBasedDataEncryptionForSingleStream() {
 			byte[] testData = new byte[1 << 20];
 			random.NextBytes(testData);
 			using var encMemStream = new MemoryStream();
@@ -55,7 +55,28 @@ namespace SGL.Utilities.Crypto.Tests {
 		}
 
 		[Fact]
-		public async Task DataEncryptorAndDecryptorCorrectlyRoundTripDataEncryptionForMultipleStreams() {
+		public async Task DataEncryptorAndDecryptorCorrectlyRoundTripArrayBasedDataEncryptionForSingleStream() {
+			byte[] testData = new byte[1 << 20];
+			random.NextBytes(testData);
+			byte[] encData;
+
+			var encryptor = new DataEncryptor(random);
+			{
+				encData = encryptor.EncryptData(testData, 0);
+			}
+			var dummyKeyCryptor = new DummyKeyEncryptorDecryptor();
+			var encInfo = encryptor.GenerateEncryptionInfo(dummyKeyCryptor);
+			byte[] decryptedData;
+			var decryptor = DataDecryptor.FromEncryptionInfo(encInfo, dummyKeyCryptor);
+			Assert.NotNull(decryptor);
+			{
+				decryptedData = decryptor!.DecryptData(encData, 0);
+			}
+			Assert.Equal(testData, decryptedData);
+		}
+
+		[Fact]
+		public async Task DataEncryptorAndDecryptorCorrectlyRoundTripStreamBasedDataEncryptionForMultipleStreams() {
 			var testData = Enumerable.Range(0, 4).Select(_ => {
 				var d = new byte[1 << 20];
 				random.NextBytes(d);
@@ -83,6 +104,39 @@ namespace SGL.Utilities.Crypto.Tests {
 				using var tempMemStream = new MemoryStream();
 				await decStream.CopyToAsync(tempMemStream);
 				decryptedData[i] = tempMemStream.ToArray();
+			}
+			Assert.All(Enumerable.Range(0, testData.Length), i => Assert.Equal(testData[i], decryptedData[i]));
+			for (int i = 0; i < encInfo.IVs.Count; ++i) {
+				for (int j = 0; j < encInfo.IVs.Count; ++j) {
+					if (i == j) continue;
+					Assert.NotEqual(encInfo.IVs[i], encInfo.IVs[j]);
+				}
+			}
+		}
+
+		[Fact]
+		public async Task DataEncryptorAndDecryptorCorrectlyRoundTripArrayBasedDataEncryptionForMultipleStreams() {
+			var testData = Enumerable.Range(0, 4).Select(_ => {
+				var d = new byte[1 << 20];
+				random.NextBytes(d);
+				return d;
+			}).ToArray();
+			var encData = new byte[4][];
+
+			var encryptor = new DataEncryptor(random, testData.Length);
+			for (int i = 0; i < testData.Length; ++i) {
+				encData[i] = encryptor.EncryptData(testData[i], i);
+			}
+
+			var dummyKeyCryptor = new DummyKeyEncryptorDecryptor();
+			var encInfo = encryptor.GenerateEncryptionInfo(dummyKeyCryptor);
+
+			var decryptor = DataDecryptor.FromEncryptionInfo(encInfo, dummyKeyCryptor);
+			Assert.NotNull(decryptor);
+			Assert.Equal(testData.Length, decryptor!.StreamCount);
+			byte[][] decryptedData = new byte[decryptor!.StreamCount][];
+			for (int i = 0; i < decryptor.StreamCount; ++i) {
+				decryptedData[i] = decryptor.DecryptData(encData[i], i);
 			}
 			Assert.All(Enumerable.Range(0, testData.Length), i => Assert.Equal(testData[i], decryptedData[i]));
 			for (int i = 0; i < encInfo.IVs.Count; ++i) {

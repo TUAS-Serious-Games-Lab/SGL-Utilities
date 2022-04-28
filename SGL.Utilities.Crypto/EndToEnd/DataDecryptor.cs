@@ -58,6 +58,28 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		}
 
 		/// <summary>
+		/// Directly decrypts the given <paramref name="encryptedContent"/> using the data key of this <see cref="DataDecryptor"/>
+		/// and the initialization vector associated with the given <paramref name="streamIndex"/>.
+		/// This operation is logically equivalent to creating a <see cref="MemoryStream"/> with <paramref name="encryptedContent"/>,
+		/// calling <see cref="OpenDecryptionReadStream(Stream, int)"/> with the memory stream to get a cipher stream and then reading the content stream into a byte array.
+		/// It is however more convenient to use and can avoid the overhead of creating the streams.
+		/// </summary>
+		/// <param name="encryptedContent">The encrypted content.</param>
+		/// <param name="streamIndex">The logical stream in the data object, the content of which is represented by the given bytes.</param>
+		/// <returns>The decrypted content.</returns>
+		public byte[] DecryptData(byte[] encryptedContent, int streamIndex) {
+			try {
+				var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
+				var keyParams = new ParametersWithIV(new KeyParameter(dataKey), ivs[streamIndex]);
+				cipher.Init(forEncryption: false, keyParams);
+				return cipher.DoFinal(encryptedContent);
+			}
+			catch (Exception ex) {
+				throw new DecryptionException("Failed to decrypt data.", ex);
+			}
+		}
+
+		/// <summary>
 		/// Attempts to construct a DataDecryptor using the data key obtained from <paramref name="encryptionInfo"/> using <paramref name="keyDecryptor"/>.
 		/// If <paramref name="keyDecryptor"/> can't obtain a data key, usually because there is no encrypted data key copy for the recipient key setup in <paramref name="keyDecryptor"/>, i.e. because the receiver is not an authorized recipient for the data object, <see langword="null"/> is returned instead.
 		/// </summary>

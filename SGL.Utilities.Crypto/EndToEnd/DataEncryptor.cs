@@ -55,6 +55,28 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		}
 
 		/// <summary>
+		/// Directly encrypts the given <paramref name="clearTextContent"/> with the data key of this <see cref="DataEncryptor"/>
+		/// and the initialization vector associated with the given <paramref name="streamIndex"/>.
+		/// This operation is logically equivalent to opening a stream using <see cref="OpenEncryptionWriteStream(Stream, int)"/> on an underlying <see cref="MemoryStream"/>,
+		/// writing <paramref name="clearTextContent"/> to the stream and then returning <see cref="MemoryStream.ToArray"/> of the underlying stream.
+		/// It is however more convenient to use and can avoid the overhead of creating the streams.
+		/// </summary>
+		/// <param name="clearTextContent">The content to encrypt.</param>
+		/// <param name="streamIndex">The logical stream in the data object, the content of which is represented by the given bytes.</param>
+		/// <returns>The encrypted content.</returns>
+		public byte[] EncryptData(byte[] clearTextContent, int streamIndex) {
+			try {
+				var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
+				var keyParams = new ParametersWithIV(new KeyParameter(dataKey), ivs[streamIndex]);
+				cipher.Init(forEncryption: true, keyParams);
+				return cipher.DoFinal(clearTextContent);
+			}
+			catch (Exception ex) {
+				throw new DecryptionException("Failed to encrypt data.", ex);
+			}
+		}
+
+		/// <summary>
 		/// Encrypts the data key using <paramref name="keyEncryptor"/> and returns an <see cref="EncryptionInfo"/> object containing the initialization vectors of the streams in the data object and the encrypted copies of the data keys for the different recipients as setup in <paramref name="keyEncryptor"/>.
 		/// </summary>
 		/// <param name="keyEncryptor">The <see cref="KeyEncryptor"/> to encrypt the data key with.</param>
