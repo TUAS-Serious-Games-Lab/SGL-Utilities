@@ -1,6 +1,5 @@
 ﻿using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Engines;
-using Org.BouncyCastle.Crypto.IO;
 using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Parameters;
 using System;
@@ -51,7 +50,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 				var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
 				var keyParams = new ParametersWithIV(new KeyParameter(dataKey), ivs[streamIndex]);
 				cipher.Init(forEncryption: false, keyParams);
-				return new CipherStream(inputStream, cipher, null);
+				return new CipherStream(new Org.BouncyCastle.Crypto.IO.CipherStream(inputStream, cipher, null), CipherStreamOperationMode.DecryptingRead);
 			}
 			catch (Exception ex) {
 				throw new DecryptionException("Failed to open encryption stream.", ex);
