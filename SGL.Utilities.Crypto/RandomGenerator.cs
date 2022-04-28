@@ -26,6 +26,18 @@ namespace SGL.Utilities.Crypto {
 		/// </summary>
 		/// <param name="buffer">The buffer to fill with random data.</param>
 		public void NextBytes(byte[] buffer) => wrapped.NextBytes(buffer);
+
+		/// <summary>
+		/// Generates the given number of random bytes and returns them as a byte array.
+		/// </summary>
+		/// <param name="size">The number of random bytes to generate.</param>
+		/// <returns>The generated random bytes.</returns>
+		public byte[] GetBytes(int size) {
+			var bytes = new byte[size];
+			wrapped.NextBytes(bytes);
+			return bytes;
+		}
+
 		internal BigInteger GetRandomBigInteger(int size) => new BigInteger(size, wrapped);
 
 		/// <summary>
