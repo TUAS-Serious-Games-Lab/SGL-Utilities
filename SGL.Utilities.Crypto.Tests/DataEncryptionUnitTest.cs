@@ -55,7 +55,7 @@ namespace SGL.Utilities.Crypto.Tests {
 		}
 
 		[Fact]
-		public async Task DataEncryptorAndDecryptorCorrectlyRoundTripArrayBasedDataEncryptionForSingleStream() {
+		public void DataEncryptorAndDecryptorCorrectlyRoundTripArrayBasedDataEncryptionForSingleStream() {
 			byte[] testData = new byte[1 << 20];
 			random.NextBytes(testData);
 			byte[] encData;
@@ -115,7 +115,7 @@ namespace SGL.Utilities.Crypto.Tests {
 		}
 
 		[Fact]
-		public async Task DataEncryptorAndDecryptorCorrectlyRoundTripArrayBasedDataEncryptionForMultipleStreams() {
+		public void DataEncryptorAndDecryptorCorrectlyRoundTripArrayBasedDataEncryptionForMultipleStreams() {
 			var testData = Enumerable.Range(0, 4).Select(_ => {
 				var d = new byte[1 << 20];
 				random.NextBytes(d);
