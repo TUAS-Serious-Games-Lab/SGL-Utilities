@@ -21,7 +21,7 @@ namespace SGL.Utilities.Crypto.Tests {
 				return encryptionInfo.DataKeys[dummyKeyId].EncryptedKey;
 			}
 
-			public (Dictionary<KeyId, DataKeyInfo> dataKeys, byte[]? messagePubKey) EncryptDataKey(byte[] dataKey) {
+			public (Dictionary<KeyId, DataKeyInfo> RecipientKeys, byte[]? MessagePublicKey) EncryptDataKey(byte[] dataKey) {
 				return (new Dictionary<KeyId, DataKeyInfo> { [dummyKeyId] = new DataKeyInfo() { EncryptedKey = dataKey, Mode = KeyEncryptionMode.RSA_PKCS1, MessagePublicKey = null } }, null);
 			}
 		}

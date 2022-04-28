@@ -11,6 +11,6 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// </summary>
 		/// <param name="dataKey">The data key to encrypt, usually coming from <see cref="DataEncryptor"/>.</param>
 		/// <returns>The mapping of recipient key ids to the corresponding encrypted copies of the data key and associated meta data, and optionally a shared message public key.</returns>
-		(Dictionary<KeyId, DataKeyInfo> dataKeys, byte[]? messagePubKey) EncryptDataKey(byte[] dataKey);
+		(Dictionary<KeyId, DataKeyInfo> RecipientKeys, byte[]? MessagePublicKey) EncryptDataKey(byte[] dataKey);
 	}
 }

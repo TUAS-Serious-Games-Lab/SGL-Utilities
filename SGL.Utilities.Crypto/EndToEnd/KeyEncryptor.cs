@@ -67,7 +67,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// Additionally, a shared message public key in encoded form is returned if <c>allowSharedMessageKeyPair=true</c> was specified in <see cref="KeyEncryptor(List{KeyValuePair{KeyId, PublicKey}}, RandomGenerator, bool)"/>
 		/// and at least one recipient uses an Elliptic Curve key pair with a named curve. This key needs to be stored together with the encrypted data keys in the metadata of the data object that is encrypted using <paramref name="dataKey"/>.
 		/// </returns>
-		public (Dictionary<KeyId, DataKeyInfo> dataKeys, byte[]? messagePubKey) EncryptDataKey(byte[] dataKey) {
+		public (Dictionary<KeyId, DataKeyInfo> RecipientKeys, byte[]? MessagePublicKey) EncryptDataKey(byte[] dataKey) {
 			AsymmetricCipherKeyPair? sharedMessageKeyPair = null;
 			byte[]? encodedSharedMessagePublicKey = null;
 			if (useSharedMessageKeyPair && ecSharedMessageKeyPairCurveName != null) {
