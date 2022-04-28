@@ -198,7 +198,7 @@ namespace SGL.Utilities.Crypto.Tests {
 			privKeyStore.LoadKeyPair(privKeyPemReader, fixture.PrivKeyPassword);
 			var keyDecryptor = new KeyDecryptor(privKeyStore.KeyPair);
 
-			Assert.ThrowsAny<DecryptionException>(() => keyDecryptor.DecryptKey(metadata1.DataKeys[impersonatedRecipient], metadata1.SenderPublicKey));
+			Assert.ThrowsAny<DecryptionException>(() => keyDecryptor.DecryptKey(metadata1.DataKeys[impersonatedRecipient], metadata1.MessagePublicKey));
 		}
 
 		[Fact]
@@ -212,7 +212,7 @@ namespace SGL.Utilities.Crypto.Tests {
 		}
 
 		[Fact]
-		public async Task EcSharedSenderKeyModeCorrectlyEncryptsForAllRecipients() {
+		public async Task EcSharedMessageKeyModeCorrectlyEncryptsForAllRecipients() {
 			using var signerPemReader = new StreamReader(new MemoryStream(fixture.SignerPubPem));
 			KeyOnlyTrustValidator validator = new KeyOnlyTrustValidator(signerPemReader, "TestSigner.pem", loggerFactory.CreateLogger<KeyOnlyTrustValidator>());
 			Assert.True(validator.CheckCertificate(fixture.RsaCert1));
@@ -240,17 +240,17 @@ namespace SGL.Utilities.Crypto.Tests {
 			using var encryptedContent1 = new MemoryStream();
 			EncryptionInfo metadata1;
 
-			var keyEncryptor = new KeyEncryptor(certStore.ListKnownKeyIdsAndPublicKeys().ToList(), fixture.Random, allowSharedSenderKeyPair: true);
+			var keyEncryptor = new KeyEncryptor(certStore.ListKnownKeyIdsAndPublicKeys().ToList(), fixture.Random, allowSharedMessageKeyPair: true);
 			metadata1 = await encrypt(clearTextInput1, encryptedContent1, keyEncryptor);
 			Assert.Equal(512, metadata1.DataKeys[keyIdRsa].EncryptedKey.Length);
 			Assert.Equal(KeyEncryptionMode.RSA_PKCS1, metadata1.DataKeys[keyIdRsa].Mode);
-			Assert.Null(metadata1.DataKeys[keyIdRsa].SenderPublicKey);
+			Assert.Null(metadata1.DataKeys[keyIdRsa].MessagePublicKey);
 
-			Assert.NotNull(metadata1.SenderPublicKey);
-			Assert.Null(metadata1.DataKeys[keyIdEc1].SenderPublicKey);
-			Assert.Null(metadata1.DataKeys[keyIdEc2].SenderPublicKey);
-			Assert.NotNull(metadata1.DataKeys[keyIdEc3].SenderPublicKey);
-			Assert.NotNull(metadata1.DataKeys[keyIdEc4].SenderPublicKey);
+			Assert.NotNull(metadata1.MessagePublicKey);
+			Assert.Null(metadata1.DataKeys[keyIdEc1].MessagePublicKey);
+			Assert.Null(metadata1.DataKeys[keyIdEc2].MessagePublicKey);
+			Assert.NotNull(metadata1.DataKeys[keyIdEc3].MessagePublicKey);
+			Assert.NotNull(metadata1.DataKeys[keyIdEc4].MessagePublicKey);
 			Assert.All(new[] { keyIdEc1, keyIdEc2, keyIdEc3, keyIdEc4 }, kId => Assert.Equal(KeyEncryptionMode.ECDH_KDF2_SHA256_AES_256_CCM, metadata1.DataKeys[kId].Mode));
 			Assert.NotEqual(metadata1.DataKeys[keyIdEc1].EncryptedKey, metadata1.DataKeys[keyIdEc2].EncryptedKey);
 

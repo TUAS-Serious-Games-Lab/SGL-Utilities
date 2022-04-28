@@ -7,9 +7,9 @@
 		/// Decrypts the encrypted data key contained in <paramref name="dataKeyInfo"/> and returns the clear text data key.
 		/// </summary>
 		/// <param name="dataKeyInfo">The encrypted data key and associated metadata.</param>
-		/// <param name="sharedSenderPublicKey">The shared sender public key for the encrypted data key, only required if <paramref name="dataKeyInfo"/> uses a shared key.</param>
+		/// <param name="sharedMessagePublicKey">The shared message public key for the encrypted data key, only required if <paramref name="dataKeyInfo"/> uses a shared key.</param>
 		/// <returns>The clear text data key, that can be used by <see cref="DataDecryptor"/>.</returns>
-		byte[] DecryptKey(DataKeyInfo dataKeyInfo, byte[]? sharedSenderPublicKey);
+		byte[] DecryptKey(DataKeyInfo dataKeyInfo, byte[]? sharedMessagePublicKey);
 		/// <summary>
 		/// Looks up the encrypted data key from <paramref name="encryptionInfo"/> that matches the recipient key in the instance of the <see cref="IKeyDecryptor"/> implementation and decrypts it.
 		/// </summary>

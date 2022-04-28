@@ -245,12 +245,12 @@ b7qZIq+EKADZHDgbuQ0ZvK2dZswsQwRMNDnWgmGOci0MdLcMpQxrOalkYr47ZvaL
 			random.NextBytes(inputDataKey);
 
 			var encryptor = new KeyEncryptor(allValidKeyPairs.Select(kp => new KeyValuePair<KeyId, PublicKey>(kp.Public.CalculateId(), kp.Public)).ToList(), random, shared);
-			var (encryptedKeys, sharedSenderKey) = encryptor.EncryptDataKey(inputDataKey);
+			var (encryptedKeys, sharedMessageKey) = encryptor.EncryptDataKey(inputDataKey);
 			Assert.All(encryptedKeys.Values, k => Assert.NotEqual(inputDataKey, k.EncryptedKey));
-			Assert.Equal(shared, sharedSenderKey != null);
+			Assert.Equal(shared, sharedMessageKey != null);
 
 			var decryptor = new KeyDecryptor(recipient);
-			var outputDataKey = decryptor.DecryptKey(encryptedKeys[recipient.Public.CalculateId()], sharedSenderKey);
+			var outputDataKey = decryptor.DecryptKey(encryptedKeys[recipient.Public.CalculateId()], sharedMessageKey);
 			Assert.Equal(inputDataKey, outputDataKey);
 		}
 
@@ -261,10 +261,10 @@ b7qZIq+EKADZHDgbuQ0ZvK2dZswsQwRMNDnWgmGOci0MdLcMpQxrOalkYr47ZvaL
 			random.NextBytes(inputDataKey);
 
 			var encryptor = new KeyEncryptor(subsetValidKeyPairs.Select(kp => new KeyValuePair<KeyId, PublicKey>(kp.Public.CalculateId(), kp.Public)).ToList(), random, shared);
-			var (encryptedKeys, sharedSenderKey) = encryptor.EncryptDataKey(inputDataKey);
+			var (encryptedKeys, sharedMessageKey) = encryptor.EncryptDataKey(inputDataKey);
 			Assert.All(encryptedKeys.Values, k => Assert.NotEqual(inputDataKey, k.EncryptedKey));
-			Assert.Equal(shared, sharedSenderKey != null);
-			var encInfo = new EncryptionInfo() { IVs = new List<byte[]> { }, DataMode = DataEncryptionMode.AES_256_CCM, DataKeys = encryptedKeys, SenderPublicKey = sharedSenderKey };
+			Assert.Equal(shared, sharedMessageKey != null);
+			var encInfo = new EncryptionInfo() { IVs = new List<byte[]> { }, DataMode = DataEncryptionMode.AES_256_CCM, DataKeys = encryptedKeys, MessagePublicKey = sharedMessageKey };
 
 			var decryptor = new KeyDecryptor(recipient);
 			var outputDataKey = decryptor.DecryptKey(encInfo);

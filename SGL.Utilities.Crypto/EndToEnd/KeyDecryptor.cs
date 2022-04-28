@@ -36,7 +36,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <exception cref="CryptoException">If the decryption itself fails.</exception>
 		public byte[]? DecryptKey(EncryptionInfo encryptionInfo) {
 			if (encryptionInfo.DataKeys.TryGetValue(keyId, out var dataKeyInfo)) {
-				return DecryptKey(dataKeyInfo, encryptionInfo.SenderPublicKey);
+				return DecryptKey(dataKeyInfo, encryptionInfo.MessagePublicKey);
 			}
 			else {
 				return null;
@@ -47,17 +47,17 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// Decrypts the data key given in <paramref name="dataKeyInfo"/> and returns the raw data key.
 		/// </summary>
 		/// <param name="dataKeyInfo">The key information containing the encrypted data key.</param>
-		/// <param name="sharedSenderPublicKey">
-		/// If <paramref name="dataKeyInfo"/> uses <see cref="KeyEncryptionMode.ECDH_KDF2_SHA256_AES_256_CCM"/> with a shared sender key, the shared public sender key must be supplied here.
-		/// It is usually taken from <see cref="EncryptionInfo.SenderPublicKey"/>.
+		/// <param name="sharedMessagePublicKey">
+		/// If <paramref name="dataKeyInfo"/> uses <see cref="KeyEncryptionMode.ECDH_KDF2_SHA256_AES_256_CCM"/> with a shared message key, the shared public message key must be supplied here.
+		/// It is usually taken from <see cref="EncryptionInfo.MessagePublicKey"/>.
 		/// </param>
 		/// <returns>The decrypted data key.</returns>
 		/// <exception cref="ArgumentException">If <paramref name="dataKeyInfo"/> uses an unsupported encryption mode.</exception>
 		/// <exception cref="CryptoException">If the decryption itself fails.</exception>
-		public byte[] DecryptKey(DataKeyInfo dataKeyInfo, byte[]? sharedSenderPublicKey) {
+		public byte[] DecryptKey(DataKeyInfo dataKeyInfo, byte[]? sharedMessagePublicKey) {
 			switch (dataKeyInfo.Mode) {
 				case KeyEncryptionMode.ECDH_KDF2_SHA256_AES_256_CCM:
-					return DecryptKeyEcdhAes(dataKeyInfo, sharedSenderPublicKey);
+					return DecryptKeyEcdhAes(dataKeyInfo, sharedMessagePublicKey);
 				case KeyEncryptionMode.RSA_PKCS1:
 					return DecryptKeyRsa(dataKeyInfo);
 				default:
@@ -76,22 +76,22 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 			}
 		}
 
-		private byte[] DecryptKeyEcdhAes(DataKeyInfo dataKeyInfo, byte[]? sharedSenderPublicKey) {
-			byte[]? senderPublicKeyEncoded = dataKeyInfo.SenderPublicKey ?? sharedSenderPublicKey;
-			if (senderPublicKeyEncoded == null && senderPublicKeyEncoded == null) {
-				throw new KeyException("Recipient-specific and shared sender public key must not both be missing");
+		private byte[] DecryptKeyEcdhAes(DataKeyInfo dataKeyInfo, byte[]? sharedMessagePublicKey) {
+			byte[]? messagePublicKeyEncoded = dataKeyInfo.MessagePublicKey ?? sharedMessagePublicKey;
+			if (messagePublicKeyEncoded == null && messagePublicKeyEncoded == null) {
+				throw new KeyException("Recipient-specific and shared message public key must not both be missing");
 			}
-			ECPublicKeyParameters senderPublicKey = EcdhKdfHelper.DecodeEcPublicKey(senderPublicKeyEncoded);
+			ECPublicKeyParameters messagePublicKey = EcdhKdfHelper.DecodeEcPublicKey(messagePublicKeyEncoded);
 			BigInteger agreement;
 			try {
 				var ecdh = new ECDHBasicAgreement();
 				ecdh.Init(keyPair.Private.wrapped);
-				agreement = ecdh.CalculateAgreement(senderPublicKey);
+				agreement = ecdh.CalculateAgreement(messagePublicKey);
 			}
 			catch (Exception ex) {
 				throw new DecryptionException("Failed to calculate ECDH agreement.", ex);
 			}
-			var keyParams = EcdhKdfHelper.DeriveKeyAndIV(agreement.ToByteArray(), senderPublicKeyEncoded);
+			var keyParams = EcdhKdfHelper.DeriveKeyAndIV(agreement.ToByteArray(), messagePublicKeyEncoded);
 			try {
 				var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
 				cipher.Init(forEncryption: false, keyParams);

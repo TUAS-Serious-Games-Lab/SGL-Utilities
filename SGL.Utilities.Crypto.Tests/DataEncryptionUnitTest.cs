@@ -13,7 +13,7 @@ namespace SGL.Utilities.Crypto.Tests {
 		private class DummyKeyEncryptorDecryptor : IKeyEncryptor, IKeyDecryptor {
 			private readonly KeyId dummyKeyId = KeyId.Parse("01:00000000:00000000:00000000:00000000:00000000:00000000:00000000:00000000");
 
-			public byte[] DecryptKey(DataKeyInfo dataKeyInfo, byte[]? sharedSenderPublicKey) {
+			public byte[] DecryptKey(DataKeyInfo dataKeyInfo, byte[]? sharedMessagePublicKey) {
 				return dataKeyInfo.EncryptedKey;
 			}
 
@@ -21,8 +21,8 @@ namespace SGL.Utilities.Crypto.Tests {
 				return encryptionInfo.DataKeys[dummyKeyId].EncryptedKey;
 			}
 
-			public (Dictionary<KeyId, DataKeyInfo> dataKeys, byte[]? senderPubKey) EncryptDataKey(byte[] dataKey) {
-				return (new Dictionary<KeyId, DataKeyInfo> { [dummyKeyId] = new DataKeyInfo() { EncryptedKey = dataKey, Mode = KeyEncryptionMode.RSA_PKCS1, SenderPublicKey = null } }, null);
+			public (Dictionary<KeyId, DataKeyInfo> dataKeys, byte[]? messagePubKey) EncryptDataKey(byte[] dataKey) {
+				return (new Dictionary<KeyId, DataKeyInfo> { [dummyKeyId] = new DataKeyInfo() { EncryptedKey = dataKey, Mode = KeyEncryptionMode.RSA_PKCS1, MessagePublicKey = null } }, null);
 			}
 		}
 

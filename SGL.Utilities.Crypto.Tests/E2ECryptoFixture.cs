@@ -92,9 +92,9 @@ namespace SGL.Utilities.Crypto.Tests {
 
 			var rsaGeneratorTasks = Enumerable.Range(0, 5).Select(_ => GenerateRsaKeyPairAsync(4096)).ToArray();
 			var ecGeneratorTasks = Enumerable.Range(0, 3).Select(_ => GenerateEcKeyPairAsync(521))
-				// one key pair with a non-matching key length -> ineligible for shared sender key
+				// one key pair with a non-matching key length -> ineligible for shared message key
 				.Append(GenerateEcKeyPairAsync(384))
-				// one key pair with a explicit parameters -> ineligible for shared sender key
+				// one key pair with a explicit parameters -> ineligible for shared message key
 				.Append(GenerateEcKeyPairAsync(new ECKeyGenerationParameters(new ECDomainParameters(ECNamedCurveTable.GetByName("secp521r1")), random.DeriveGenerator(1024).wrapped))).ToArray();
 
 			Task.WaitAll(rsaGeneratorTasks.Concat(ecGeneratorTasks).ToArray());

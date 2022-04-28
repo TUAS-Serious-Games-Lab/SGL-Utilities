@@ -20,25 +20,25 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 	public class KeyEncryptor : IKeyEncryptor {
 		private readonly List<KeyValuePair<KeyId, PublicKey>> trustedRecipients;
 		private readonly RandomGenerator random;
-		private readonly bool useSharedSenderKeyPair;
-		private readonly DerObjectIdentifier? ecSharedSenderKeyPairCurveName = null;
+		private readonly bool useSharedMessageKeyPair;
+		private readonly DerObjectIdentifier? ecSharedMessageKeyPairCurveName = null;
 
 		/// <summary>
 		/// Creates a KeyEncryptor that encrypts a copy of the data key for each of the recipients who have their public key (and its id) listed in <paramref name="trustedRecipients"/>.
 		/// </summary>
 		/// <param name="trustedRecipients">The list of authorized recipient public keys that shall be able to decrypt data objects the data keys of which are encrypted using <see cref="EncryptDataKey(byte[])"/>.</param>
-		/// <param name="random">The random generator to generate sender key pairs for the <see cref="KeyEncryptionMode.ECDH_KDF2_SHA256_AES_256_CCM"/> mode, which is used for recipients that use an Elliptic Curve key pair.</param>
-		/// <param name="allowSharedSenderKeyPair">
-		/// Specifies whether the <see cref="KeyEncryptionMode.ECDH_KDF2_SHA256_AES_256_CCM"/> mode is allowed to use a shared sender key pair for all or most of the recipients with Elliptic Curve key pairs.
-		/// If this is set to true, the named curve used by the most recipient key pairs is determined and a shared sender key pair is generated that will be used for all recipients that use that curve.
-		/// The other Elliptic-Curve-using recipients will still use a specific sender key pair.
-		/// If this is set to false, all Elliptic-Curve-using recipients will get their own specific sender key pair.
+		/// <param name="random">The random generator to generate message key pairs for the <see cref="KeyEncryptionMode.ECDH_KDF2_SHA256_AES_256_CCM"/> mode, which is used for recipients that use an Elliptic Curve key pair.</param>
+		/// <param name="allowSharedMessageKeyPair">
+		/// Specifies whether the <see cref="KeyEncryptionMode.ECDH_KDF2_SHA256_AES_256_CCM"/> mode is allowed to use a shared message key pair for all or most of the recipients with Elliptic Curve key pairs.
+		/// If this is set to true, the named curve used by the most recipient key pairs is determined and a shared message key pair is generated that will be used for all recipients that use that curve.
+		/// The other Elliptic-Curve-using recipients will still use a specific message key pair.
+		/// If this is set to false, all Elliptic-Curve-using recipients will get their own specific message key pair.
 		/// </param>
-		public KeyEncryptor(List<KeyValuePair<KeyId, PublicKey>> trustedRecipients, RandomGenerator random, bool allowSharedSenderKeyPair = false) {
+		public KeyEncryptor(List<KeyValuePair<KeyId, PublicKey>> trustedRecipients, RandomGenerator random, bool allowSharedMessageKeyPair = false) {
 			this.trustedRecipients = trustedRecipients;
 			this.random = random;
-			if (allowSharedSenderKeyPair) {
-				// Determine named curve that has the most recipients using it, to handle all those recipients using a shared sender EC public key.
+			if (allowSharedMessageKeyPair) {
+				// Determine named curve that has the most recipients using it, to handle all those recipients using a shared message EC public key.
 				var ecRecipientKeyCurveNames = trustedRecipients.Select(tr => tr.Value.wrapped)
 					.OfType<ECPublicKeyParameters>()
 					.Where(pk => pk.PublicKeyParamSet != null)
@@ -46,15 +46,15 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 					.OrderByDescending(grp => grp.Count())
 					.ToList();
 				if (ecRecipientKeyCurveNames.Count() > 0) {
-					ecSharedSenderKeyPairCurveName = ecRecipientKeyCurveNames.First().First().PublicKeyParamSet;
-					useSharedSenderKeyPair = true;
+					ecSharedMessageKeyPairCurveName = ecRecipientKeyCurveNames.First().First().PublicKeyParamSet;
+					useSharedMessageKeyPair = true;
 				}
 				else {
-					useSharedSenderKeyPair = false;
+					useSharedMessageKeyPair = false;
 				}
 			}
 			else {
-				useSharedSenderKeyPair = false;
+				useSharedMessageKeyPair = false;
 			}
 		}
 
@@ -63,26 +63,26 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// </summary>
 		/// <param name="dataKey">The plain data key.</param>
 		/// <returns>
-		/// A <see cref="Dictionary{KeyId, DataKeyInfo}"/> containing the encrypted data keys, encryption modes, and where needed a sender public key, for each recipient, indexed by the recipient's public key <see cref="KeyId"/>.
-		/// Additionally, a shared sender public key in encoded form is returned if <c>allowSharedSenderKeyPair=true</c> was specified in <see cref="KeyEncryptor(List{KeyValuePair{KeyId, PublicKey}}, RandomGenerator, bool)"/>
+		/// A <see cref="Dictionary{KeyId, DataKeyInfo}"/> containing the encrypted data keys, encryption modes, and where needed a message public key, for each recipient, indexed by the recipient's public key <see cref="KeyId"/>.
+		/// Additionally, a shared message public key in encoded form is returned if <c>allowSharedMessageKeyPair=true</c> was specified in <see cref="KeyEncryptor(List{KeyValuePair{KeyId, PublicKey}}, RandomGenerator, bool)"/>
 		/// and at least one recipient uses an Elliptic Curve key pair with a named curve. This key needs to be stored together with the encrypted data keys in the metadata of the data object that is encrypted using <paramref name="dataKey"/>.
 		/// </returns>
-		public (Dictionary<KeyId, DataKeyInfo> dataKeys, byte[]? senderPubKey) EncryptDataKey(byte[] dataKey) {
-			AsymmetricCipherKeyPair? sharedSenderKeyPair = null;
-			byte[]? encodedSharedSenderPublicKey = null;
-			if (useSharedSenderKeyPair && ecSharedSenderKeyPairCurveName != null) {
-				sharedSenderKeyPair = GenerateECKeyPair(ecSharedSenderKeyPairCurveName);
-				encodedSharedSenderPublicKey = EcdhKdfHelper.EncodeEcPublicKey((ECPublicKeyParameters)sharedSenderKeyPair.Public);
+		public (Dictionary<KeyId, DataKeyInfo> dataKeys, byte[]? messagePubKey) EncryptDataKey(byte[] dataKey) {
+			AsymmetricCipherKeyPair? sharedMessageKeyPair = null;
+			byte[]? encodedSharedMessagePublicKey = null;
+			if (useSharedMessageKeyPair && ecSharedMessageKeyPairCurveName != null) {
+				sharedMessageKeyPair = GenerateECKeyPair(ecSharedMessageKeyPairCurveName);
+				encodedSharedMessagePublicKey = EcdhKdfHelper.EncodeEcPublicKey((ECPublicKeyParameters)sharedMessageKeyPair.Public);
 			}
-			return (trustedRecipients.ToDictionary(kv => kv.Key, kv => EncryptDataKey(kv.Value.wrapped, dataKey, sharedSenderKeyPair, encodedSharedSenderPublicKey)), encodedSharedSenderPublicKey);
+			return (trustedRecipients.ToDictionary(kv => kv.Key, kv => EncryptDataKey(kv.Value.wrapped, dataKey, sharedMessageKeyPair, encodedSharedMessagePublicKey)), encodedSharedMessagePublicKey);
 		}
 
-		private DataKeyInfo EncryptDataKey(AsymmetricKeyParameter recipientKey, byte[] dataKey, AsymmetricCipherKeyPair? sharedSenderKeyPair, byte[]? encodedSharedSenderPublicKey) {
+		private DataKeyInfo EncryptDataKey(AsymmetricKeyParameter recipientKey, byte[] dataKey, AsymmetricCipherKeyPair? sharedMessageKeyPair, byte[]? encodedSharedMessagePublicKey) {
 			switch (recipientKey) {
 				case RsaKeyParameters rsa when !rsa.IsPrivate:
 					return EncryptDataKeyRsa(rsa, dataKey);
 				case ECPublicKeyParameters ec:
-					return EncryptDataKeyEcdhAes(ec, dataKey, sharedSenderKeyPair, encodedSharedSenderPublicKey);
+					return EncryptDataKeyEcdhAes(ec, dataKey, sharedMessageKeyPair, encodedSharedMessagePublicKey);
 				default:
 					throw new EncryptionException($"Unsupported recipient key type {recipientKey.GetType().FullName}.");
 			}
@@ -98,22 +98,22 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 				throw new EncryptionException("Failed to encrypt data key using RSA.", ex);
 			}
 		}
-		private DataKeyInfo EncryptDataKeyEcdhAes(ECPublicKeyParameters recipientKey, byte[] dataKey, AsymmetricCipherKeyPair? sharedSenderKeyPair, byte[]? encodedSharedSenderPublicKey) {
+		private DataKeyInfo EncryptDataKeyEcdhAes(ECPublicKeyParameters recipientKey, byte[] dataKey, AsymmetricCipherKeyPair? sharedMessageKeyPair, byte[]? encodedSharedMessagePublicKey) {
 
-			bool useSharedSenderKPHere = sharedSenderKeyPair != null && sharedSenderKeyPair.Private is ECPrivateKeyParameters sharedEC &&
+			bool useSharedMessageKPHere = sharedMessageKeyPair != null && sharedMessageKeyPair.Private is ECPrivateKeyParameters sharedEC &&
 							sharedEC.PublicKeyParamSet != null && recipientKey.PublicKeyParamSet != null && sharedEC.PublicKeyParamSet.Id == recipientKey.PublicKeyParamSet.Id;
-			AsymmetricCipherKeyPair senderKeyPair = useSharedSenderKPHere ? sharedSenderKeyPair! : GenerateECKeyPair(recipientKey.PublicKeyParamSet, recipientKey.Parameters);
-			byte[] encodedSenderPublicKey = useSharedSenderKPHere ? encodedSharedSenderPublicKey! : EcdhKdfHelper.EncodeEcPublicKey((ECPublicKeyParameters)senderKeyPair.Public);
+			AsymmetricCipherKeyPair messageKeyPair = useSharedMessageKPHere ? sharedMessageKeyPair! : GenerateECKeyPair(recipientKey.PublicKeyParamSet, recipientKey.Parameters);
+			byte[] encodedMessagePublicKey = useSharedMessageKPHere ? encodedSharedMessagePublicKey! : EcdhKdfHelper.EncodeEcPublicKey((ECPublicKeyParameters)messageKeyPair.Public);
 			BigInteger agreement;
 			try {
 				var ecdh = new ECDHBasicAgreement();
-				ecdh.Init(senderKeyPair.Private);
+				ecdh.Init(messageKeyPair.Private);
 				agreement = ecdh.CalculateAgreement(recipientKey);
 			}
 			catch (Exception ex) {
 				throw new EncryptionException("Failed to calculate ECDH agreement.", ex);
 			}
-			var keyParams = EcdhKdfHelper.DeriveKeyAndIV(agreement.ToByteArray(), encodedSenderPublicKey);
+			var keyParams = EcdhKdfHelper.DeriveKeyAndIV(agreement.ToByteArray(), encodedMessagePublicKey);
 			try {
 				var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
 				cipher.Init(forEncryption: true, keyParams);
@@ -122,7 +122,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 				return new DataKeyInfo() {
 					Mode = KeyEncryptionMode.ECDH_KDF2_SHA256_AES_256_CCM,
 					EncryptedKey = encryptedDataKey,
-					SenderPublicKey = useSharedSenderKPHere ? null : encodedSenderPublicKey
+					MessagePublicKey = useSharedMessageKPHere ? null : encodedMessagePublicKey
 				};
 			}
 			catch (Exception ex) {
@@ -143,7 +143,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 				return ecKeyGen.GenerateKeyPair();
 			}
 			catch (Exception ex) {
-				throw new EncryptionException("Failed to generate ECDH sender key pair.", ex);
+				throw new EncryptionException("Failed to generate ECDH message key pair.", ex);
 			}
 		}
 	}

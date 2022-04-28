@@ -85,7 +85,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 			EncryptionInfo result = new EncryptionInfo();
 			result.DataMode = DataEncryptionMode.AES_256_CCM;
 			result.IVs = ivs;
-			(result.DataKeys, result.SenderPublicKey) = keyEncryptor.EncryptDataKey(dataKey);
+			(result.DataKeys, result.MessagePublicKey) = keyEncryptor.EncryptDataKey(dataKey);
 			return result;
 		}
 	}

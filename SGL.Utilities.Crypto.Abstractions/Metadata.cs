@@ -37,12 +37,12 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <summary>
 		/// Indicates that the data keys are encrypted using the following procedure:
 		/// <list type="number">
-		/// <item><description>Generate an Elliptic Curves keypair for the sender.</description></item>
-		/// <item><description>Perform Elliptic Curve Diffie Hellman with the sender private key and the recipients public key.</description></item>
-		/// <item><description>Derive a 256-bit key and an initialization vector from the agreement value and the sender public key using Key Derivation Function 2 (KDF2).</description></item>
+		/// <item><description>Generate an Elliptic Curves keypair for the message.</description></item>
+		/// <item><description>Perform Elliptic Curve Diffie Hellman with the message private key and the recipients public key.</description></item>
+		/// <item><description>Derive a 256-bit key and an initialization vector from the agreement value and the message public key using Key Derivation Function 2 (KDF2).</description></item>
 		/// <item><description>Encrypt the data key using Advanced Encryption Standard (AES) with the 'Counter with CBC-MAC' (CCM) mode of operation and with the derived key.</description></item>
 		/// </list>
-		/// The decryption procedure works the same way, except that in the second step, the keys are replaced with their opposite (i.e. sender public key and recipient private key).
+		/// The decryption procedure works the same way, except that in the second step, the keys are replaced with their opposite (i.e. message public key and recipient private key).
 		/// This mode requires less key material overhead.
 		/// </summary>
 		ECDH_KDF2_SHA256_AES_256_CCM
@@ -69,9 +69,9 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 #endif
 		public Dictionary<KeyId, DataKeyInfo> DataKeys { get; set; } = new Dictionary<KeyId, DataKeyInfo>();
 		/// <summary>
-		/// When <see cref="KeyEncryptionMode.ECDH_KDF2_SHA256_AES_256_CCM"/> is used with a shared sender key pair, this property holds an encoded version of the shared public key.
+		/// When <see cref="KeyEncryptionMode.ECDH_KDF2_SHA256_AES_256_CCM"/> is used with a shared message key pair, this property holds an encoded version of the shared public key.
 		/// </summary>
-		public byte[]? SenderPublicKey { get; set; }
+		public byte[]? MessagePublicKey { get; set; }
 	}
 
 	/// <summary>
@@ -88,18 +88,18 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// </summary>
 		public byte[] EncryptedKey { get; set; } = new byte[0];
 		/// <summary>
-		/// When <see cref="KeyEncryptionMode.ECDH_KDF2_SHA256_AES_256_CCM"/> is used with a recipient-specific sender key pair,
+		/// When <see cref="KeyEncryptionMode.ECDH_KDF2_SHA256_AES_256_CCM"/> is used with a recipient-specific message key pair,
 		/// this property holds an encoded version of the public key.
-		/// Recipient-specific sender key pairs are used when either a shared key is not allowed by the sender's policy,
+		/// Recipient-specific message key pairs are used when either a shared key is not allowed by the sender's policy,
 		/// or when a recipient needs a key that deviates from the shared key. The latter happens when not all recipients use the same named Elliptic Curve
 		/// or when the recipient uses excplicit Elliptic Curve parameteres instead of a named curve.
 		/// </summary>
 		/// <remarks>
 		/// Using recipient key pairs with excplicit Elliptic Curve parameteres instead of a named curve should be avoided,
-		/// beause it implies that the sender key pair will also use explicit parameters.
-		/// This will make the sender key pair much larger and prevents a shared sender key pair.
+		/// beause it implies that the message key pair will also use explicit parameters.
+		/// This will make the message key pair much larger and prevents a shared message key pair.
 		/// Thus, it causes the metadata to significantly grow in size.
 		/// </remarks>
-		public byte[]? SenderPublicKey { get; set; }
+		public byte[]? MessagePublicKey { get; set; }
 	}
 }
