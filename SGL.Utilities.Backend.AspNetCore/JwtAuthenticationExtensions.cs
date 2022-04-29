@@ -54,63 +54,63 @@ namespace SGL.Utilities.Backend.AspNetCore {
 				options.Events = new JwtBearerEvents {
 					OnAuthenticationFailed = context => {
 						var token = readTokenFromRequest(context.Request);
-						var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<JwtAuthentication>>();
+						var logger = context?.HttpContext?.RequestServices?.GetRequiredService<ILogger<JwtAuthentication>>();
 						var userid = token?.Claims?.GetClaimOrNull("userid");
 						var appname = token?.Claims?.GetClaimOrNull("appname");
 						var service = token?.Claims?.GetClaimOrNull("service");
 						if (userid != null && appname != null) {
-							logger.LogError(context.Exception, "Authentication failed for user {userid} and app {appName}.", userid, appname);
+							logger?.LogError(context?.Exception, "Authentication failed for user {userid} and app {appName}.", userid, appname);
 						}
 						else if (service != null) {
-							logger.LogError(context.Exception, "Authentication failed for service {service}.", service);
+							logger?.LogError(context?.Exception, "Authentication failed for service {service}.", service);
 						}
 						else {
-							logger.LogError("Authentication failed for a JWT auth token, that did contain neither a user+appname claims combination nor a service claim.");
+							logger?.LogError("Authentication failed for a JWT auth token, that did contain neither a user+appname claims combination nor a service claim.");
 						}
 						return Task.CompletedTask;
 					},
 					OnChallenge = context => {
-						var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<JwtAuthentication>>();
-						logger.LogInformation("Challenging client for authentication for {verb} access to {path}.",
-							context.Request.Method, context.Request.Path.Value ?? "<path not specified in request>");
+						var logger = context?.HttpContext?.RequestServices.GetRequiredService<ILogger<JwtAuthentication>>();
+						logger?.LogInformation("Challenging client for authentication for {verb} access to {path}.",
+							context?.Request?.Method, context?.Request?.Path.Value ?? "<path not specified in request>");
 						return Task.CompletedTask;
 					},
 					OnForbidden = context => {
 						var token = readTokenFromRequest(context.Request);
-						var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<JwtAuthentication>>();
+						var logger = context?.HttpContext?.RequestServices?.GetRequiredService<ILogger<JwtAuthentication>>();
 						var userid = token?.Claims?.GetClaimOrNull("userid");
 						var appname = token?.Claims?.GetClaimOrNull("appname");
 						var service = token?.Claims?.GetClaimOrNull("service");
 						if (userid != null && appname != null) {
-							logger.LogError(context.Result.Failure, "Access forbidden for {verb} access to {path} from user {userid} and app {appName}.",
-								context.Request.Method, context.Request.Path.Value, userid, appname);
+							logger?.LogError(context?.Result?.Failure, "Access forbidden for {verb} access to {path} from user {userid} and app {appName}.",
+								context?.Request?.Method, context?.Request?.Path.Value, userid, appname);
 						}
 						else if (service != null) {
-							logger.LogError(context.Result.Failure, "Access forbidden for {verb} access to {path} from service {service}.",
-								context.Request.Method, context.Request.Path.Value, service);
+							logger?.LogError(context?.Result?.Failure, "Access forbidden for {verb} access to {path} from service {service}.",
+								context?.Request?.Method, context?.Request?.Path.Value, service);
 						}
 						else {
-							logger.LogError(context.Result.Failure,
+							logger?.LogError(context?.Result?.Failure,
 								"Access forbidden for {verb} access to {path} using a token that did contain neither a user+appname claims combination nor a service claim.",
-								context.Request.Method, context.Request.Path.Value);
+								context?.Request?.Method, context?.Request?.Path.Value);
 						}
 						return Task.CompletedTask;
 					},
 					OnTokenValidated = context => {
-						var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<JwtAuthentication>>();
-						var userid = context.Principal?.GetClaimOrNull("userid");
-						var appname = context.Principal?.GetClaimOrNull("appname");
-						var service = context.Principal?.GetClaimOrNull("service");
+						var logger = context?.HttpContext?.RequestServices?.GetRequiredService<ILogger<JwtAuthentication>>();
+						var userid = context?.Principal?.GetClaimOrNull("userid");
+						var appname = context?.Principal?.GetClaimOrNull("appname");
+						var service = context?.Principal?.GetClaimOrNull("service");
 						if (userid != null && appname != null) {
-							logger.LogInformation("Successfully authenticated user {userid} from app {appName} for {verb} access to {path}",
-								userid, appname, context.Request.Method, context.Request.Path.Value ?? "<path not specified in request>");
+							logger?.LogInformation("Successfully authenticated user {userid} from app {appName} for {verb} access to {path}",
+								userid, appname, context?.Request?.Method, context?.Request?.Path.Value ?? "<path not specified in request>");
 						}
 						else if (service != null) {
-							logger.LogInformation("Successfully authenticated service {service} for {verb} access to {path}",
-								service, context.Request.Method, context.Request.Path.Value ?? "<path not specified in request>");
+							logger?.LogInformation("Successfully authenticated service {service} for {verb} access to {path}",
+								service, context?.Request?.Method, context?.Request?.Path.Value ?? "<path not specified in request>");
 						}
 						else {
-							logger.LogInformation("Successfully validated JWT auth token, but the token did contain neither a user+appname claims combination nor a service claim.");
+							logger?.LogInformation("Successfully validated JWT auth token, but the token did contain neither a user+appname claims combination nor a service claim.");
 						}
 						return Task.CompletedTask;
 					}
