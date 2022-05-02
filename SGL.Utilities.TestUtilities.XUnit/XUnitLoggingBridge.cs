@@ -47,7 +47,13 @@ namespace SGL.Utilities.TestUtilities.XUnit {
 				scopes.ForEachScope((scope, sb) => sb.AppendFormat("<{0}>", scope), builder);
 				var str = builder.ToString();
 				lock (output) {
-					output.WriteLine(str);
+					try {
+						output.WriteLine(str);
+					}
+					catch (Exception) {
+						// Couldn't write to output. This error will be ignored, because there is nothing else to do.
+						// This may happen if something logs during disposal and output is not assigned to a test anymore.
+					}
 				}
 			}
 		}
