@@ -24,9 +24,16 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		private readonly DerObjectIdentifier? ecSharedMessageKeyPairCurveName = null;
 
 		/// <summary>
-		/// Creates a KeyEncryptor that encrypts a copy of the data key for each of the recipients who have their public key (and its id) listed in <paramref name="trustedRecipients"/>.
+		/// Acts as a convenience overload for <see cref="KeyEncryptor(List{KeyValuePair{KeyId,PublicKey}},RandomGenerator,bool)"/> that generates the public key IDs for the caller.
+		/// See <see cref="KeyEncryptor(List{KeyValuePair{KeyId,PublicKey}},RandomGenerator,bool)"/> for details.
 		/// </summary>
-		/// <param name="trustedRecipients">The list of authorized recipient public keys that shall be able to decrypt data objects the data keys of which are encrypted using <see cref="EncryptDataKey(byte[])"/>.</param>
+		public KeyEncryptor(IEnumerable<PublicKey> recipientPublicKeys, RandomGenerator random, bool allowSharedMessageKeyPair = false) :
+			this(recipientPublicKeys.Select(rpk => new KeyValuePair<KeyId, PublicKey>(rpk.CalculateId(), rpk)).ToList(), random, allowSharedMessageKeyPair) { }
+
+		/// <summary>
+		/// Creates a KeyEncryptor that encrypts a copy of the data key for each of the recipients who have their public key (and its id) listed in <paramref name="recipientPublicKeys"/>.
+		/// </summary>
+		/// <param name="recipientPublicKeys">The list of authorized recipient public keys that shall be able to decrypt data objects the data keys of which are encrypted using <see cref="EncryptDataKey(byte[])"/>.</param>
 		/// <param name="random">The random generator to generate message key pairs for the <see cref="KeyEncryptionMode.ECDH_KDF2_SHA256_AES_256_CCM"/> mode, which is used for recipients that use an Elliptic Curve key pair.</param>
 		/// <param name="allowSharedMessageKeyPair">
 		/// Specifies whether the <see cref="KeyEncryptionMode.ECDH_KDF2_SHA256_AES_256_CCM"/> mode is allowed to use a shared message key pair for all or most of the recipients with Elliptic Curve key pairs.
@@ -34,12 +41,12 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// The other Elliptic-Curve-using recipients will still use a specific message key pair.
 		/// If this is set to false, all Elliptic-Curve-using recipients will get their own specific message key pair.
 		/// </param>
-		public KeyEncryptor(List<KeyValuePair<KeyId, PublicKey>> trustedRecipients, RandomGenerator random, bool allowSharedMessageKeyPair = false) {
-			this.trustedRecipients = trustedRecipients;
+		public KeyEncryptor(List<KeyValuePair<KeyId, PublicKey>> recipientPublicKeys, RandomGenerator random, bool allowSharedMessageKeyPair = false) {
+			this.trustedRecipients = recipientPublicKeys;
 			this.random = random;
 			if (allowSharedMessageKeyPair) {
 				// Determine named curve that has the most recipients using it, to handle all those recipients using a shared message EC public key.
-				var ecRecipientKeyCurveNames = trustedRecipients.Select(tr => tr.Value.wrapped)
+				var ecRecipientKeyCurveNames = recipientPublicKeys.Select(tr => tr.Value.wrapped)
 					.OfType<ECPublicKeyParameters>()
 					.Where(pk => pk.PublicKeyParamSet != null)
 					.GroupBy(pk => pk.PublicKeyParamSet.Id)
