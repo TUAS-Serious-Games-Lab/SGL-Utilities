@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
@@ -35,8 +36,13 @@ namespace SGL.Utilities.Backend.TestUtilities {
 				if (dbContextDescriptor != null) services.Remove(dbContextDescriptor);
 				var dbContextOptionsDescriptor = services.SingleOrDefault(sd => sd.ServiceType == typeof(DbContextOptions<TContext>));
 				if (dbContextOptionsDescriptor != null) services.Remove(dbContextOptionsDescriptor);
-				services.AddDbContext<TContext>(options => options.UseSqlite(db.Connection,
-					o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery)));
+				services.AddDbContext<TContext>(options => {
+					options.UseSqlite(db.Connection, o => {
+						o.UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery);
+						OverrideOptions(o);
+					});
+					OverrideOptions(options);
+				});
 				OverrideConfig(services);
 
 				using (var context = Activator.CreateInstance(typeof(TContext), db.ContextOptions) as TContext ?? throw new InvalidOperationException()) {
@@ -46,7 +52,19 @@ namespace SGL.Utilities.Backend.TestUtilities {
 		}
 
 		/// <summary>
-		/// Provides a hook method for derived classes to also adapt the service configuration after the database context was replaced.
+		/// Provides a hook method for derived classes to adapt the DbContext options.
+		/// </summary>
+		/// <param name="options">The options being configured.</param>
+		protected virtual void OverrideOptions(DbContextOptionsBuilder options) { }
+
+		/// <summary>
+		/// Provides a hook method for derived classes to adapt the SqliteDbContext options.
+		/// </summary>
+		/// <param name="options">The options being configured.</param>
+		protected virtual void OverrideOptions(SqliteDbContextOptionsBuilder options) { }
+
+		/// <summary>
+		/// Provides a hook method for derived classes to adapt the service configuration after the database context was replaced.
 		/// </summary>
 		/// <param name="services">The service collection that is being configured.</param>
 		protected virtual void OverrideConfig(IServiceCollection services) { }
