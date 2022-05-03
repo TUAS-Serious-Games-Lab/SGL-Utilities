@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +17,26 @@ namespace SGL.Utilities.Backend.TestUtilities {
 	/// <typeparam name="TContext"></typeparam>
 	/// <typeparam name="TStartup"></typeparam>
 	public class DbWebAppIntegrationTestFixtureBase<TContext, TStartup> : WebApplicationFactory<TStartup> where TContext : DbContext where TStartup : class {
-		private readonly TestDatabase<TContext> db = new();
+		private readonly TestDatabase<TContext> db;
+
+		/// <summary>
+		/// Creates a new object that uses an anonymous in-memory database.
+		/// Only one context <typeparamref name="TContext"/> object can access the database at a time, as they use a shared connection.
+		/// </summary>
+		protected DbWebAppIntegrationTestFixtureBase() {
+			db = new TestDatabase<TContext>();
+		}
+
+		/// <summary>
+		/// Creates a new object that uses an in-memory database with the given name.
+		/// Contrary to <see cref="DbWebAppIntegrationTestFixtureBase()"/>, each <typeparamref name="TContext"/> object uses its own connection.
+		/// Calling code should use a unique name for each testing scenario to ensure isolation.
+		/// </summary>
+		/// <param name="dataSourceName"></param>
+		protected DbWebAppIntegrationTestFixtureBase(string dataSourceName) {
+			db = new TestDatabase<TContext>(dataSourceName);
+		}
+
 
 		/// <summary>
 		/// Disposes both, the underlying <see cref="WebApplicationFactory{TEntryPoint}"/> and the <see cref="TestDatabase{TContext}"/>.
@@ -37,7 +57,7 @@ namespace SGL.Utilities.Backend.TestUtilities {
 				var dbContextOptionsDescriptor = services.SingleOrDefault(sd => sd.ServiceType == typeof(DbContextOptions<TContext>));
 				if (dbContextOptionsDescriptor != null) services.Remove(dbContextOptionsDescriptor);
 				services.AddDbContext<TContext>(options => {
-					options.UseSqlite(db.Connection, o => {
+					db.ApplyDbContextOptions(options, o => {
 						o.UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery);
 						OverrideOptions(o);
 					});
