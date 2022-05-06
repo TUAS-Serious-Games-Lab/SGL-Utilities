@@ -6,10 +6,10 @@
 		/// <summary>
 		/// The key (pair) is for the RSA algorithm.
 		/// </summary>
-		RSA,
+		RSA = 1,
 		/// <summary>
 		/// The key (pair) is for Elliptic Curve Cryptography.
 		/// </summary>
-		EllipticCurves
+		EllipticCurves = 2
 	}
 }
