@@ -42,12 +42,12 @@ namespace SGL.Utilities {
 		/// </summary>
 		/// <returns>The <see cref="AuthenticationHeaderValue"/> for the request.</returns>
 		/// <exception cref="AuthorizationTokenException">If <see cref="Authorization"/> is null or is expired and <see cref="AuthorizationExpired"/> didn't provide a remediation.</exception>
-		protected async Task<AuthenticationHeaderValue> GetAuthenticationHeaderAsync() {
+		protected async Task<AuthenticationHeaderValue> GetAuthenticationHeaderAsync(CancellationToken ct = default) {
 			if (!Authorization.HasValue) {
 				throw new AuthorizationTokenException("No authenticated session.");
 			}
 			if (!Authorization.Value.Valid) {
-				await (AuthorizationExpired?.InvokeAllAsync(this, new AuthorizationExpiredEventArgs { }) ?? Task.CompletedTask);
+				await (AuthorizationExpired?.InvokeAllAsync(this, new AuthorizationExpiredEventArgs { }, ct) ?? Task.CompletedTask);
 			}
 			if (!Authorization.Value.Valid) {
 				throw new AuthorizationTokenException("Authorization token expired.");
