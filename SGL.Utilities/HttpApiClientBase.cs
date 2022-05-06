@@ -8,7 +8,7 @@ namespace SGL.Utilities {
 	/// <summary>
 	/// Provides common functionality for REST HTTP API clients.
 	/// </summary>
-	public class HttpApiClientBase : IApiClient {
+	public class HttpApiClientBase : IApiClient, IDisposable {
 		/// <summary>
 		/// The underlying <see cref="HttpClient"/> to use for requests.
 		/// </summary>
@@ -27,6 +27,8 @@ namespace SGL.Utilities {
 		/// </summary>
 		protected string PrefixUriPath { get; }
 
+		private SemaphoreSlim authorizationLock = new SemaphoreSlim(1);
+
 		/// <summary>
 		/// Constructs the object with the given <see cref="HttpClient"/>, initializing <see cref="Authorization"/> with the given token.
 		/// </summary>
@@ -36,6 +38,10 @@ namespace SGL.Utilities {
 			PrefixUriPath = prefixUriPath;
 		}
 
+		public void Dispose() {
+			authorizationLock.Dispose();
+		}
+
 		/// <summary>
 		/// Gets an <see cref="AuthenticationHeaderValue"/> object from <see cref="Authorization"/> for a request.
 		/// If <see cref="Authorization"/> is expired, <see cref="AuthorizationExpired"/> is triggered to allow refreshing the token.
@@ -43,16 +49,22 @@ namespace SGL.Utilities {
 		/// <returns>The <see cref="AuthenticationHeaderValue"/> for the request.</returns>
 		/// <exception cref="AuthorizationTokenException">If <see cref="Authorization"/> is null or is expired and <see cref="AuthorizationExpired"/> didn't provide a remediation.</exception>
 		protected async Task<AuthenticationHeaderValue> GetAuthenticationHeaderAsync(CancellationToken ct = default) {
-			if (!Authorization.HasValue) {
-				throw new AuthorizationTokenException("No authenticated session.");
+			await authorizationLock.WaitAsync(ct);
+			try {
+				if (!Authorization.HasValue) {
+					throw new AuthorizationTokenException("No authenticated session.");
+				}
+				if (!Authorization.Value.Valid) {
+					await (AuthorizationExpired?.InvokeAllAsync(this, new AuthorizationExpiredEventArgs { }, ct) ?? Task.CompletedTask);
+				}
+				if (!Authorization.Value.Valid) {
+					throw new AuthorizationTokenException("Authorization token expired.");
+				}
+				return Authorization.Value.Token.ToHttpHeaderValue();
 			}
-			if (!Authorization.Value.Valid) {
-				await (AuthorizationExpired?.InvokeAllAsync(this, new AuthorizationExpiredEventArgs { }, ct) ?? Task.CompletedTask);
+			finally {
+				authorizationLock.Release();
 			}
-			if (!Authorization.Value.Valid) {
-				throw new AuthorizationTokenException("Authorization token expired.");
-			}
-			return Authorization.Value.Token.ToHttpHeaderValue();
 		}
 
 		/// <summary>
