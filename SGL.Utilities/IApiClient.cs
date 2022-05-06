@@ -46,6 +46,6 @@ namespace SGL.Utilities {
 		/// It allows other components to remedy the expiry by obtaining a new token and updating <see cref="Authorization"/> with it.
 		/// If no remediation is made, the original request will fail with an <see cref="AuthorizationTokenException"/>.
 		/// </summary>
-		event EventHandler<AuthorizationExpiredEventArgs>? AuthorizationExpired;
+		event AsyncEventHandler<AuthorizationExpiredEventArgs>? AuthorizationExpired;
 	}
 }

@@ -18,7 +18,7 @@ namespace SGL.Utilities {
 		public AuthorizationData? Authorization { get; set; }
 
 		/// <inheritdoc/>
-		public event EventHandler<AuthorizationExpiredEventArgs>? AuthorizationExpired;
+		public event AsyncEventHandler<AuthorizationExpiredEventArgs>? AuthorizationExpired;
 
 		/// <summary>
 		/// The URI path under which this client operates with <see cref="SendRequest"/>.
@@ -42,12 +42,12 @@ namespace SGL.Utilities {
 		/// </summary>
 		/// <returns>The <see cref="AuthenticationHeaderValue"/> for the request.</returns>
 		/// <exception cref="AuthorizationTokenException">If <see cref="Authorization"/> is null or is expired and <see cref="AuthorizationExpired"/> didn't provide a remediation.</exception>
-		protected AuthenticationHeaderValue GetAuthenticationHeader() {
+		protected async Task<AuthenticationHeaderValue> GetAuthenticationHeaderAsync() {
 			if (!Authorization.HasValue) {
 				throw new AuthorizationTokenException("No authenticated session.");
 			}
 			if (!Authorization.Value.Valid) {
-				AuthorizationExpired?.Invoke(this, new AuthorizationExpiredEventArgs { });
+				await (AuthorizationExpired?.InvokeAllAsync(this, new AuthorizationExpiredEventArgs { }) ?? Task.CompletedTask);
 			}
 			if (!Authorization.Value.Valid) {
 				throw new AuthorizationTokenException("Authorization token expired.");
@@ -64,7 +64,7 @@ namespace SGL.Utilities {
 		/// <param name="prepareRequest">A delegate to apply to the request before sending, e.g. to set additional headers.</param>
 		/// <param name="accept">The mediatype for the Accept header to set, or null if no Accept header should be set or it is set through <paramref name="prepareRequest"/>.</param>
 		/// <param name="ct">A <see cref="CancellationToken"/> that allows cancelling the operation.</param>
-		/// <param name="authenticated">If true, the request will have its Authorization header set to the result of <see cref="GetAuthenticationHeader"/>.</param>
+		/// <param name="authenticated">If true, the request will have its Authorization header set to the result of <see cref="GetAuthenticationHeaderAsync"/>.</param>
 		/// <param name="statusCodeExceptionMapping">
 		/// If true, <see cref="MapExceptionForError(HttpResponseMessage)"/> will be called if the response has <see cref="HttpResponseMessage.IsSuccessStatusCode"/> false.
 		/// If false, it is the callers responsibility to check the status code.
@@ -77,7 +77,7 @@ namespace SGL.Utilities {
 				request.Content = requestContent;
 			}
 			if (authenticated) {
-				request.Headers.Authorization = GetAuthenticationHeader();
+				request.Headers.Authorization = await GetAuthenticationHeaderAsync();
 			}
 			if (accept != null) {
 				request.Headers.Accept.Add(accept);
