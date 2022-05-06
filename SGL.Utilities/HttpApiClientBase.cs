@@ -38,6 +38,7 @@ namespace SGL.Utilities {
 			PrefixUriPath = prefixUriPath;
 		}
 
+		/// <inheritdoc/>
 		public void Dispose() {
 			authorizationLock.Dispose();
 		}
