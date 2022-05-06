@@ -90,7 +90,7 @@ namespace SGL.Utilities {
 				request.Content = requestContent;
 			}
 			if (authenticated) {
-				request.Headers.Authorization = await GetAuthenticationHeaderAsync();
+				request.Headers.Authorization = await GetAuthenticationHeaderAsync(ct);
 			}
 			if (accept != null) {
 				request.Headers.Accept.Add(accept);
