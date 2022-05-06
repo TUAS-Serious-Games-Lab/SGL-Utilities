@@ -6,6 +6,6 @@
 		/// <summary>
 		/// Indicates that the key shall be encrypted using a 256-bit AES using the CBC mode of operation.
 		/// </summary>
-		AES_256_CBC
+		AES_256_CBC = 1
 	}
 }

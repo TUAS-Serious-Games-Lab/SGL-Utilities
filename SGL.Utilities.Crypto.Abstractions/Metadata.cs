@@ -17,7 +17,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <summary>
 		/// Indicates that the contents are encrypted using Advanced Encryption Standard (AES) with the 'Counter with CBC-MAC' (CCM) mode of operation and a 256-bit key.
 		/// </summary>
-		AES_256_CCM,
+		AES_256_CCM = 1,
 	}
 
 	/// <summary>
@@ -33,7 +33,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <summary>
 		/// Indicates that the data keys are encrypted using RSA with the PKCS1 encoding.
 		/// </summary>
-		RSA_PKCS1,
+		RSA_PKCS1 = 1,
 		/// <summary>
 		/// Indicates that the data keys are encrypted using the following procedure:
 		/// <list type="number">
@@ -45,7 +45,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// The decryption procedure works the same way, except that in the second step, the keys are replaced with their opposite (i.e. message public key and recipient private key).
 		/// This mode requires less key material overhead.
 		/// </summary>
-		ECDH_KDF2_SHA256_AES_256_CCM
+		ECDH_KDF2_SHA256_AES_256_CCM = 2
 	}
 
 	/// <summary>
