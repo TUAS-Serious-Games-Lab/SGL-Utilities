@@ -35,6 +35,25 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		}
 
 		/// <summary>
+		/// Opens a <see cref="CipherStream"/> backed by <paramref name="inputStream"/> using the data key of the encryptor and the initialization vector of the stream with the index given in <paramref name="streamIndex"/>.
+		/// The <see cref="CipherStream"/> is setup to encrypt the data read from it.
+		/// </summary>
+		/// <param name="inputStream">The backing stream for the encrypting stream.</param>
+		/// <param name="streamIndex">The logical index of the stream within the data object.</param>
+		/// <returns>A stream that reads data from <paramref name="inputStream"/>, encrypts it and returns the encrypted data to the reader.</returns>
+		public CipherStream OpenEncryptionReadStream(Stream inputStream, int streamIndex) {
+			try {
+				var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
+				var keyParams = new ParametersWithIV(new KeyParameter(dataKey), ivs[streamIndex]);
+				cipher.Init(forEncryption: true, keyParams);
+				return new CipherStream(new Org.BouncyCastle.Crypto.IO.CipherStream(inputStream, cipher, null), CipherStreamOperationMode.EncryptingRead);
+			}
+			catch (Exception ex) {
+				throw new EncryptionException("Failed to open encryption stream.", ex);
+			}
+		}
+
+		/// <summary>
 		/// Opens a <see cref="CipherStream"/> backed by <paramref name="outputStream"/> using the data key of the encryptor and the initialization vector of the stream with the index given in <paramref name="streamIndex"/>.
 		/// The <see cref="CipherStream"/> is setup to encrypt the data written to it.
 		/// </summary>

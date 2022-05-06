@@ -58,6 +58,25 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		}
 
 		/// <summary>
+		/// Opens a <see cref="CipherStream"/> backed by <paramref name="outputStream"/> using the data key of the decryptor and the initialization vector of the stream with the index given in <paramref name="streamIndex"/>.
+		/// The <see cref="CipherStream"/> is setup to decrypt the data written through it.
+		/// </summary>
+		/// <param name="outputStream">The backing stream for the decrypting stream.</param>
+		/// <param name="streamIndex">The logical index of the stream within the data object.</param>
+		/// <returns>A stream that decrypts data written to it and writes the decrypted data to <paramref name="outputStream"/>.</returns>
+		public CipherStream OpenDecryptionWriteStream(Stream outputStream, int streamIndex) {
+			try {
+				var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
+				var keyParams = new ParametersWithIV(new KeyParameter(dataKey), ivs[streamIndex]);
+				cipher.Init(forEncryption: false, keyParams);
+				return new CipherStream(new Org.BouncyCastle.Crypto.IO.CipherStream(outputStream, null, cipher), CipherStreamOperationMode.DecryptingWrite);
+			}
+			catch (Exception ex) {
+				throw new DecryptionException("Failed to open encryption stream.", ex);
+			}
+		}
+
+		/// <summary>
 		/// Directly decrypts the given <paramref name="encryptedContent"/> using the data key of this <see cref="DataDecryptor"/>
 		/// and the initialization vector associated with the given <paramref name="streamIndex"/>.
 		/// This operation is logically equivalent to creating a <see cref="MemoryStream"/> with <paramref name="encryptedContent"/>,
