@@ -17,6 +17,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 	public class DataEncryptor {
 		private List<byte[]> ivs;
 		private byte[] dataKey;
+		private readonly DataEncryptionMode dataMode;
 
 		/// <summary>
 		/// Created a DataEncryptor for a data object with given number of streams.
@@ -24,14 +25,29 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// </summary>
 		/// <param name="random">The random generator to use for generating the data key and the initialization vector.</param>
 		/// <param name="numberOfStreams">The number of streams, the data object consists of. This determines the number of initialization vectors that will be generated.</param>
-		public DataEncryptor(RandomGenerator random, int numberOfStreams = 1) {
-			dataKey = new byte[32];
-			random.NextBytes(dataKey);
+		/// <param name="dataEncryptionMode">The mode used for encrypting the data.</param>
+		public DataEncryptor(RandomGenerator random, int numberOfStreams = 1, DataEncryptionMode dataEncryptionMode = DataEncryptionMode.AES_256_CCM) {
+			this.dataMode = dataEncryptionMode;
+			dataKey = random.GetBytes(32);
 			ivs = Enumerable.Range(0, numberOfStreams).Select(_ => {
-				var iv = new byte[7];
-				random.NextBytes(iv);
+				var iv = random.GetBytes(GetIvLength(dataEncryptionMode));
 				return iv;
 			}).ToList();
+		}
+
+		private int GetIvLength(DataEncryptionMode dataEncryptionMode) => dataEncryptionMode switch {
+			DataEncryptionMode.AES_256_CCM => 7,
+			_ => throw new CryptographyException($"Unsupported encryption mode {dataEncryptionMode}."),
+		};
+
+		private IBufferedCipher GetCipher(int streamIndex) {
+			IBufferedCipher cipher = dataMode switch {
+				DataEncryptionMode.AES_256_CCM => new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine())),
+				_ => throw new CryptographyException($"Unsupported encryption mode {dataMode}.")
+			};
+			var keyParams = new ParametersWithIV(new KeyParameter(dataKey), ivs[streamIndex]);
+			cipher.Init(forEncryption: true, keyParams);
+			return cipher;
 		}
 
 		/// <summary>
@@ -43,9 +59,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <returns>A stream that reads data from <paramref name="inputStream"/>, encrypts it and returns the encrypted data to the reader.</returns>
 		public CipherStream OpenEncryptionReadStream(Stream inputStream, int streamIndex) {
 			try {
-				var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
-				var keyParams = new ParametersWithIV(new KeyParameter(dataKey), ivs[streamIndex]);
-				cipher.Init(forEncryption: true, keyParams);
+				var cipher = GetCipher(streamIndex);
 				return new CipherStream(new Org.BouncyCastle.Crypto.IO.CipherStream(inputStream, cipher, null), CipherStreamOperationMode.EncryptingRead);
 			}
 			catch (Exception ex) {
@@ -62,9 +76,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <returns>A stream that encrypts data written to it and then writes the encrypted data to <paramref name="outputStream"/>.</returns>
 		public CipherStream OpenEncryptionWriteStream(Stream outputStream, int streamIndex) {
 			try {
-				var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
-				var keyParams = new ParametersWithIV(new KeyParameter(dataKey), ivs[streamIndex]);
-				cipher.Init(forEncryption: true, keyParams);
+				var cipher = GetCipher(streamIndex);
 				return new CipherStream(new Org.BouncyCastle.Crypto.IO.CipherStream(outputStream, null, cipher), CipherStreamOperationMode.EncryptingWrite);
 			}
 			catch (Exception ex) {
@@ -84,9 +96,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <returns>The encrypted content.</returns>
 		public byte[] EncryptData(byte[] clearTextContent, int streamIndex) {
 			try {
-				var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
-				var keyParams = new ParametersWithIV(new KeyParameter(dataKey), ivs[streamIndex]);
-				cipher.Init(forEncryption: true, keyParams);
+				var cipher = GetCipher(streamIndex);
 				return cipher.DoFinal(clearTextContent);
 			}
 			catch (Exception ex) {
@@ -101,7 +111,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <returns>The key material an metadata for the data object.</returns>
 		public EncryptionInfo GenerateEncryptionInfo(IKeyEncryptor keyEncryptor) {
 			EncryptionInfo result = new EncryptionInfo();
-			result.DataMode = DataEncryptionMode.AES_256_CCM;
+			result.DataMode = dataMode;
 			result.IVs = ivs;
 			(result.DataKeys, result.MessagePublicKey) = keyEncryptor.EncryptDataKey(dataKey);
 			return result;

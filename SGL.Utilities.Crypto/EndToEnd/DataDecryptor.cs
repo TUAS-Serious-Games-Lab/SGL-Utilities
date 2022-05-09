@@ -16,6 +16,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 	/// These streams are identified using an index within the data object and have their own initialization vector for each stream.
 	/// </summary>
 	public class DataDecryptor {
+		private readonly DataEncryptionMode dataMode;
 		private IList<byte[]> ivs;
 		private byte[] dataKey;
 
@@ -31,11 +32,26 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <param name="ivs">The initialization vectors of the data object's streams, on for each stream.</param>
 		/// <param name="dataKey">The data key for the data object.</param>
 		public DataDecryptor(DataEncryptionMode dataMode, IList<byte[]> ivs, byte[] dataKey) {
-			if (dataMode != DataEncryptionMode.AES_256_CCM) {
-				throw new DecryptionException("Unsupported data encryption mode.");
+			switch (dataMode) {
+				case DataEncryptionMode.AES_256_CCM:
+					break;
+				default:
+					throw new DecryptionException($"Unsupported data encryption mode {dataMode}.");
 			}
+
+			this.dataMode = dataMode;
 			this.ivs = ivs;
 			this.dataKey = dataKey;
+		}
+
+		private IBufferedCipher GetCipher(int streamIndex) {
+			var cipher = dataMode switch {
+				DataEncryptionMode.AES_256_CCM => new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine())),
+				_ => throw new NotImplementedException()
+			};
+			var keyParams = new ParametersWithIV(new KeyParameter(dataKey), ivs[streamIndex]);
+			cipher.Init(forEncryption: false, keyParams);
+			return cipher;
 		}
 
 		/// <summary>
@@ -47,9 +63,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <returns>A stream that reads the encrypted data from <paramref name="inputStream"/> and decrypts data when the stream is read from.</returns>
 		public CipherStream OpenDecryptionReadStream(Stream inputStream, int streamIndex) {
 			try {
-				var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
-				var keyParams = new ParametersWithIV(new KeyParameter(dataKey), ivs[streamIndex]);
-				cipher.Init(forEncryption: false, keyParams);
+				var cipher = GetCipher(streamIndex);
 				return new CipherStream(new Org.BouncyCastle.Crypto.IO.CipherStream(inputStream, cipher, null), CipherStreamOperationMode.DecryptingRead);
 			}
 			catch (Exception ex) {
@@ -66,9 +80,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <returns>A stream that decrypts data written to it and writes the decrypted data to <paramref name="outputStream"/>.</returns>
 		public CipherStream OpenDecryptionWriteStream(Stream outputStream, int streamIndex) {
 			try {
-				var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
-				var keyParams = new ParametersWithIV(new KeyParameter(dataKey), ivs[streamIndex]);
-				cipher.Init(forEncryption: false, keyParams);
+				var cipher = GetCipher(streamIndex);
 				return new CipherStream(new Org.BouncyCastle.Crypto.IO.CipherStream(outputStream, null, cipher), CipherStreamOperationMode.DecryptingWrite);
 			}
 			catch (Exception ex) {
@@ -88,9 +100,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <returns>The decrypted content.</returns>
 		public byte[] DecryptData(byte[] encryptedContent, int streamIndex) {
 			try {
-				var cipher = new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine()));
-				var keyParams = new ParametersWithIV(new KeyParameter(dataKey), ivs[streamIndex]);
-				cipher.Init(forEncryption: false, keyParams);
+				var cipher = GetCipher(streamIndex);
 				return cipher.DoFinal(encryptedContent);
 			}
 			catch (Exception ex) {
