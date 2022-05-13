@@ -5,12 +5,13 @@ using Org.BouncyCastle.Crypto.Parameters;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace SGL.Utilities.Crypto.EndToEnd {
 	/// <summary>
 	/// Provides the functionality to decrypt the content of a data object using a data key obtained from the encrypted data object's metadata.
 	/// Each data object requires a separate DataEncryptor object.
-	/// The data key and the initialization vectors can either be specified directly using <see cref="DataDecryptor(DataEncryptionMode, IList{byte[]}, byte[])"/> or can be obtained from an
+	/// The data key and the initialization vectors can either be specified directly using <see cref="DataDecryptor(DataEncryptionMode, IEnumerable{byte[]}, byte[])"/> or can be obtained from an
 	/// <see cref="EncryptionInfo"/> representing the key material for the data object using a <see cref="KeyDecryptor"/> by calling <see cref="FromEncryptionInfo(EncryptionInfo, IKeyDecryptor)"/>.
 	/// A data object can consist of multiple streams that are encrypted with the same data key, e.g. a message with attachments where the message text and the attachments each have their own stream.
 	/// These streams are identified using an index within the data object and have their own initialization vector for each stream.
@@ -31,7 +32,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <param name="dataMode">The encryption mode to use for the decryption. Currently, only <see cref="DataEncryptionMode.AES_256_CCM"/> is supported.</param>
 		/// <param name="ivs">The initialization vectors of the data object's streams, on for each stream.</param>
 		/// <param name="dataKey">The data key for the data object.</param>
-		public DataDecryptor(DataEncryptionMode dataMode, IList<byte[]> ivs, byte[] dataKey) {
+		public DataDecryptor(DataEncryptionMode dataMode, IEnumerable<byte[]> ivs, byte[] dataKey) {
 			switch (dataMode) {
 				case DataEncryptionMode.AES_256_CCM:
 					break;
@@ -40,7 +41,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 			}
 
 			this.dataMode = dataMode;
-			this.ivs = ivs;
+			this.ivs = ivs.ToList();
 			this.dataKey = dataKey;
 		}
 
