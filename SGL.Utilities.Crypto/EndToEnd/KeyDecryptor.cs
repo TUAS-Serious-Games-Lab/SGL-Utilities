@@ -32,8 +32,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// </summary>
 		/// <param name="encryptionInfo">The metadata for a data object, for which the recipient handled by this KeyDecryptor is an authorized recipient.</param>
 		/// <returns>The decrypted data key, or null if there is no data key </returns>
-		/// <exception cref="ArgumentException">If the found data key in <see cref="EncryptionInfo.DataKeys"/> of <paramref name="encryptionInfo"/> uses an unsupported encryption mode.</exception>
-		/// <exception cref="CryptoException">If the decryption itself fails.</exception>
+		/// <exception cref="DecryptionException">If the found data key in <see cref="EncryptionInfo.DataKeys"/> of <paramref name="encryptionInfo"/> uses an unsupported encryption mode or if the decryption itself fails.</exception>
 		public byte[]? DecryptKey(EncryptionInfo encryptionInfo) {
 			if (encryptionInfo.DataKeys.TryGetValue(keyId, out var dataKeyInfo)) {
 				return DecryptKey(dataKeyInfo, encryptionInfo.MessagePublicKey);
@@ -52,8 +51,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// It is usually taken from <see cref="EncryptionInfo.MessagePublicKey"/>.
 		/// </param>
 		/// <returns>The decrypted data key.</returns>
-		/// <exception cref="ArgumentException">If <paramref name="dataKeyInfo"/> uses an unsupported encryption mode.</exception>
-		/// <exception cref="CryptoException">If the decryption itself fails.</exception>
+		/// <exception cref="DecryptionException">If <paramref name="dataKeyInfo"/> uses an unsupported encryption mode or if the decryption itself fails.</exception>
 		public byte[] DecryptKey(DataKeyInfo dataKeyInfo, byte[]? sharedMessagePublicKey) {
 			switch (dataKeyInfo.Mode) {
 				case KeyEncryptionMode.ECDH_KDF2_SHA256_AES_256_CCM:
