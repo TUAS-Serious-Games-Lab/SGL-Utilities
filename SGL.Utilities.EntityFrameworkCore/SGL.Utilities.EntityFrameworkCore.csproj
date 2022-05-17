@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net5.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<AnalysisLevel>Preview</AnalysisLevel>
+	</PropertyGroup>
+	<PropertyGroup>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<PackageId>SGL.Utilities.Crypto.EntityFrameworkCore</PackageId>
+		<Version>0.0.0-dev</Version>
+		<Authors>Serious Games Lab Team at Hochschule Trier</Authors>
+		<Company>Hochschule Trier, Serious Games Lab</Company>
+		<Description>An extension library providing EntityFrameworkCore database model functionality for SGL Projects.</Description>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<DebugType>embedded</DebugType>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.10" />
+	</ItemGroup>
+
+</Project>

@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 
-namespace SGL.Utilities.Backend {
+namespace SGL.Utilities.EntityFrameworkCore {
 	/// <summary>
 	/// Provides extension methods for working with date and time values in Entity Framework Core.
 	/// </summary>
