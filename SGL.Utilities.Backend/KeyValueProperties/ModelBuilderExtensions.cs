@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SGL.Utilities.Backend.Domain.KeyValueProperties;
+using SGL.Utilities.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
