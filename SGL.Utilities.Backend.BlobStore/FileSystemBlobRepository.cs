@@ -212,8 +212,8 @@ namespace SGL.Utilities.Backend.BlobStore {
 							   where userId.HasValue
 							   select dirName;
 				foreach (var userDir in userDirs) {
-					foreach (var logFile in Directory.EnumerateFiles(Path.Combine(storageDirectory, appName, userDir), searchPattern)) {
-						yield return new TempFilePath(appName, userDir, Path.GetFileName(logFile));
+					foreach (var blobFile in Directory.EnumerateFiles(Path.Combine(storageDirectory, appName, userDir), searchPattern)) {
+						yield return new TempFilePath(appName, userDir, Path.GetFileName(blobFile));
 					}
 				}
 			}
@@ -246,19 +246,19 @@ namespace SGL.Utilities.Backend.BlobStore {
 
 		/// <inheritdoc/>
 		/// <remarks>
-		/// The log is first written to a temporary file that is not found by the enumerating and reading methods.
+		/// The blob is first written to a temporary file that is not found by the enumerating and reading methods.
 		/// and then renamed to the correct final filename upon successful completion.
 		/// Thus, if an error occurs during the writing process, the incomplete contents are not visible.
 		/// Instead the temporary file is removed if transfer fails.
-		/// Furthermore, this strategy provides a last-writer wins resolution for concurrent uploads of the same log, where 'last' refers to the operation the finishes last.
+		/// Furthermore, this strategy provides a last-writer wins resolution for concurrent uploads of the same blob, where 'last' refers to the operation the finishes last.
 		/// </remarks>
-		public Task<long> StoreBlobAsync(string appName, Guid userId, Guid logId, string suffix, Stream content, CancellationToken ct = default) {
+		public Task<long> StoreBlobAsync(string appName, Guid userId, Guid blobId, string suffix, Stream content, CancellationToken ct = default) {
 			return Task.Run(async () => {
 				long size = 0;
 				ct.ThrowIfCancellationRequested();
 				ensureDirectoryExists(appName, userId);
 				// Create target file with temporary name to not make it visible to other operations while it is still being written.
-				var filePath = Path.Combine(storageDirectory, appName, userId.ToString(), logId.ToString() + suffix + makeTempSuffix());
+				var filePath = Path.Combine(storageDirectory, appName, userId.ToString(), blobId.ToString() + suffix + makeTempSuffix());
 				try {
 					ct.ThrowIfCancellationRequested();
 					using (var writeStream = new FileStream(filePath, FileMode.CreateNew, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true)) {
@@ -279,7 +279,7 @@ namespace SGL.Utilities.Backend.BlobStore {
 					throw;
 				}
 				// Rename to final file name to make it visible to other operations.
-				File.Move(filePath, makeFilePath(appName, userId, logId, suffix), overwrite: true);
+				File.Move(filePath, makeFilePath(appName, userId, blobId, suffix), overwrite: true);
 				return size;
 			}, ct);
 		}
