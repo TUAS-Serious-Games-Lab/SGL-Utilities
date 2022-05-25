@@ -15,6 +15,7 @@ namespace SGL.Utilities {
 	/// </summary>
 	public class SingleThreadedSynchronizationContext : SynchronizationContext, IDisposable {
 		private class State : IDisposable {
+			private Action<Exception> uncaughtExceptionCallback;
 			private readonly Thread thread;
 			private readonly AutoResetEvent resetEvent = new AutoResetEvent(false);
 			private readonly CancellationTokenSource shutdownTokenSource = new CancellationTokenSource();
@@ -22,7 +23,8 @@ namespace SGL.Utilities {
 			private readonly ConcurrentQueue<(SendOrPostCallback Callback, object? State)> queue = new ConcurrentQueue<(SendOrPostCallback Callback, object? State)>();
 			private long refCount = 1;
 
-			internal State(string threadName, SingleThreadedSynchronizationContext ctx) {
+			internal State(Action<Exception> uncaughtExceptionCallback, string threadName, SingleThreadedSynchronizationContext ctx) {
+				this.uncaughtExceptionCallback = uncaughtExceptionCallback;
 				shutdownToken = shutdownTokenSource.Token;
 				thread = new Thread(() => pump(ctx));
 				thread.Name = threadName;
@@ -38,7 +40,7 @@ namespace SGL.Utilities {
 
 			private void process() {
 				while (queue.TryDequeue(out var element)) {
-					element.Callback(element.State);
+					execute(element.Callback, element.State);
 				}
 			}
 			public void Dispose() {
@@ -80,19 +82,29 @@ namespace SGL.Utilities {
 				queue.Enqueue((callback, state));
 				resetEvent.Set();
 			}
+
+			public void execute(SendOrPostCallback callback, object? state) {
+				try {
+					callback(state);
+				}
+				catch (Exception ex) {
+					uncaughtExceptionCallback(ex);
+				}
+			}
 		}
 		private readonly State internalState;
 
 		/// <summary>
 		/// Creates a new <see cref="SingleThreadedSynchronizationContext"/> with its own thread.
 		/// </summary>
+		/// <param name="uncaughtExceptionCallback">A delegate that is invoked on the worker thread if an exception escapes from a callback.</param>
 		/// <param name="threadName">
 		/// Allows specifying a custom name for the thread that will run this context's callbacks.
 		/// By default, the class name <see cref="SingleThreadedSynchronizationContext"/> is used.
 		/// This is mainly relevant as a marker where the current code is runnning, e.g. for debugging purposes.
 		/// </param>
-		public SingleThreadedSynchronizationContext(string threadName = nameof(SingleThreadedSynchronizationContext)) {
-			internalState = new State(threadName, this);
+		public SingleThreadedSynchronizationContext(Action<Exception> uncaughtExceptionCallback, string threadName = nameof(SingleThreadedSynchronizationContext)) {
+			internalState = new State(uncaughtExceptionCallback, threadName, this);
 		}
 
 		private SingleThreadedSynchronizationContext(State internalState) {
