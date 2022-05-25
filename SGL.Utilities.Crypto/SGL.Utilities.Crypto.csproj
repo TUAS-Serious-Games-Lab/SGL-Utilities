@@ -32,6 +32,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\SGL.Utilities.Crypto.Abstractions\SGL.Utilities.Crypto.Abstractions.csproj" />
+		<ProjectReference Include="..\SGL.Utilities\SGL.Utilities.csproj" />
 	</ItemGroup>
 
 

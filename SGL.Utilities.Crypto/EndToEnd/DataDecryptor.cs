@@ -61,10 +61,14 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// </summary>
 		/// <param name="inputStream">The backing stream for the decrypting stream.</param>
 		/// <param name="streamIndex">The logical index of the stream within the data object.</param>
+		/// <param name="leaveOpen">Indicates, that <paramref name="inputStream"/> should be left open when the returned stream built on top of it is disposed.</param>
 		/// <returns>A stream that reads the encrypted data from <paramref name="inputStream"/> and decrypts data when the stream is read from.</returns>
-		public CipherStream OpenDecryptionReadStream(Stream inputStream, int streamIndex) {
+		public CipherStream OpenDecryptionReadStream(Stream inputStream, int streamIndex, bool leaveOpen = false) {
 			try {
 				var cipher = GetCipher(streamIndex);
+				if (leaveOpen) {
+					inputStream = new LeaveOpenStreamWrapper(inputStream);
+				}
 				return new CipherStream(new Org.BouncyCastle.Crypto.IO.CipherStream(inputStream, cipher, null), CipherStreamOperationMode.DecryptingRead);
 			}
 			catch (Exception ex) {
@@ -78,10 +82,14 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// </summary>
 		/// <param name="outputStream">The backing stream for the decrypting stream.</param>
 		/// <param name="streamIndex">The logical index of the stream within the data object.</param>
+		/// <param name="leaveOpen">Indicates, that <paramref name="outputStream"/> should be left open when the returned stream built on top of it is disposed.</param>
 		/// <returns>A stream that decrypts data written to it and writes the decrypted data to <paramref name="outputStream"/>.</returns>
-		public CipherStream OpenDecryptionWriteStream(Stream outputStream, int streamIndex) {
+		public CipherStream OpenDecryptionWriteStream(Stream outputStream, int streamIndex, bool leaveOpen = false) {
 			try {
 				var cipher = GetCipher(streamIndex);
+				if (leaveOpen) {
+					outputStream = new LeaveOpenStreamWrapper(outputStream);
+				}
 				return new CipherStream(new Org.BouncyCastle.Crypto.IO.CipherStream(outputStream, null, cipher), CipherStreamOperationMode.DecryptingWrite);
 			}
 			catch (Exception ex) {

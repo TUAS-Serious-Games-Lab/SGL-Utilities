@@ -56,10 +56,14 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// </summary>
 		/// <param name="inputStream">The backing stream for the encrypting stream.</param>
 		/// <param name="streamIndex">The logical index of the stream within the data object.</param>
+		/// <param name="leaveOpen">Indicates, that <paramref name="inputStream"/> should be left open when the returned stream built on top of it is disposed.</param>
 		/// <returns>A stream that reads data from <paramref name="inputStream"/>, encrypts it and returns the encrypted data to the reader.</returns>
-		public CipherStream OpenEncryptionReadStream(Stream inputStream, int streamIndex) {
+		public CipherStream OpenEncryptionReadStream(Stream inputStream, int streamIndex, bool leaveOpen = false) {
 			try {
 				var cipher = GetCipher(streamIndex);
+				if (leaveOpen) {
+					inputStream = new LeaveOpenStreamWrapper(inputStream);
+				}
 				return new CipherStream(new Org.BouncyCastle.Crypto.IO.CipherStream(inputStream, cipher, null), CipherStreamOperationMode.EncryptingRead);
 			}
 			catch (Exception ex) {
@@ -73,10 +77,14 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// </summary>
 		/// <param name="outputStream">The backing stream for the encrypting stream.</param>
 		/// <param name="streamIndex">The logical index of the stream within the data object.</param>
+		/// <param name="leaveOpen">Indicates, that <paramref name="outputStream"/> should be left open when the returned stream built on top of it is disposed.</param>
 		/// <returns>A stream that encrypts data written to it and then writes the encrypted data to <paramref name="outputStream"/>.</returns>
-		public CipherStream OpenEncryptionWriteStream(Stream outputStream, int streamIndex) {
+		public CipherStream OpenEncryptionWriteStream(Stream outputStream, int streamIndex, bool leaveOpen = false) {
 			try {
 				var cipher = GetCipher(streamIndex);
+				if (leaveOpen) {
+					outputStream = new LeaveOpenStreamWrapper(outputStream);
+				}
 				return new CipherStream(new Org.BouncyCastle.Crypto.IO.CipherStream(outputStream, null, cipher), CipherStreamOperationMode.EncryptingWrite);
 			}
 			catch (Exception ex) {
