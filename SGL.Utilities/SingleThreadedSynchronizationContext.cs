@@ -27,7 +27,7 @@ namespace SGL.Utilities {
 				shutdownToken = shutdownTokenSource.Token;
 				thread = new Thread(() => pump(ctx));
 				thread.Name = threadName;
-				thread.Start(this);
+				thread.Start();
 			}
 			internal void pump(SingleThreadedSynchronizationContext ctx) {
 				SetSynchronizationContext(ctx);
