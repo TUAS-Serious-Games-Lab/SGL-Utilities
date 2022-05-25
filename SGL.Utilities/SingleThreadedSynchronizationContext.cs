@@ -10,7 +10,6 @@ namespace SGL.Utilities {
 	/// <summary>
 	/// Provides a <see cref="SynchronizationContext"/> implementation that uses a single designated thread to execute the posted callbacks one at a time and
 	/// in <see cref="Post"/>ing order (disregarding ordering of concurrent <see cref="Post"/> operations).
-	/// The <see cref="Send"/> operation is currently not supported.
 	/// To ensure proper shutdown of the designated worker thread, the context should be disposed.
 	/// </summary>
 	public class SingleThreadedSynchronizationContext : SynchronizationContext, IDisposable {
@@ -34,19 +33,19 @@ namespace SGL.Utilities {
 				SetSynchronizationContext(ctx);
 				while (!shutdownToken.IsCancellationRequested) {
 					resetEvent.WaitOne();
-					process();
+					Process();
 				}
 			}
 
-			private void process() {
+			internal void Process() {
 				while (queue.TryDequeue(out var element)) {
-					execute(element.Callback, element.State);
+					Execute(element.Callback, element.State);
 				}
 			}
 			public void Dispose() {
 				shutdownTokenSource.Cancel();
 				if (Thread.CurrentThread.ManagedThreadId == thread.ManagedThreadId) {
-					process();
+					Process();
 				}
 				else {
 					resetEvent.Set();
@@ -83,7 +82,9 @@ namespace SGL.Utilities {
 				resetEvent.Set();
 			}
 
-			public void execute(SendOrPostCallback callback, object? state) {
+			public bool IsCurrentThreadWorker => Thread.CurrentThread.ManagedThreadId == thread.ManagedThreadId;
+
+			public void Execute(SendOrPostCallback callback, object? state) {
 				try {
 					callback(state);
 				}
@@ -139,12 +140,30 @@ namespace SGL.Utilities {
 		}
 
 		/// <summary>
-		/// Throws <see cref="NotSupportedException"/>, as synchronus callbacks are currently not supported.
+		/// Dispatches a synchronous callback to this synchronization context and waits for its execution.
+		/// This operation respects the ordering of callbacks and thus only executes the given <paramref name="callback"/> when previously enqued ones have completed.
 		/// </summary>
-		/// <param name="callback">ignored</param>
-		/// <param name="state">ignored</param>
+		/// <param name="callback">The callback to execute.</param>
+		/// <param name="state">The state object to pass to the callback.</param>
+		/// <remarks>
+		/// Note that this operation is relatively expensive when called from a thread that isn't the worker thread,
+		/// as a completion event needs to be allocated and cleaned up, and the callback needs to be wrapped in a delegate that notifies the completion.
+		/// </remarks>
 		public override void Send(SendOrPostCallback callback, object? state) {
-			throw new NotSupportedException();
+			if (internalState.IsCurrentThreadWorker) {
+				internalState.Process();
+				internalState.Execute(callback, state);
+			}
+			else {
+				using var finishedEvent = new ManualResetEventSlim(false);
+				// Wrap callback in a delegate that notifies the event for this operation after completion.
+				internalState.Enqueue(s => {
+					internalState.Execute(callback, s);
+					finishedEvent.Set();
+				}, state);
+				// Wait for the delegate to be completed.
+				finishedEvent.Wait();
+			}
 		}
 	}
 }
