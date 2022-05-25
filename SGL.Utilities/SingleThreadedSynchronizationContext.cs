@@ -43,7 +43,7 @@ namespace SGL.Utilities {
 			}
 			public void Dispose() {
 				shutdownTokenSource.Cancel();
-				if (Thread.CurrentThread == thread) {
+				if (Thread.CurrentThread.ManagedThreadId == thread.ManagedThreadId) {
 					process();
 				}
 				else {
