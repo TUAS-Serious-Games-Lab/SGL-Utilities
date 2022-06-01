@@ -121,7 +121,9 @@ namespace SGL.Utilities.Backend.AspNetCore {
 								appname, context?.Request?.Method, context?.Request?.Path.Value ?? "<path not specified in request>");
 						}
 						else {
-							logger?.LogInformation("Successfully validated JWT auth token, but the token did contain neither a user+appname claims combination nor a service claim.");
+							logger?.LogInformation("Successfully validated JWT auth token for {verb} access to {path}, " +
+								"but the token did contain neither a user+appname claims combination nor a service claim.",
+								context?.Request?.Method, context?.Request?.Path.Value ?? "<path not specified in request>");
 						}
 						return Task.CompletedTask;
 					}
