@@ -36,6 +36,8 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 			switch (dataMode) {
 				case DataEncryptionMode.AES_256_CCM:
 					break;
+				case DataEncryptionMode.UNENCRYPTED:
+					break;
 				default:
 					throw new DecryptionException($"Unsupported data encryption mode {dataMode}.");
 			}
@@ -65,10 +67,13 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <returns>A stream that reads the encrypted data from <paramref name="inputStream"/> and decrypts data when the stream is read from.</returns>
 		public CipherStream OpenDecryptionReadStream(Stream inputStream, int streamIndex, bool leaveOpen = false) {
 			try {
-				var cipher = GetCipher(streamIndex);
 				if (leaveOpen) {
 					inputStream = new LeaveOpenStreamWrapper(inputStream);
 				}
+				if (dataMode == DataEncryptionMode.UNENCRYPTED) {
+					return new CipherStream(inputStream, CipherStreamOperationMode.DecryptingRead);
+				}
+				var cipher = GetCipher(streamIndex);
 				return new CipherStream(new Org.BouncyCastle.Crypto.IO.CipherStream(inputStream, cipher, null), CipherStreamOperationMode.DecryptingRead);
 			}
 			catch (Exception ex) {
@@ -86,10 +91,13 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <returns>A stream that decrypts data written to it and writes the decrypted data to <paramref name="outputStream"/>.</returns>
 		public CipherStream OpenDecryptionWriteStream(Stream outputStream, int streamIndex, bool leaveOpen = false) {
 			try {
-				var cipher = GetCipher(streamIndex);
 				if (leaveOpen) {
 					outputStream = new LeaveOpenStreamWrapper(outputStream);
 				}
+				if (dataMode == DataEncryptionMode.UNENCRYPTED) {
+					return new CipherStream(outputStream, CipherStreamOperationMode.DecryptingWrite);
+				}
+				var cipher = GetCipher(streamIndex);
 				return new CipherStream(new Org.BouncyCastle.Crypto.IO.CipherStream(outputStream, null, cipher), CipherStreamOperationMode.DecryptingWrite);
 			}
 			catch (Exception ex) {
@@ -109,6 +117,9 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <returns>The decrypted content.</returns>
 		public byte[] DecryptData(byte[] encryptedContent, int streamIndex) {
 			try {
+				if (dataMode == DataEncryptionMode.UNENCRYPTED) {
+					return encryptedContent;
+				}
 				var cipher = GetCipher(streamIndex);
 				return cipher.DoFinal(encryptedContent);
 			}
@@ -125,6 +136,9 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <param name="keyDecryptor">A <see cref="KeyDecryptor"/> to use for decrypting the data key in <paramref name="encryptionInfo"/>.</param>
 		/// <returns>A DataDecryptor for the data object associated with <paramref name="encryptionInfo"/>, or <see langword="null"/> if the data key could not be decrypted using <paramref name="keyDecryptor"/>.</returns>
 		public static DataDecryptor? FromEncryptionInfo(EncryptionInfo encryptionInfo, IKeyDecryptor keyDecryptor) {
+			if (encryptionInfo.DataMode == DataEncryptionMode.UNENCRYPTED) {
+				return new DataDecryptor(encryptionInfo.DataMode, encryptionInfo.IVs, Array.Empty<byte>());
+			}
 			var dataKey = keyDecryptor.DecryptKey(encryptionInfo);
 			if (dataKey != null) {
 				return new DataDecryptor(encryptionInfo.DataMode, encryptionInfo.IVs, dataKey);

@@ -28,11 +28,17 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <param name="dataEncryptionMode">The mode used for encrypting the data.</param>
 		public DataEncryptor(RandomGenerator random, int numberOfStreams = 1, DataEncryptionMode dataEncryptionMode = DataEncryptionMode.AES_256_CCM) {
 			this.dataMode = dataEncryptionMode;
-			dataKey = random.GetBytes(32);
-			ivs = Enumerable.Range(0, numberOfStreams).Select(_ => {
-				var iv = random.GetBytes(GetIvLength(dataEncryptionMode));
-				return iv;
-			}).ToList();
+			if (dataEncryptionMode == DataEncryptionMode.UNENCRYPTED) {
+				dataKey = Array.Empty<byte>();
+				ivs = Enumerable.Repeat(Array.Empty<byte>(), numberOfStreams).ToList();
+			}
+			else {
+				dataKey = random.GetBytes(32);
+				ivs = Enumerable.Range(0, numberOfStreams).Select(_ => {
+					var iv = random.GetBytes(GetIvLength(dataEncryptionMode));
+					return iv;
+				}).ToList();
+			}
 		}
 
 		private int GetIvLength(DataEncryptionMode dataEncryptionMode) => dataEncryptionMode switch {
@@ -60,10 +66,13 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <returns>A stream that reads data from <paramref name="inputStream"/>, encrypts it and returns the encrypted data to the reader.</returns>
 		public CipherStream OpenEncryptionReadStream(Stream inputStream, int streamIndex, bool leaveOpen = false) {
 			try {
-				var cipher = GetCipher(streamIndex);
 				if (leaveOpen) {
 					inputStream = new LeaveOpenStreamWrapper(inputStream);
 				}
+				if (dataMode == DataEncryptionMode.UNENCRYPTED) {
+					return new CipherStream(inputStream, CipherStreamOperationMode.EncryptingRead);
+				}
+				var cipher = GetCipher(streamIndex);
 				return new CipherStream(new Org.BouncyCastle.Crypto.IO.CipherStream(inputStream, cipher, null), CipherStreamOperationMode.EncryptingRead);
 			}
 			catch (Exception ex) {
@@ -81,10 +90,13 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <returns>A stream that encrypts data written to it and then writes the encrypted data to <paramref name="outputStream"/>.</returns>
 		public CipherStream OpenEncryptionWriteStream(Stream outputStream, int streamIndex, bool leaveOpen = false) {
 			try {
-				var cipher = GetCipher(streamIndex);
 				if (leaveOpen) {
 					outputStream = new LeaveOpenStreamWrapper(outputStream);
 				}
+				if (dataMode == DataEncryptionMode.UNENCRYPTED) {
+					return new CipherStream(outputStream, CipherStreamOperationMode.EncryptingWrite);
+				}
+				var cipher = GetCipher(streamIndex);
 				return new CipherStream(new Org.BouncyCastle.Crypto.IO.CipherStream(outputStream, null, cipher), CipherStreamOperationMode.EncryptingWrite);
 			}
 			catch (Exception ex) {
@@ -104,6 +116,9 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <returns>The encrypted content.</returns>
 		public byte[] EncryptData(byte[] clearTextContent, int streamIndex) {
 			try {
+				if (dataMode == DataEncryptionMode.UNENCRYPTED) {
+					return clearTextContent;
+				}
 				var cipher = GetCipher(streamIndex);
 				return cipher.DoFinal(clearTextContent);
 			}
@@ -118,6 +133,14 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <param name="keyEncryptor">The <see cref="KeyEncryptor"/> to encrypt the data key with.</param>
 		/// <returns>The key material an metadata for the data object.</returns>
 		public EncryptionInfo GenerateEncryptionInfo(IKeyEncryptor keyEncryptor) {
+			if (dataMode == DataEncryptionMode.UNENCRYPTED) {
+				return new EncryptionInfo() {
+					DataKeys = new Dictionary<Keys.KeyId, DataKeyInfo> { },
+					DataMode = DataEncryptionMode.UNENCRYPTED,
+					IVs = ivs,
+					MessagePublicKey = null
+				};
+			}
 			EncryptionInfo result = new EncryptionInfo();
 			result.DataMode = dataMode;
 			result.IVs = ivs;

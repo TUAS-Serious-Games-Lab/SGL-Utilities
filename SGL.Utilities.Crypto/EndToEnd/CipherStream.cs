@@ -34,14 +34,14 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 	/// Objects of this class are returned by <see cref="DataEncryptor.OpenEncryptionWriteStream(Stream, int)"/> and <see cref="DataDecryptor.OpenDecryptionReadStream(Stream, int)"/>.
 	/// </summary>
 	public class CipherStream : Stream {
-		private Org.BouncyCastle.Crypto.IO.CipherStream wrapped;
+		private Stream wrapped;
 
 		/// <summary>
 		/// The operation mode of the stream.
 		/// </summary>
 		public CipherStreamOperationMode Mode { get; }
 
-		internal CipherStream(Org.BouncyCastle.Crypto.IO.CipherStream wrapped, CipherStreamOperationMode mode) {
+		internal CipherStream(Stream wrapped, CipherStreamOperationMode mode) {
 			this.wrapped = wrapped;
 			Mode = mode;
 		}
