@@ -11,7 +11,7 @@ namespace SGL.Utilities.Crypto.Tests {
 		[Fact]
 		public void UnencryptedModeUsingDirectMethodPassesDataThroughUnchanged() {
 			var origData = random.GetBytes(128);
-			var encryptor = new DataEncryptor(null!, 1, DataEncryptionMode.UNENCRYPTED);
+			var encryptor = new DataEncryptor(null!, 1, DataEncryptionMode.Unencrypted);
 			var dataAfterEncryptor = encryptor.EncryptData(origData, 0);
 			Assert.Equal(origData, dataAfterEncryptor);
 			var encryptionInfo = encryptor.GenerateEncryptionInfo(null!);
@@ -24,7 +24,7 @@ namespace SGL.Utilities.Crypto.Tests {
 		[Fact]
 		public async Task UnencryptedModeUsingReadStreamsPassesDataThroughUnchanged() {
 			using var origData = new MemoryStream(random.GetBytes(128));
-			var encryptor = new DataEncryptor(null!, 1, DataEncryptionMode.UNENCRYPTED);
+			var encryptor = new DataEncryptor(null!, 1, DataEncryptionMode.Unencrypted);
 			using var dataAfterEncryptor = new MemoryStream();
 			using var encStream = encryptor.OpenEncryptionReadStream(origData, 0, leaveOpen: true);
 			await encStream.CopyToAsync(dataAfterEncryptor);
@@ -45,7 +45,7 @@ namespace SGL.Utilities.Crypto.Tests {
 		[Fact]
 		public async Task UnencryptedModeUsingWriteStreamsPassesDataThroughUnchanged() {
 			using var origData = new MemoryStream(random.GetBytes(128));
-			var encryptor = new DataEncryptor(null!, 1, DataEncryptionMode.UNENCRYPTED);
+			var encryptor = new DataEncryptor(null!, 1, DataEncryptionMode.Unencrypted);
 			using var dataAfterEncryptor = new MemoryStream();
 			using var encStream = encryptor.OpenEncryptionWriteStream(dataAfterEncryptor, 0, leaveOpen: true);
 			await origData.CopyToAsync(encStream);

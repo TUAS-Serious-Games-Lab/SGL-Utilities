@@ -26,7 +26,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// Use-cases include publically available objects in a format that needs to also support encryption for private objects which use the same format,
 		/// or objects used in testing code that is not concerned with the encryption aspect.
 		/// </summary>
-		UNENCRYPTED = 0xFFFF
+		Unencrypted = 0xFFFF
 	}
 
 	/// <summary>
@@ -96,7 +96,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <returns>An 'empty' <see cref="EncryptionInfo"/> object that indicates the associated object as unencrypted.</returns>
 		public static EncryptionInfo CreateUnencrypted(int numberOfStreams = 1) {
 			return new EncryptionInfo {
-				DataMode = DataEncryptionMode.UNENCRYPTED,
+				DataMode = DataEncryptionMode.Unencrypted,
 				DataKeys = new Dictionary<KeyId, DataKeyInfo> { },
 				MessagePublicKey = null,
 				IVs = Enumerable.Repeat(Array.Empty<byte>(), numberOfStreams).ToList()

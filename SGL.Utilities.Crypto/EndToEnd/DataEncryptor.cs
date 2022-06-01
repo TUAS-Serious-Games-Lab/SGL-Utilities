@@ -28,7 +28,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <param name="dataEncryptionMode">The mode used for encrypting the data.</param>
 		public DataEncryptor(RandomGenerator random, int numberOfStreams = 1, DataEncryptionMode dataEncryptionMode = DataEncryptionMode.AES_256_CCM) {
 			this.dataMode = dataEncryptionMode;
-			if (dataEncryptionMode == DataEncryptionMode.UNENCRYPTED) {
+			if (dataEncryptionMode == DataEncryptionMode.Unencrypted) {
 				dataKey = Array.Empty<byte>();
 				ivs = Enumerable.Repeat(Array.Empty<byte>(), numberOfStreams).ToList();
 			}
@@ -69,7 +69,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 				if (leaveOpen) {
 					inputStream = new LeaveOpenStreamWrapper(inputStream);
 				}
-				if (dataMode == DataEncryptionMode.UNENCRYPTED) {
+				if (dataMode == DataEncryptionMode.Unencrypted) {
 					return new CipherStream(inputStream, CipherStreamOperationMode.EncryptingRead);
 				}
 				var cipher = GetCipher(streamIndex);
@@ -93,7 +93,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 				if (leaveOpen) {
 					outputStream = new LeaveOpenStreamWrapper(outputStream);
 				}
-				if (dataMode == DataEncryptionMode.UNENCRYPTED) {
+				if (dataMode == DataEncryptionMode.Unencrypted) {
 					return new CipherStream(outputStream, CipherStreamOperationMode.EncryptingWrite);
 				}
 				var cipher = GetCipher(streamIndex);
@@ -116,7 +116,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <returns>The encrypted content.</returns>
 		public byte[] EncryptData(byte[] clearTextContent, int streamIndex) {
 			try {
-				if (dataMode == DataEncryptionMode.UNENCRYPTED) {
+				if (dataMode == DataEncryptionMode.Unencrypted) {
 					return clearTextContent;
 				}
 				var cipher = GetCipher(streamIndex);
@@ -133,10 +133,10 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <param name="keyEncryptor">The <see cref="KeyEncryptor"/> to encrypt the data key with.</param>
 		/// <returns>The key material an metadata for the data object.</returns>
 		public EncryptionInfo GenerateEncryptionInfo(IKeyEncryptor keyEncryptor) {
-			if (dataMode == DataEncryptionMode.UNENCRYPTED) {
+			if (dataMode == DataEncryptionMode.Unencrypted) {
 				return new EncryptionInfo() {
 					DataKeys = new Dictionary<Keys.KeyId, DataKeyInfo> { },
-					DataMode = DataEncryptionMode.UNENCRYPTED,
+					DataMode = DataEncryptionMode.Unencrypted,
 					IVs = ivs,
 					MessagePublicKey = null
 				};

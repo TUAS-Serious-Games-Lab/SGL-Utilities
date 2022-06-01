@@ -36,7 +36,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 			switch (dataMode) {
 				case DataEncryptionMode.AES_256_CCM:
 					break;
-				case DataEncryptionMode.UNENCRYPTED:
+				case DataEncryptionMode.Unencrypted:
 					break;
 				default:
 					throw new DecryptionException($"Unsupported data encryption mode {dataMode}.");
@@ -70,7 +70,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 				if (leaveOpen) {
 					inputStream = new LeaveOpenStreamWrapper(inputStream);
 				}
-				if (dataMode == DataEncryptionMode.UNENCRYPTED) {
+				if (dataMode == DataEncryptionMode.Unencrypted) {
 					return new CipherStream(inputStream, CipherStreamOperationMode.DecryptingRead);
 				}
 				var cipher = GetCipher(streamIndex);
@@ -94,7 +94,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 				if (leaveOpen) {
 					outputStream = new LeaveOpenStreamWrapper(outputStream);
 				}
-				if (dataMode == DataEncryptionMode.UNENCRYPTED) {
+				if (dataMode == DataEncryptionMode.Unencrypted) {
 					return new CipherStream(outputStream, CipherStreamOperationMode.DecryptingWrite);
 				}
 				var cipher = GetCipher(streamIndex);
@@ -117,7 +117,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <returns>The decrypted content.</returns>
 		public byte[] DecryptData(byte[] encryptedContent, int streamIndex) {
 			try {
-				if (dataMode == DataEncryptionMode.UNENCRYPTED) {
+				if (dataMode == DataEncryptionMode.Unencrypted) {
 					return encryptedContent;
 				}
 				var cipher = GetCipher(streamIndex);
@@ -136,7 +136,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <param name="keyDecryptor">A <see cref="KeyDecryptor"/> to use for decrypting the data key in <paramref name="encryptionInfo"/>.</param>
 		/// <returns>A DataDecryptor for the data object associated with <paramref name="encryptionInfo"/>, or <see langword="null"/> if the data key could not be decrypted using <paramref name="keyDecryptor"/>.</returns>
 		public static DataDecryptor? FromEncryptionInfo(EncryptionInfo encryptionInfo, IKeyDecryptor keyDecryptor) {
-			if (encryptionInfo.DataMode == DataEncryptionMode.UNENCRYPTED) {
+			if (encryptionInfo.DataMode == DataEncryptionMode.Unencrypted) {
 				return new DataDecryptor(encryptionInfo.DataMode, encryptionInfo.IVs, Array.Empty<byte>());
 			}
 			var dataKey = keyDecryptor.DecryptKey(encryptionInfo);
