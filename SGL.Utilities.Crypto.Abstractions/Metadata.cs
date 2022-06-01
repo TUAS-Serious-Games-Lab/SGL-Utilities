@@ -1,5 +1,7 @@
 ﻿using SGL.Utilities.Crypto.Keys;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace SGL.Utilities.Crypto.EndToEnd {
@@ -18,6 +20,13 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// Indicates that the contents are encrypted using Advanced Encryption Standard (AES) with the 'Counter with CBC-MAC' (CCM) mode of operation and a 256-bit key.
 		/// </summary>
 		AES_256_CCM = 1,
+		/// <summary>
+		/// Indicates that the contents are not encrypted at all and thus, the whole encryption mechanism is not used for the object.
+		/// Obviously, this should only be used for special purposes where the contents are not private.
+		/// Use-cases include publically available objects in a format that needs to also support encryption for private objects which use the same format,
+		/// or objects used in testing code that is not concerned with the encryption aspect.
+		/// </summary>
+		UNENCRYPTED = 0xFFFF
 	}
 
 	/// <summary>
@@ -72,6 +81,27 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// When <see cref="KeyEncryptionMode.ECDH_KDF2_SHA256_AES_256_CCM"/> is used with a shared message key pair, this property holds an encoded version of the shared public key.
 		/// </summary>
 		public byte[]? MessagePublicKey { get; set; }
+
+		/// <summary>
+		/// Creates an unencrypted instance of <see cref="EncryptionInfo"/> for the given number of streams.
+		/// Obviously, this should only be used for special purposes where the contents are not private.
+		/// Use-cases include publically available objects in a format that needs to also support encryption for private objects which use the same format,
+		/// or objects used in testing code that is not concerned with the encryption aspect.
+		/// </summary>
+		/// <param name="numberOfStreams">
+		/// The number of streams, the data object consists of.
+		/// This determines the number of (empty) entries in <see cref="IVs"/>,
+		/// which are created to keep the invariant of having the a matching number of entries for the stream number,
+		/// even though <see cref="IVs"/> are not used for unencrypted objects.</param>
+		/// <returns>An 'empty' <see cref="EncryptionInfo"/> object that indicates the associated object as unencrypted.</returns>
+		public static EncryptionInfo CreateUnencrypted(int numberOfStreams = 1) {
+			return new EncryptionInfo {
+				DataMode = DataEncryptionMode.UNENCRYPTED,
+				DataKeys = new Dictionary<KeyId, DataKeyInfo> { },
+				MessagePublicKey = null,
+				IVs = Enumerable.Repeat(Array.Empty<byte>(), numberOfStreams).ToList()
+			};
+		}
 	}
 
 	/// <summary>
