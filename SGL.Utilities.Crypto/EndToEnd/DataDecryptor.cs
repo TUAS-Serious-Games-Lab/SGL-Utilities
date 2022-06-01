@@ -109,7 +109,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// Directly decrypts the given <paramref name="encryptedContent"/> using the data key of this <see cref="DataDecryptor"/>
 		/// and the initialization vector associated with the given <paramref name="streamIndex"/>.
 		/// This operation is logically equivalent to creating a <see cref="MemoryStream"/> with <paramref name="encryptedContent"/>,
-		/// calling <see cref="OpenDecryptionReadStream(Stream, int)"/> with the memory stream to get a cipher stream and then reading the content stream into a byte array.
+		/// calling <see cref="OpenDecryptionReadStream(Stream, int, bool)"/> with the memory stream to get a cipher stream and then reading the content stream into a byte array.
 		/// It is however more convenient to use and can avoid the overhead of creating the streams.
 		/// </summary>
 		/// <param name="encryptedContent">The encrypted content.</param>

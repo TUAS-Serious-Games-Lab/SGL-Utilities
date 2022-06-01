@@ -107,7 +107,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <summary>
 		/// Directly encrypts the given <paramref name="clearTextContent"/> with the data key of this <see cref="DataEncryptor"/>
 		/// and the initialization vector associated with the given <paramref name="streamIndex"/>.
-		/// This operation is logically equivalent to opening a stream using <see cref="OpenEncryptionWriteStream(Stream, int)"/> on an underlying <see cref="MemoryStream"/>,
+		/// This operation is logically equivalent to opening a stream using <see cref="OpenEncryptionWriteStream(Stream, int, bool)"/> on an underlying <see cref="MemoryStream"/>,
 		/// writing <paramref name="clearTextContent"/> to the stream and then returning <see cref="MemoryStream.ToArray"/> of the underlying stream.
 		/// It is however more convenient to use and can avoid the overhead of creating the streams.
 		/// </summary>

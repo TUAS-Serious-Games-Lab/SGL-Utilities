@@ -31,7 +31,8 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 
 	/// <summary>
 	/// A <see cref="Stream"/> inplementation that encrypts or decrypts data on-the-fly.
-	/// Objects of this class are returned by <see cref="DataEncryptor.OpenEncryptionWriteStream(Stream, int)"/> and <see cref="DataDecryptor.OpenDecryptionReadStream(Stream, int)"/>.
+	/// Objects of this class are returned by <see cref="DataEncryptor.OpenEncryptionWriteStream(Stream, int, bool)"/>, <see cref="DataEncryptor.OpenEncryptionReadStream(Stream, int, bool)"/>,
+	/// <see cref="DataDecryptor.OpenDecryptionWriteStream(Stream, int, bool)"/>, and <see cref="DataDecryptor.OpenDecryptionReadStream(Stream, int, bool)"/>.
 	/// </summary>
 	public class CipherStream : Stream {
 		private Stream wrapped;
