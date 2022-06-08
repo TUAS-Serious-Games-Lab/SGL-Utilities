@@ -68,7 +68,8 @@ namespace SGL.Utilities.Backend.AspNetCore {
 							logger?.LogError(context?.Exception, "Authentication failed for app {appName}.", appname);
 						}
 						else {
-							logger?.LogError("Authentication failed for a JWT auth token, that did contain neither a user+appname claims combination nor a service claim.");
+							logger?.LogError("Authentication failed for a JWT auth token, that did contain non of the expected claim combinations: " +
+								"user+appname, appname only, service");
 						}
 						return Task.CompletedTask;
 					},
@@ -98,7 +99,8 @@ namespace SGL.Utilities.Backend.AspNetCore {
 						}
 						else {
 							logger?.LogError(context?.Result?.Failure,
-								"Access forbidden for {verb} access to {path} using a token that did contain neither a user+appname claims combination nor a service claim.",
+								"Access forbidden for {verb} access to {path} using a token that did contain non of the expected claim combinations: " +
+								"user+appname, appname only, service",
 								context?.Request?.Method, context?.Request?.Path.Value);
 						}
 						return Task.CompletedTask;
@@ -122,7 +124,7 @@ namespace SGL.Utilities.Backend.AspNetCore {
 						}
 						else {
 							logger?.LogInformation("Successfully validated JWT auth token for {verb} access to {path}, " +
-								"but the token did contain neither a user+appname claims combination nor a service claim.",
+								"but the token did contain non of the expected claim combinations: user+appname, appname only, service",
 								context?.Request?.Method, context?.Request?.Path.Value ?? "<path not specified in request>");
 						}
 						return Task.CompletedTask;
