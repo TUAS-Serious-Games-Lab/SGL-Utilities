@@ -39,5 +39,30 @@ namespace SGL.Utilities {
 		public void Finish() {
 			channel.Writer.Complete();
 		}
+		/// <summary>
+		/// Attempts to close the queue and end the async iteration of the consumer after it has consumed the currently last element, if the queue is not already closed.
+		/// No further elements can be enqueued afterwards.
+		/// </summary>
+		/// <returns><see langword="true"/> if this call closed the queue, <see langword="false"/> if it was already closed.</returns>
+		public bool TryFinish() {
+			return channel.Writer.TryComplete();
+		}
+		/// <summary>
+		/// Closes the queue with the given exception, that is thrown from <see cref="DequeueAllAsync"/> after it has consumed the currently last element.
+		/// No further elements can be enqueued afterwards.
+		/// </summary>
+		/// <param name="error">The exception to throw.</param>
+		public void Error(Exception error) {
+			channel.Writer.Complete(error);
+		}
+		/// <summary>
+		/// Attempts to close the queue with the given exception to throw from <see cref="DequeueAllAsync"/> after it has consumed the currently last element, if the queue is not already closed.
+		/// No further elements can be enqueued afterwards.
+		/// </summary>
+		/// <param name="error">The exception to throw.</param>
+		/// <returns><see langword="true"/> if this call closed the queue, <see langword="false"/> if it was already closed.</returns>
+		public bool TryError(Exception error) {
+			return channel.Writer.TryComplete(error);
+		}
 	}
 }
