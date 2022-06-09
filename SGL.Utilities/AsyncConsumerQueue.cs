@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Channels;
 
 namespace SGL.Utilities {
@@ -26,9 +27,10 @@ namespace SGL.Utilities {
 		/// The async iteration is suspended when all current elements are consumed and continues when new elements are <see cref="Enqueue(T)"/>ed.
 		/// This must only be called once per queue and only by the consumer.
 		/// </summary>
+		/// <param name="ct">A CancellationToken that can be used to cancel the operation.</param>
 		/// <returns>An <see cref="IAsyncEnumerable{T}"/> iterating over the queue elements.</returns>
-		public IAsyncEnumerable<T> DequeueAllAsync() {
-			return channel.Reader.ReadAllAsync();
+		public IAsyncEnumerable<T> DequeueAllAsync(CancellationToken ct = default) {
+			return channel.Reader.ReadAllAsync(ct);
 		}
 		/// <summary>
 		/// Closes the queue and ends the async iteration of the consumer after it has consumed the currently last element.
