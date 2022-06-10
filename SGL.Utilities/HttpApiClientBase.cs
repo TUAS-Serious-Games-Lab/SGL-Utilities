@@ -27,7 +27,7 @@ namespace SGL.Utilities {
 		/// </summary>
 		protected string PrefixUriPath { get; }
 
-		private SemaphoreSlim authorizationLock = new SemaphoreSlim(1);
+		private AsyncSemaphoreLock authorizationLock = new AsyncSemaphoreLock();
 
 		/// <summary>
 		/// Constructs the object with the given <see cref="HttpClient"/>, initializing <see cref="Authorization"/> with the given token.
@@ -50,22 +50,17 @@ namespace SGL.Utilities {
 		/// <returns>The <see cref="AuthenticationHeaderValue"/> for the request.</returns>
 		/// <exception cref="AuthorizationTokenException">If <see cref="Authorization"/> is null or is expired and <see cref="AuthorizationExpired"/> didn't provide a remediation.</exception>
 		protected async Task<AuthenticationHeaderValue> GetAuthenticationHeaderAsync(CancellationToken ct = default) {
-			await authorizationLock.WaitAsync(ct);
-			try {
-				if (!Authorization.HasValue) {
-					throw new AuthorizationTokenException("No authenticated session.");
-				}
-				if (!Authorization.Value.Valid) {
-					await (AuthorizationExpired?.InvokeAllAsync(this, new AuthorizationExpiredEventArgs { }, ct) ?? Task.CompletedTask);
-				}
-				if (!Authorization.Value.Valid) {
-					throw new AuthorizationTokenException("Authorization token expired.");
-				}
-				return Authorization.Value.Token.ToHttpHeaderValue();
+			using var lockHandle = await authorizationLock.WaitAsyncWithScopedRelease(ct);
+			if (!Authorization.HasValue) {
+				throw new AuthorizationTokenException("No authenticated session.");
 			}
-			finally {
-				authorizationLock.Release();
+			if (!Authorization.Value.Valid) {
+				await (AuthorizationExpired?.InvokeAllAsync(this, new AuthorizationExpiredEventArgs { }, ct) ?? Task.CompletedTask);
 			}
+			if (!Authorization.Value.Valid) {
+				throw new AuthorizationTokenException("Authorization token expired.");
+			}
+			return Authorization.Value.Token.ToHttpHeaderValue();
 		}
 
 		/// <summary>
