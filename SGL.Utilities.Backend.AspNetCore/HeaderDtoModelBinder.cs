@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SGL.Utilities.Backend.AspNetCore {
 	internal class HeaderDtoModelBinder : IModelBinder {
-		public async Task BindModelAsync(ModelBindingContext bindingContext) {
+		public Task BindModelAsync(ModelBindingContext bindingContext) {
 			if (bindingContext == null) throw new ArgumentNullException(nameof(bindingContext));
 			var modelName = bindingContext.FieldName;
 			var prefix = "";
@@ -46,7 +46,7 @@ namespace SGL.Utilities.Backend.AspNetCore {
 			else {
 				bindingContext.Result = ModelBindingResult.Failed();
 			}
-			await Task.CompletedTask;
+			return Task.CompletedTask;
 		}
 
 		private Func<string, object?> getConverter(Type type) {
