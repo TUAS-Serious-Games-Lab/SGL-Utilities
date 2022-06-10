@@ -57,7 +57,7 @@ namespace SGL.Utilities.TestUtilities.XUnit {
 						builder.Append(tag);
 					}
 					builder.Append(") ");
-					builder.AppendFormat("{3}", formatter(state, exception));
+					builder.Append(formatter(state, exception));
 				}
 				else {
 					builder.AppendFormat("{0:G} [{1}] {2}", logLevel, categoryName, formatter(state, exception));
