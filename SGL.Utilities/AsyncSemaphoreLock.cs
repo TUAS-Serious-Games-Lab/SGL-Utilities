@@ -11,6 +11,9 @@ namespace SGL.Utilities {
 	///
 	/// Recursive use is supported. I.e. an asynchronous operation can call <see cref="WaitAsyncWithScopedRelease(CancellationToken)"/> again while it already holds the lock
 	/// without deadlocking by waiting for itself. If an operations does this, all returned handles must be disposed to correctly release the lock again.
+	/// However, note that when an outer async operation obtains the lock and then forks multiple async operations concurrently that use the same lock,
+	/// those operations are NOT mutally excluded against eachother because they are already inside the critical section.
+	/// Thus, the inner operations would need their own synchronization mechanism.
 	/// </summary>
 	public class AsyncSemaphoreLock : IDisposable {
 		private SemaphoreSlim semaphore = new SemaphoreSlim(1);
