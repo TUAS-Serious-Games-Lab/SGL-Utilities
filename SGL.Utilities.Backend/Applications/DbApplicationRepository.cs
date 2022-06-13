@@ -66,7 +66,7 @@ namespace SGL.Utilities.Backend.Applications {
 		public Task<TApp?> GetApplicationByNameAsync(string appName, TQueryOptions? queryOptions = null, CancellationToken ct = default) {
 			IQueryable<TApp> query = appsSet.Where(a => a.Name == appName);
 			query = OnPrepareQuery(query, queryOptions);
-			return query.SingleOrDefaultAsync<TApp?>(ct);
+			return query.OrderBy(a => a.Name).SingleOrDefaultAsync<TApp?>(ct);
 		}
 
 		/// <inheritdoc/>
