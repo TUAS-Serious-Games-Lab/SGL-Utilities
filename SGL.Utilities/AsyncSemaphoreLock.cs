@@ -14,7 +14,15 @@ namespace SGL.Utilities {
 	/// </summary>
 	public class AsyncSemaphoreLock : IDisposable {
 		private SemaphoreSlim semaphore = new SemaphoreSlim(1);
-		private AsyncLocal<int> currentOperationHoldsLock = new AsyncLocal<int>(); // int instead of bool to support recursive use
+		private AsyncLocal<Context> currentOperationHoldsLock = new AsyncLocal<Context>(); // Context with counter instead of bool to support recursive use
+
+		private class Context {
+			internal int RecursionLevel { get; set; } = 0;
+		}
+
+		private Context GetContext() {
+			return currentOperationHoldsLock.Value ??= new Context();
+		}
 
 		/// <summary>
 		/// Asynchronously waits for the lock to be available, aquires it and returns a disposable object that releases the lock when disposed.
@@ -22,14 +30,26 @@ namespace SGL.Utilities {
 		/// </summary>
 		/// <param name="ct">A cancellation token to allow cancelling the waiting.</param>
 		/// <returns>The handle that must be disposed when leaving the critical section.</returns>
-		public async Task<IDisposable> WaitAsyncWithScopedRelease(CancellationToken ct = default) {
+		public Task<IDisposable> WaitAsyncWithScopedRelease(CancellationToken ct = default) {
+			// Ensure there is a context installed here
+			// This needs to happen in this synchronous wrapper around the actual async method,
+			// because entering the async method copies the ExecutionContext and thus a context installed
+			// inside the async method would not be present outside. Because the context needs to be present
+			// when the LockHandle is disposed, it must however be installed in the callers context and therefore
+			// this wrapper is needed.
+			// If the lock is used recursively, on the second level, there is already a context installed here and
+			// only the counter is manipulated.
+			var ctx = GetContext();
+			return WaitAsyncWithScopedReleaseInner(ctx, ct);
+		}
+		private async Task<IDisposable> WaitAsyncWithScopedReleaseInner(Context ctx, CancellationToken ct = default) {
 			var handle = new LockHandle(this);
-			if (currentOperationHoldsLock.Value > 0) {
-				currentOperationHoldsLock.Value++;
+			if (ctx.RecursionLevel > 0) {
+				ctx.RecursionLevel++;
 			}
 			else {
 				await semaphore.WaitAsync(ct);
-				currentOperationHoldsLock.Value = 1;
+				ctx.RecursionLevel = 1;
 			}
 			return handle;
 		}
@@ -37,7 +57,7 @@ namespace SGL.Utilities {
 		internal class LockHandle : IDisposable {
 			private AsyncSemaphoreLock? heldLock;
 
-			internal LockHandle(AsyncSemaphoreLock? heldLock) {
+			internal LockHandle(AsyncSemaphoreLock heldLock) {
 				this.heldLock = heldLock;
 			}
 
@@ -48,9 +68,13 @@ namespace SGL.Utilities {
 		}
 
 		private void Release() {
-			if (currentOperationHoldsLock.Value > 0) {
+			var ctx = GetContext();
+			if (ctx.RecursionLevel > 1) {
+				ctx.RecursionLevel--;
+			}
+			else if (ctx.RecursionLevel == 1) {
+				ctx.RecursionLevel--;
 				semaphore.Release();
-				currentOperationHoldsLock.Value--;
 			}
 			else {
 				throw new InvalidOperationException("Can't release a lock that the current operation doesn't hold.");
