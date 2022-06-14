@@ -5,9 +5,10 @@ WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:5.0-alpine AS build
 WORKDIR /src
-COPY ["SGL.Utilities.Backend.BlobStore.GC/SGL.Utilities.Backend.BlobStore.GC.csproj", "SGL.Utilities.Backend.BlobStore.GC/"]
-COPY ["SGL.Utilities.Backend.BlobStore/SGL.Utilities.Backend.BlobStore.csproj", "SGL.Utilities.Backend.BlobStore/"]
 COPY ["SGL.Utilities/SGL.Utilities.csproj", "SGL.Utilities/"]
+COPY ["SGL.Utilities.Backend.Abstractions/SGL.Utilities.Backend.Abstractions.csproj", "SGL.Utilities.Backend.Abstractions/"]
+COPY ["SGL.Utilities.Backend.BlobStore/SGL.Utilities.Backend.BlobStore.csproj", "SGL.Utilities.Backend.BlobStore/"]
+COPY ["SGL.Utilities.Backend.BlobStore.GC/SGL.Utilities.Backend.BlobStore.GC.csproj", "SGL.Utilities.Backend.BlobStore.GC/"]
 RUN dotnet restore "SGL.Utilities.Backend.BlobStore.GC/SGL.Utilities.Backend.BlobStore.GC.csproj"
 COPY . .
 WORKDIR "/src/SGL.Utilities.Backend.BlobStore.GC"
