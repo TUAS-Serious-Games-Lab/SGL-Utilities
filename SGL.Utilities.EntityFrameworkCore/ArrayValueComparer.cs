@@ -17,7 +17,8 @@ namespace SGL.Utilities.EntityFrameworkCore {
 				(e) => computeHashCode(elementValueComparer, e),
 				(e) => makeSnapshot(elementValueComparer, e)) { }
 
-		private static bool checkEqual(ValueComparer elementValueComparer, T[] a, T[] b) {
+		private static bool checkEqual(ValueComparer elementValueComparer, T[]? a, T[]? b) {
+			if (a == null || b == null) return a == b;
 			if (a.Length != b.Length) return false;
 			for (int i = 0; i < a.Length; ++i) {
 				if (elementValueComparer.Equals(a[i], b[i])) {
@@ -34,7 +35,7 @@ namespace SGL.Utilities.EntityFrameworkCore {
 		private static T[] makeSnapshot(ValueComparer elementValueComparer, T[] e) {
 			var res = new T[e.Length];
 			for (int i = 0; i < e.Length; ++i) {
-				res[i] = (T)elementValueComparer.Snapshot(e[i]);
+				res[i] = (T)elementValueComparer.Snapshot(e[i])!;
 			}
 			return res;
 		}
