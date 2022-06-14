@@ -6,7 +6,6 @@ using SGL.Utilities.Backend.TestUtilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -112,11 +111,11 @@ namespace SGL.Utilities.Backend.Tests {
 			using (var context = createContext()) {
 				var readAgg = await context.Aggregates.FindAsync(agg.Id);
 				Assert.NotNull(readAgg);
-				Assert.Equal(agg.Id, readAgg.Id);
+				Assert.Equal(agg.Id, readAgg!.Id);
 				Assert.Equal(agg.Label, readAgg.Label);
 				var readPart = await context.Parts.FindAsync(part.Id);
 				Assert.NotNull(readPart);
-				Assert.Equal(part.Id, readPart.Id);
+				Assert.Equal(part.Id, readPart!.Id);
 				Assert.Equal(part.Label, readPart.Label);
 				await context.Entry(readAgg).Collection(a => a.Properties).LoadAsync();
 				await context.Entry(readPart).Collection(p => p.Properties).LoadAsync();
@@ -192,7 +191,8 @@ namespace SGL.Utilities.Backend.Tests {
 			}
 			using (var context = createContext()) {
 				var readPart = await context.Parts.Where(p => p.Label == "Part 1").Include(p => p.Properties).SingleOrDefaultAsync();
-				Assert.Equal(1234, readPart.GetProperty("Number"));
+				Assert.NotNull(readPart);
+				Assert.Equal(1234, readPart!.GetProperty("Number"));
 				Assert.Equal("Hello World", readPart.GetProperty("String"));
 				Assert.Equal(date.ToUniversalTime(), (readPart.GetProperty("Date") as DateTime?)?.ToUniversalTime());
 				Assert.Equal(guid, readPart.GetProperty("Guid") as Guid?);
@@ -226,7 +226,8 @@ namespace SGL.Utilities.Backend.Tests {
 
 			using (var context = createContext()) {
 				var readPart = await context.Parts.Where(p => p.Label == "Part 1").Include(p => p.Properties).SingleOrDefaultAsync();
-				IDictionary<string, object?> props = readPart.GetProperties();
+				Assert.NotNull(readPart);
+				IDictionary<string, object?> props = readPart!.GetProperties();
 				Assert.Equal(1234, Assert.Contains("Number", props));
 				Assert.Equal("Hello World", Assert.Contains("String", props));
 				Assert.Equal(date.ToUniversalTime(), (Assert.Contains("Date", props) as DateTime?)?.ToUniversalTime());

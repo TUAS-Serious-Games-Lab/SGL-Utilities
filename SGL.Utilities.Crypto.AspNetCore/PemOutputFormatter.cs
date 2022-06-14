@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Formatters;
+﻿using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -87,6 +86,6 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 		/// </summary>
 		/// <param name="type">The type to check.</param>
 		/// <returns>A bool indicating whether the given type can be formatted by this formatter.</returns>
-		protected override bool CanWriteType(Type type) => supportedTypes.Any(t => t.IsAssignableFrom(type));
+		protected override bool CanWriteType(Type? type) => supportedTypes.Any(t => t.IsAssignableFrom(type));
 	}
 }

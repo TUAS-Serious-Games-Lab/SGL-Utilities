@@ -5,9 +5,7 @@ using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Security.Claims;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,13 +17,13 @@ namespace SGL.Utilities.Backend.AspNetCore {
 		private readonly IHeaderDictionary headers;
 		private IFormCollection form = new FormCollection(new());
 		long? contentLength = null;
-		string contentType;
+		string? contentType;
 
 		public MultipartSectionHttpRequest(HttpRequest parent, MultipartSection section, HttpContext httpContext) {
 			this.parent = parent;
 			this.section = section;
 			this.httpContext = httpContext;
-			contentType = section.ContentType ?? "";
+			contentType = section.ContentType;
 			if (section.Headers != null) {
 				Dictionary<string, StringValues> headerMergeDict = new Dictionary<string, StringValues>();
 				foreach (var entry in parent.Headers) {
@@ -44,7 +42,7 @@ namespace SGL.Utilities.Backend.AspNetCore {
 		public override HttpContext HttpContext => httpContext;
 		public override IHeaderDictionary Headers => headers;
 		public override long? ContentLength { get => contentLength; set => contentLength = value; }
-		public override string ContentType { get => contentType; set => contentType = value; }
+		public override string? ContentType { get => contentType; set => contentType = value; }
 		public override bool HasFormContentType => false;
 		public override IFormCollection Form { get => form; set => form = value; }
 		public override Stream Body { get => section.Body; set => section.Body = value; }

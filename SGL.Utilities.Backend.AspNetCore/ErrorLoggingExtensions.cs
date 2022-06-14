@@ -29,7 +29,7 @@ namespace SGL.Utilities.Backend.AspNetCore {
 					context.Response.ContentType = "text/plain";
 					var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
 					var logger = context.RequestServices.GetRequiredService<ILogger<TStartup>>();
-					logger.LogError(exceptionHandlerPathFeature.Error, "Uncaught exception from request for path {path}.", exceptionHandlerPathFeature.Path);
+					logger.LogError(exceptionHandlerPathFeature?.Error, "Uncaught exception from request for path {path}.", exceptionHandlerPathFeature?.Path);
 					await context.Response.WriteAsync("Internal server error.");
 					await context.Response.CompleteAsync();
 				});
@@ -54,7 +54,7 @@ namespace SGL.Utilities.Backend.AspNetCore {
 				options.InvalidModelStateResponseFactory = context => {
 					var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
 					var logger = loggerFactory.CreateLogger<ModelStateValidation>();
-					var errors = context.ModelState.SelectMany(msePair => msePair.Value.Errors);
+					var errors = context.ModelState.SelectMany(msePair => msePair.Value?.Errors ?? Enumerable.Empty<ModelError>());
 					logger.LogError("Request failed due to the following model state validation errors: {errors}", String.Join(", ", errors.Select(e => $"\"{e.ErrorMessage}\"")));
 					foreach (var error in errors) {
 						errorCallback(error, context);
@@ -79,7 +79,7 @@ namespace SGL.Utilities.Backend.AspNetCore {
 				options.InvalidModelStateResponseFactory = context => {
 					var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
 					var logger = loggerFactory.CreateLogger<ModelStateValidation>();
-					var errors = context.ModelState.SelectMany(msePair => msePair.Value.Errors);
+					var errors = context.ModelState.SelectMany(msePair => msePair.Value?.Errors ?? Enumerable.Empty<ModelError>());
 					logger.LogError("Request failed due to the following model state validation errors: {errors}", String.Join(", ", errors.Select(e => $"\"{e.ErrorMessage}\"")));
 					return builtInFactory(context);
 				};
