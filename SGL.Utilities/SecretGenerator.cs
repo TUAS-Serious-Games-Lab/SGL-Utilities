@@ -7,8 +7,6 @@ namespace SGL.Utilities {
 	/// Provides a generator for cryptographically random base64 strings.
 	/// </summary>
 	public class SecretGenerator {
-		private RNGCryptoServiceProvider rngCsp = new RNGCryptoServiceProvider();
-		private object lockObject = new object();
 		private SecretGenerator() { }
 
 		/// <summary>
@@ -23,10 +21,7 @@ namespace SGL.Utilities {
 		/// <returns>A base64 string encoding the random bytes.</returns>
 		/// <remarks>Note: The returned string is longer than the number given in <c>bytes</c>, because the given number of random bytes are base64-encoded after drawing them from the RNG.</remarks>
 		public string GenerateSecret(int bytes) {
-			byte[] buff = new byte[bytes];
-			lock (lockObject) {
-				rngCsp.GetBytes(buff);
-			}
+			byte[] buff = RandomNumberGenerator.GetBytes(bytes);
 			return Convert.ToBase64String(buff);
 		}
 	}
