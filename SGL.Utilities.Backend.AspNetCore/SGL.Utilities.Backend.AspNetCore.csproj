@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net5.0</TargetFramework>
+		<TargetFramework>net6.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<AnalysisLevel>Preview</AnalysisLevel>
 	</PropertyGroup>
@@ -16,8 +16,8 @@
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.10" />
-		<PackageReference Include="Microsoft.AspNetCore.Authorization" Version="5.0.10" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.5" />
+		<PackageReference Include="Microsoft.AspNetCore.Authorization" Version="6.0.5" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\SGL.Utilities.Backend.Security\SGL.Utilities.Backend.Security.csproj" />

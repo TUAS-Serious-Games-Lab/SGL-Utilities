@@ -3,10 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Net.Http.Headers;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -82,7 +79,7 @@ namespace SGL.Utilities.Backend.AspNetCore {
 		/// The callback given here is stored in <see cref="SkippedSectionWithoutValidContentDispositionCallback"/>. If the callback is not given, <see cref="SkippedSectionWithoutValidContentDispositionCallback"/> is set to a no-op callback.
 		/// </param>
 		/// <param name="boundaryLengthLimit">The maximum allowed length for the parsed <see cref="Boundary"/>.</param>
-		public MultipartStreamingHelper(HttpRequest request, Func<string, ActionResult> invalidContentTypeCallback, Func<ActionResult> noBoundaryCallback,
+		public MultipartStreamingHelper(HttpRequest request, Func<string?, ActionResult> invalidContentTypeCallback, Func<ActionResult> noBoundaryCallback,
 				Func<ActionResult> boundaryTooLongCallback, Action<string, string?>? skippedUnexpectedSectionNameContentTypeCallback = null,
 				Action<string?>? skippedSectionWithoutValidContentDispositionCallback = null, int boundaryLengthLimit = 100) {
 			if (string.IsNullOrEmpty(request.ContentType) || !request.ContentType.Contains("multipart/", StringComparison.OrdinalIgnoreCase)) {

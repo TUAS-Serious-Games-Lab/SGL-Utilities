@@ -6,8 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SGL.Utilities.Backend.KeyValueProperties {
 	/// <summary>
@@ -34,7 +32,7 @@ namespace SGL.Utilities.Backend.KeyValueProperties {
 		/// <returns>A reference to <paramref name="modelBuilder"/> for chaining.</returns>
 		public static ModelBuilder KeyValuePropertiesBetween<TDefinitionOwner, TInstanceOwner, TDefinition, TInstance>(this ModelBuilder modelBuilder,
 				EntityTypeBuilder<TDefinitionOwner> definitionOwner, EntityTypeBuilder<TInstanceOwner> instanceOwner,
-				Expression<Func<TDefinitionOwner, IEnumerable<TDefinition>>> definitionExpression, Expression<Func<TInstanceOwner, IEnumerable<TInstance>>> instanceExpression, int nameLength = 128)
+				Expression<Func<TDefinitionOwner, IEnumerable<TDefinition>?>> definitionExpression, Expression<Func<TInstanceOwner, IEnumerable<TInstance>?>> instanceExpression, int nameLength = 128)
 				where TDefinitionOwner : class where TInstanceOwner : class where TDefinition : PropertyDefinitionBase<TDefinitionOwner> where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> {
 			modelBuilder.Ignore<PropertyDefinitionBase>();
 			modelBuilder.Ignore<PropertyDefinitionBase<TDefinitionOwner>>();
