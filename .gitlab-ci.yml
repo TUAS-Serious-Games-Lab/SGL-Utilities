@@ -70,6 +70,7 @@ docs:
   script:
     - docfx docfx_project/docfx.json
   artifacts:
+    name: "SGL.Utilities.Docs"
     expire_in: 14 days
     paths:
       - docfx_output
