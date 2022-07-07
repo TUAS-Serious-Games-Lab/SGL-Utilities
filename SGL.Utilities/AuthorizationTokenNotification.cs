@@ -13,7 +13,7 @@ namespace SGL.Utilities {
 		/// The authorization token data for the authenticated user during the current session.
 		/// </summary>
 #if NETSTANDARD
-		public AuthorizationData Authorization { get; set; }
+		public AuthorizationData Authorization { get; }
 #else
 		public AuthorizationData Authorization { get; init; }
 #endif
@@ -21,11 +21,17 @@ namespace SGL.Utilities {
 		/// The id of the authenticated user.
 		/// </summary>
 #if NETSTANDARD
-		public Guid AuthenticatedUserId { get; set; }
+		public Guid AuthenticatedUserId { get; }
 #else
 		public Guid AuthenticatedUserId { get; init; }
 #endif
-
+		/// <summary>
+		/// Creates an <see cref="UserAuthenticatedEventArgs"/> with the given <see cref="AuthorizationData"/> and user id.
+		/// </summary>
+		public UserAuthenticatedEventArgs(AuthorizationData authorization, Guid authenticatedUserId) {
+			Authorization = authorization;
+			AuthenticatedUserId = authenticatedUserId;
+		}
 	}
 
 	/// <summary>
