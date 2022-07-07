@@ -142,6 +142,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 				await httpClient.GetStreamAsync(source, ct),
 #endif
 				Encoding.UTF8);
+			ct.ThrowIfCancellationRequested();
 			LoadCertificatesFromReader(reader, source.AbsoluteUri);
 		}
 
