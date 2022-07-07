@@ -14,7 +14,7 @@ namespace SGL.Utilities.TestUtilities.XUnit {
 	public class XUnitLoggingProvider : ILoggerProvider {
 		private Func<ITestOutputHelper?> outputObtainer;
 		private Configurator configuration = new Configurator();
-		private static ThreadLocal<StringBuilder> cachedStringBuilder = new(() => new StringBuilder());
+		private static ThreadLocal<StringBuilder> cachedStringBuilder = new ThreadLocal<StringBuilder>(() => new StringBuilder());
 		private LoggerExternalScopeProvider scopes = new LoggerExternalScopeProvider();
 
 		internal class XUnitLogger : ILogger {

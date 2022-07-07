@@ -106,7 +106,11 @@ namespace SGL.Utilities.Crypto.Keys {
 			if (otherChars.Count() != 8) throw new ArgumentException("Incorrect number of separators in KeyId");
 			var digits = str.Where(c => Uri.IsHexDigit(c)).ToArray();
 			if (digits.Length != 33 /*bytes in id*/ * 2 /*hex per byte*/) throw new ArgumentException("Incorrect number of characters for KeyId.");
+#if NETSTANDARD
+			var id = FromHexString(digits);
+#else
 			var id = Convert.FromHexString(digits);
+#endif
 			if (id[0] < 1 || id[0] > 2) throw new ArgumentException("Given KeyId uses unknown type identifier.");
 			return new KeyId(id);
 		}
@@ -126,11 +130,39 @@ namespace SGL.Utilities.Crypto.Keys {
 			if (otherChars.Count() != 8) return false;
 			var digits = str.Where(c => Uri.IsHexDigit(c)).ToArray();
 			if (digits.Length != 33 /*bytes in id*/ * 2 /*hex per byte*/) return false;
+#if NETSTANDARD
+			var id = FromHexString(digits);
+#else
 			var id = Convert.FromHexString(digits);
+#endif
+
 			if (id[0] < 1 || id[0] > 2) return false;
 			result = new KeyId(id);
 			return true;
 		}
+
+#if NETSTANDARD
+			private static byte[] FromHexString(ReadOnlySpan<char> chars) {
+			if (chars.Length == 0)
+				return Array.Empty<byte>();
+			if ((uint)chars.Length % 2 != 0)
+				throw new FormatException("Odd number of hex digits can't be converted to bytes.");
+			var bytes = new byte[chars.Length / 2];
+			for (int i = 0; i < bytes.Length; i++) {
+				var high = FromHexChar(chars[i]);
+				var low = FromHexChar(chars[i + 1]);
+				bytes[i] = (byte)((high << 4) | low);
+			}
+			return bytes;
+		}
+
+		private static byte FromHexChar(char c) => c switch {
+			>= '0' and <= '9' => (byte)(c - '0'),
+			>= 'a' and <= 'f' => (byte)(c - 'a' + 10),
+			>= 'A' and <= 'F' => (byte)(c - 'A' + 10),
+			_ => throw new FormatException("Incorrect character in hex string.")
+		};
+#endif
 	}
 
 	/// <summary>

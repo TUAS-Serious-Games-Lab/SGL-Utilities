@@ -10,11 +10,11 @@ namespace SGL.Utilities {
 	/// <typeparam name="TKey">The type for the keys, used to lookup entries.</typeparam>
 	/// <typeparam name="TValue">The type for the actual values stored in the cache.</typeparam>
 	public class LRUCache<TKey, TValue> : IDictionary<TKey, TValue> where TKey : notnull {
-		private readonly Dictionary<TKey, LinkedListNode<(TKey Key, TValue Value)>> entryMap = new();
-		private readonly LinkedList<(TKey Key, TValue Value)> recentList = new();
+		private readonly Dictionary<TKey, LinkedListNode<Node<TKey, TValue>>> entryMap = new();
+		private readonly LinkedList<Node<TKey, TValue>> recentList = new();
 		private int capacity;
 
-		private void use(LinkedListNode<(TKey Key, TValue Value)> entryNode) {
+		private void use(LinkedListNode<Node<TKey, TValue>> entryNode) {
 			recentList.Remove(entryNode);
 			recentList.AddLast(entryNode);
 		}
@@ -23,7 +23,7 @@ namespace SGL.Utilities {
 			if (Count >= Capacity) {
 				removeLeastRecent();
 			}
-			var node = new LinkedListNode<(TKey Key, TValue Value)>((key, value));
+			var node = new LinkedListNode<Node<TKey, TValue>>((key, value));
 			entryMap.Add(key, node);
 			recentList.AddLast(node);
 		}
@@ -100,7 +100,11 @@ namespace SGL.Utilities {
 			set {
 				if (entryMap.TryGetValue(key, out var node)) {
 					use(node);
+#if NETSTANDARD
+					node.Value.Value = value;
+#else
 					node.ValueRef.Value = value;
+#endif
 				}
 				else {
 					add(key, value);
@@ -264,5 +268,27 @@ namespace SGL.Utilities {
 		}
 
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+	}
+
+#if NETSTANDARD
+	internal class Node<TKey, TValue> where TKey : notnull {
+#else
+	internal struct Node<TKey, TValue> where TKey : notnull {
+#endif
+		internal TKey Key { get; set; }
+		internal TValue Value { get; set; }
+
+		internal Node(TKey key, TValue value) {
+			Key = key;
+			Value = value;
+		}
+
+		public static implicit operator (TKey Key, TValue Value)(Node<TKey, TValue> value) {
+			return (value.Key, value.Value);
+		}
+
+		public static implicit operator Node<TKey, TValue>((TKey Key, TValue Value) value) {
+			return new Node<TKey, TValue>(value.Key, value.Value);
+		}
 	}
 }

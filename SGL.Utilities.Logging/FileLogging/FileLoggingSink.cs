@@ -122,7 +122,11 @@ namespace SGL.Utilities.Logging.FileLogging {
 			else {
 				normalMessageFormatter.AppendFormattedTo(stringBuilder, msg);
 			}
+#if NETSTANDARD
+			await writer.WriteLineAsync(stringBuilder.ToString());
+#else
 			await writer.WriteLineAsync(stringBuilder);
+#endif
 			await writer.FlushAsync();
 		}
 

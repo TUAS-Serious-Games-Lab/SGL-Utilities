@@ -1,5 +1,6 @@
 using System.IO;
 using System.Linq;
+using System.Text;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -34,7 +35,7 @@ namespace SGL.Utilities.TestUtilities.XUnit {
 		/// <param name="output">The test case output to write to.</param>
 		/// <param name="textStream">A stream containing bytes encoding text, to be written to the test case output.</param>
 		public static void WriteStreamContents(this ITestOutputHelper output, Stream textStream) {
-			using (var rdr = new StreamReader(textStream, leaveOpen: true)) {
+			using (var rdr = new StreamReader(textStream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, 1024, leaveOpen: true)) {
 				output.WriteTextReaderContents(rdr);
 			}
 		}

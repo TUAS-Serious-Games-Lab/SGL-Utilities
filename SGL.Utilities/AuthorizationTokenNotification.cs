@@ -12,11 +12,19 @@ namespace SGL.Utilities {
 		/// <summary>
 		/// The authorization token data for the authenticated user during the current session.
 		/// </summary>
+#if NETSTANDARD
+		public AuthorizationData Authorization { get; set; }
+#else
 		public AuthorizationData Authorization { get; init; }
+#endif
 		/// <summary>
 		/// The id of the authenticated user.
 		/// </summary>
+#if NETSTANDARD
+		public Guid AuthenticatedUserId { get; set; }
+#else
 		public Guid AuthenticatedUserId { get; init; }
+#endif
 
 	}
 

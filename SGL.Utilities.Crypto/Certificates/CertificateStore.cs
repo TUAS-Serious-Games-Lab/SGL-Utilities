@@ -135,7 +135,13 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// <param name="ct">A cancellation token to allow cancelling of the asynchronous download operation.</param>
 		/// <returns>A task representing the asynchronous operation.</returns>
 		public async Task LoadCertificatesFromHttpAsync(HttpClient httpClient, Uri source, CancellationToken ct = default) {
-			using var reader = new StreamReader(await httpClient.GetStreamAsync(source, ct), Encoding.UTF8);
+			using var reader = new StreamReader(
+#if NETSTANDARD
+				await httpClient.GetStreamAsync(source/*, ct*/), 
+#else
+				await httpClient.GetStreamAsync(source, ct),
+#endif
+				Encoding.UTF8);
 			LoadCertificatesFromReader(reader, source.AbsoluteUri);
 		}
 

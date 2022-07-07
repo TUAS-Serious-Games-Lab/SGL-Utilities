@@ -7,7 +7,21 @@ namespace SGL.Utilities.Tests {
 	public class DtoHeaderBindingExtensionsUnitTest {
 		private class FakeHeaders : HttpHeaders { }
 
+#if NET6_0_OR_GREATER
 		private record LogMetadataDTO(Guid LogFileId, DateTime CreationTime, DateTime EndTime);
+#else
+		private class LogMetadataDTO {
+			public Guid LogFileId { get; set; }
+			public DateTime CreationTime { get; set; }
+			public DateTime EndTime { get; set; }
+
+			public LogMetadataDTO(Guid LogFileId, DateTime CreationTime, DateTime EndTime) {
+				this.LogFileId = LogFileId;
+				this.CreationTime = CreationTime;
+				this.EndTime = EndTime;
+			}
+		}
+#endif
 
 		[Fact]
 		public void MapDtoPropertiesCanMapLogMetadataDTOCorrectly() {
