@@ -92,3 +92,21 @@ pages:
 include:
 - template: 'Workflows/Branch-Pipelines.gitlab-ci.yml'
 - local: '/package.gitlab-ci.yml'
+
+deploy-upm:
+  stage: deploy
+  inherit:
+    variables: false
+  variables:
+    SGL_UTILITIES_VERSION: $SGL_UTILITIES_VERSION
+    SGL_UTILITIES_REF: $CI_COMMIT_REF_NAME
+  needs:
+  - nuget-package
+  trigger:
+    project: serious-games-lab/sgl-utilities-unity
+    branch: main
+    strategy: depend
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_TAG =~ /^\d+(\.\d+)*$/'
+    - if: $FORCE_NUGET_BUILD
