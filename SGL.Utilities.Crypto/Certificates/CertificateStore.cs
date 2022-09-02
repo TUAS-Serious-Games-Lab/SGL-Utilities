@@ -212,7 +212,17 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// <param name="sourceName">A name for the source behind <paramref name="reader"/> to use for log messages. This can, e.g. be a filename or an URL.</param>
 		public void LoadCertificatesFromReader(TextReader reader, string sourceName) {
 			var certs = loadCertificates(reader, sourceName);
-			foreach (var cert in certs) {
+			AddCertificatesWithValidation(certs, sourceName);
+		}
+
+		/// <summary>
+		/// Checks the certificates given in <paramref name="certificates"/> and add those that pass the validation to the certificate store.
+		/// The certificates are validated using the <see cref="ICertificateValidator"/> given at construction.
+		/// </summary>
+		/// <param name="certificates">The certifiacte objects to check and add.</param>
+		/// <param name="sourceName">A name identifying the source of the certificates to use for logging.</param>
+		public void AddCertificatesWithValidation(IEnumerable<Certificate> certificates, string sourceName) {
+			foreach (var cert in certificates) {
 				var keyid = cert.PublicKey.CalculateId();
 				if (validator.CheckCertificate(cert)) {
 					certificatesByKeyId[keyid] = cert;
