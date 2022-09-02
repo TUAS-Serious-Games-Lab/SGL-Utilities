@@ -147,6 +147,48 @@ namespace SGL.Utilities.Crypto.Certificates {
 		}
 
 		/// <summary>
+		/// Asynchronously downloads, loads, and verifies certificates in PEM format obtained from the response to the given HTTP(S) request.
+		/// The certificates are validated using the <see cref="ICertificateValidator"/> given at construction.
+		/// Only certificates that pass the validation checks are added to the store.
+		/// </summary>
+		/// <param name="httpClient">The <see cref="HttpClient"/> object to use for downloading.</param>
+		/// <param name="request">The request to perform using <paramref name="httpClient"/> to obtain the certificates.</param>
+		/// <param name="ct">A cancellation token to allow cancelling of the asynchronous download operation.</param>
+		/// <returns>A task representing the asynchronous operation.</returns>
+		public async Task LoadCertificatesFromHttpAsync(HttpClient httpClient, HttpRequestMessage request, CancellationToken ct = default) {
+			using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+			response.EnsureSuccessStatusCode();
+			ct.ThrowIfCancellationRequested();
+			await LoadCertificatesFromHttpAsync(response, ct);
+		}
+
+
+		/// <summary>
+		/// Asynchronously downloads, loads, and verifies certificates in PEM format obtained from the given HTTP(S) response.
+		/// The certificates are validated using the <see cref="ICertificateValidator"/> given at construction.
+		/// Only certificates that pass the validation checks are added to the store.
+		/// </summary>
+		/// <param name="response">An HTTP(S) response the content of which provides the certificates in PEM form.</param>
+		/// <param name="ct">A cancellation token to allow cancelling of the asynchronous operation.</param>
+		/// <returns>A task representing the asynchronous operation.</returns>
+		public async Task LoadCertificatesFromHttpAsync(HttpResponseMessage response, CancellationToken ct = default) {
+			response.EnsureSuccessStatusCode();
+			// TODO: Switch to temp file if content length is over a threshold
+			using var buffer = new MemoryStream();
+#if NETSTANDARD
+			ct.ThrowIfCancellationRequested();
+			await response.Content.CopyToAsync(buffer/*, ct*/);
+			ct.ThrowIfCancellationRequested();
+#else
+			await response.Content.CopyToAsync(buffer, ct);
+#endif
+			buffer.Position = 0;
+			using var reader = new StreamReader(buffer, Encoding.UTF8);
+			ct.ThrowIfCancellationRequested();
+			LoadCertificatesFromReader(reader, response.RequestMessage?.RequestUri?.AbsoluteUri ?? "[web request]");
+		}
+
+		/// <summary>
 		/// Loads and verifies certificates from all PEM files in the given directory and its subdirectory.
 		/// The certificates are validated using the <see cref="ICertificateValidator"/> given at construction.
 		/// Only certificates that pass the validation checks are added to the store.
