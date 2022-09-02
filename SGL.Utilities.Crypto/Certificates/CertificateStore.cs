@@ -77,6 +77,15 @@ namespace SGL.Utilities.Crypto.Certificates {
 		}
 
 		/// <summary>
+		/// Removes all certificates from the store.
+		/// </summary>
+		public void Clear() {
+			certificatesByKeyId.Clear();
+			certificatesBySubjectDN.Clear();
+			certificatesBySKID.Clear();
+		}
+
+		/// <summary>
 		/// Lists the <see cref="KeyId"/> of all certificates contained in the certificate store.
 		/// </summary>
 		/// <returns>An enumerable over all <see cref="KeyId"/>s.</returns>
