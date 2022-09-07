@@ -82,19 +82,6 @@ namespace SGL.Utilities.Backend.AspNetCore {
 		public MultipartStreamingHelper(HttpRequest request, Func<string?, ActionResult> invalidContentTypeCallback, Func<ActionResult> noBoundaryCallback,
 				Func<ActionResult> boundaryTooLongCallback, Action<string, string?>? skippedUnexpectedSectionNameContentTypeCallback = null,
 				Action<string?>? skippedSectionWithoutValidContentDispositionCallback = null, int boundaryLengthLimit = 100) {
-			if (string.IsNullOrEmpty(request.ContentType) || !request.ContentType.Contains("multipart/", StringComparison.OrdinalIgnoreCase)) {
-				InitError = invalidContentTypeCallback(request.ContentType);
-			}
-			var parsedContentType = MediaTypeHeaderValue.Parse(request.ContentType);
-			Boundary = HeaderUtilities.RemoveQuotes(parsedContentType.Boundary).Value;
-			if (string.IsNullOrEmpty(Boundary)) {
-				InitError = noBoundaryCallback();
-			}
-			if (Boundary.Length > boundaryLengthLimit) {
-				InitError = boundaryTooLongCallback();
-			}
-
-			reader = new MultipartReader(Boundary, request.Body);
 			if (skippedUnexpectedSectionNameContentTypeCallback == null) {
 				skippedUnexpectedSectionNameContentTypeCallback = (name, contentType) => { };
 			}
@@ -103,6 +90,23 @@ namespace SGL.Utilities.Backend.AspNetCore {
 				skippedSectionWithoutValidContentDispositionCallback = (contentType) => { };
 			}
 			SkippedSectionWithoutValidContentDispositionCallback = skippedSectionWithoutValidContentDispositionCallback;
+			Boundary = "invalid-" + Guid.NewGuid().ToString("N");
+
+			if (string.IsNullOrEmpty(request.ContentType) || !request.ContentType.Contains("multipart/", StringComparison.OrdinalIgnoreCase)) {
+				InitError = invalidContentTypeCallback(request.ContentType);
+				return;
+			}
+			var parsedContentType = MediaTypeHeaderValue.Parse(request.ContentType);
+			Boundary = HeaderUtilities.RemoveQuotes(parsedContentType.Boundary).Value;
+			if (string.IsNullOrEmpty(Boundary)) {
+				InitError = noBoundaryCallback();
+				return;
+			}
+			if (Boundary.Length > boundaryLengthLimit) {
+				InitError = boundaryTooLongCallback();
+				return;
+			}
+			reader = new MultipartReader(Boundary, request.Body);
 		}
 
 		private bool matchesSelector(string? name, string? contentTypePrefix) =>
