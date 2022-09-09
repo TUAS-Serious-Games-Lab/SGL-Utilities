@@ -42,6 +42,10 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// If this is set to false, all Elliptic-Curve-using recipients will get their own specific message key pair.
 		/// </param>
 		public KeyEncryptor(List<KeyValuePair<KeyId, PublicKey>> recipientPublicKeys, RandomGenerator random, bool allowSharedMessageKeyPair = false) {
+			if (!recipientPublicKeys.Any()) {
+				throw new ArgumentException("List of recipient keys must not be empty. An empty list would result in objects being encrypted but no copy of the data key being stored anywhere, " +
+					$"as {nameof(EncryptDataKey)} would produce an empty dictionary.", nameof(recipientPublicKeys));
+			}
 			this.trustedRecipients = recipientPublicKeys;
 			this.random = random;
 			if (allowSharedMessageKeyPair) {
