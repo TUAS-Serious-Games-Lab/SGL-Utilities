@@ -7,6 +7,7 @@ using SGL.Utilities.Crypto.Internals;
 using SGL.Utilities.Crypto.Keys;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.SymbolStore;
 using System.IO;
 
 namespace SGL.Utilities.Crypto.Certificates {
@@ -152,6 +153,45 @@ namespace SGL.Utilities.Crypto.Certificates {
 
 		private KeyUsages? keyUsageCache = null;
 
+		private int? caPathLengthCache = null;
+
+		/// <summary>
+		/// If the BasicConstrains extension is present, and the this certificate is a CA certificate (see <see cref="IsCA"/>), provides the specified path length, i.e. how many intermediate certificates are allowed for signing.
+		/// If the extension is not present or the certificate is not marked as a CA, <see langword="null"/> is returned.
+		/// </summary>
+		public int? CAPathLength {
+			get {
+				if (caPathLengthCache == null) {
+					var basicConstraintsEnc = wrapped.GetExtensionValue(X509Extensions.BasicConstraints);
+					if (basicConstraintsEnc != null) {
+						var basicConstraintsExtObj = BasicConstraints.GetInstance(basicConstraintsEnc.GetOctets());
+						if (basicConstraintsExtObj.IsCA()) {
+							caPathLengthCache = basicConstraintsExtObj.PathLenConstraint?.IntValueExact;
+						}
+					}
+				}
+				return caPathLengthCache;
+			}
+		}
+
+		private bool? isCACache = null;
+		/// <summary>
+		/// Indicates whether this certificate is allowed to be used as a CA certificate according to the BasicConstraints extension, if present.
+		/// If the extension is not present, null is returned and the certificate should not be considered as a CA certificate.
+		/// </summary>
+		public bool? IsCA {
+			get {
+				if (isCACache == null) {
+					var basicConstraintsEnc = wrapped.GetExtensionValue(X509Extensions.BasicConstraints);
+					if (basicConstraintsEnc != null) {
+						var basicConstraintsExtObj = BasicConstraints.GetInstance(basicConstraintsEnc.GetOctets());
+						isCACache = basicConstraintsExtObj.IsCA();
+					}
+				}
+				return isCACache;
+			}
+		}
+
 		/// <summary>
 		/// Loads one certificate from the PEM-encoded data in <paramref name="reader"/>.
 		/// </summary>
@@ -212,12 +252,16 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// If flags in <see cref="KeyUsages.AllBasic"/> are set, the certificate will contain a corresponding KeyUsage extension.
 		/// If flags in <see cref="KeyUsages.AllSupportedExt"/> are set, the certificate will contain a corresponding ExtendedKeyUsage extension.
 		/// </param>
+		/// <param name="caConstraint">
+		/// If set, adds a BasicConstraint extension to the generated certificate.
+		/// This is used to mark certificates as a CA certificate by setting the <c>IsCA</c> property to true and specify the number of allowed intermediate layers.
+		/// </param>
 		/// <returns>The generated and singed certificate.</returns>
 		public static Certificate Generate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, DateTime validFrom, DateTime validTo,
 			long serialNumber, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null,
-			bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined) =>
+			bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined, (bool IsCA, int CAPathLenght)? caConstraint = null) =>
 				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validFrom, validTo, BigInteger.ValueOf(serialNumber), signatureDigest,
-					authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages);
+					authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages, caConstraint);
 		/// <summary>
 		/// Generates a certificate with the given contents.
 		/// </summary>
@@ -237,12 +281,16 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// If flags in <see cref="KeyUsages.AllBasic"/> are set, the certificate will contain a corresponding KeyUsage extension.
 		/// If flags in <see cref="KeyUsages.AllSupportedExt"/> are set, the certificate will contain a corresponding ExtendedKeyUsage extension.
 		/// </param>
+		/// <param name="caConstraint">
+		/// If set, adds a BasicConstraint extension to the generated certificate.
+		/// This is used to mark certificates as a CA certificate by setting the <c>IsCA</c> property to true and specify the number of allowed intermediate layers.
+		/// </param>
 		/// <returns>The generated and singed certificate.</returns>
 		public static Certificate Generate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, DateTime validFrom, DateTime validTo,
 			byte[] serialNumber, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null,
-			bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined) =>
+			bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined, (bool IsCA, int CAPathLenght)? caConstraint = null) =>
 				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validFrom, validTo, new BigInteger(serialNumber), signatureDigest,
-					authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages);
+					authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages, caConstraint);
 		/// <summary>
 		/// Generates a certificate with the given contents.
 		/// </summary>
@@ -263,12 +311,17 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// If flags in <see cref="KeyUsages.AllBasic"/> are set, the certificate will contain a corresponding KeyUsage extension.
 		/// If flags in <see cref="KeyUsages.AllSupportedExt"/> are set, the certificate will contain a corresponding ExtendedKeyUsage extension.
 		/// </param>
+		/// <param name="caConstraint">
+		/// If set, adds a BasicConstraint extension to the generated certificate.
+		/// This is used to mark certificates as a CA certificate by setting the <c>IsCA</c> property to true and specify the number of allowed intermediate layers.
+		/// </param>
 		/// <returns>The generated and singed certificate.</returns>
 		public static Certificate Generate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, DateTime validFrom, DateTime validTo,
 			RandomGenerator randomSerialNumberGen, int serialNumberLength, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256,
-			KeyIdentifier? authorityKeyIdentifier = null, bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined) =>
+			KeyIdentifier? authorityKeyIdentifier = null, bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined,
+			(bool IsCA, int CAPathLenght)? caConstraint = null) =>
 				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validFrom, validTo, randomSerialNumberGen, serialNumberLength,
-					signatureDigest, authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages);
+					signatureDigest, authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages, caConstraint);
 
 		/// <summary>
 		/// Generates a certificate with the given contents.
@@ -288,12 +341,16 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// If flags in <see cref="KeyUsages.AllBasic"/> are set, the certificate will contain a corresponding KeyUsage extension.
 		/// If flags in <see cref="KeyUsages.AllSupportedExt"/> are set, the certificate will contain a corresponding ExtendedKeyUsage extension.
 		/// </param>
+		/// <param name="caConstraint">
+		/// If set, adds a BasicConstraint extension to the generated certificate.
+		/// This is used to mark certificates as a CA certificate by setting the <c>IsCA</c> property to true and specify the number of allowed intermediate layers.
+		/// </param>
 		/// <returns>The generated and singed certificate.</returns>
 		public static Certificate Generate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, TimeSpan validityDuration,
 			long serialNumber, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null,
-			bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined) =>
+			bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined, (bool IsCA, int CAPathLenght)? caConstraint = null) =>
 				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validityDuration, BigInteger.ValueOf(serialNumber), signatureDigest,
-					authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages);
+					authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages, caConstraint);
 		/// <summary>
 		/// Generates a certificate with the given contents.
 		/// </summary>
@@ -312,12 +369,16 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// If flags in <see cref="KeyUsages.AllBasic"/> are set, the certificate will contain a corresponding KeyUsage extension.
 		/// If flags in <see cref="KeyUsages.AllSupportedExt"/> are set, the certificate will contain a corresponding ExtendedKeyUsage extension.
 		/// </param>
+		/// <param name="caConstraint">
+		/// If set, adds a BasicConstraint extension to the generated certificate.
+		/// This is used to mark certificates as a CA certificate by setting the <c>IsCA</c> property to true and specify the number of allowed intermediate layers.
+		/// </param>
 		/// <returns>The generated and singed certificate.</returns>
 		public static Certificate Generate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, TimeSpan validityDuration,
 			byte[] serialNumber, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null,
-			bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined) =>
+			bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined, (bool IsCA, int CAPathLenght)? caConstraint = null) =>
 				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validityDuration, new BigInteger(serialNumber), signatureDigest,
-					authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages);
+					authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages, caConstraint);
 		/// <summary>
 		/// Generates a certificate with the given contents.
 		/// </summary>
@@ -337,11 +398,16 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// If flags in <see cref="KeyUsages.AllBasic"/> are set, the certificate will contain a corresponding KeyUsage extension.
 		/// If flags in <see cref="KeyUsages.AllSupportedExt"/> are set, the certificate will contain a corresponding ExtendedKeyUsage extension.
 		/// </param>
+		/// <param name="caConstraint">
+		/// If set, adds a BasicConstraint extension to the generated certificate.
+		/// This is used to mark certificates as a CA certificate by setting the <c>IsCA</c> property to true and specify the number of allowed intermediate layers.
+		/// </param>
 		/// <returns>The generated and singed certificate.</returns>
 		public static Certificate Generate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, TimeSpan validityDuration,
 			RandomGenerator randomSerialNumberGen, int serialNumberLength, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256,
-			KeyIdentifier? authorityKeyIdentifier = null, bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined) =>
+			KeyIdentifier? authorityKeyIdentifier = null, bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined,
+			(bool IsCA, int CAPathLenght)? caConstraint = null) =>
 				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validityDuration, randomSerialNumberGen, serialNumberLength,
-					signatureDigest, authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages);
+					signatureDigest, authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages, caConstraint);
 	}
 }
