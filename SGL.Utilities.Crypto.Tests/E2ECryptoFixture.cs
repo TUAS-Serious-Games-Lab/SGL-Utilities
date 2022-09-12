@@ -113,7 +113,7 @@ namespace SGL.Utilities.Crypto.Tests {
 			BigInteger serialBase = new BigInteger(128, random.wrapped);
 
 			var issuerDN = new DistinguishedName(new KeyValuePair<string, string>[] { new("o", "SGL"), new("ou", "Utility"), new("ou", "Tests"), new("cn", "Test Signer") });
-			signerCert = Certificate.Generate(issuerDN, signerKeyPair.Private, issuerDN, signerKeyPair.Public, TimeSpan.FromHours(1), serialBase.ToByteArray(), generateSubjectKeyIdentifier: true);
+			signerCert = Certificate.Generate(issuerDN, signerKeyPair.Private, issuerDN, signerKeyPair.Public, TimeSpan.FromHours(1), serialBase.ToByteArray(), generateSubjectKeyIdentifier: true, keyUsages: KeyUsages.KeyCertSign);
 
 			var subj1DN = new DistinguishedName(new KeyValuePair<string, string>[] { new("o", "SGL"), new("ou", "Utility"), new("ou", "Tests"), new("cn", "Test 1") });
 			var subj2DN = new DistinguishedName(new KeyValuePair<string, string>[] { new("o", "SGL"), new("ou", "Utility"), new("ou", "Tests"), new("cn", "Test 2") });

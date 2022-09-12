@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Org.BouncyCastle.Security.Certificates;
 using SGL.Utilities.Crypto.Internals;
+using System.Collections.Generic;
 using System.IO;
 
 namespace SGL.Utilities.Crypto.Certificates {
@@ -22,6 +23,16 @@ namespace SGL.Utilities.Crypto.Certificates {
 
 			public bool CheckCertificate(Certificate cert) {
 				try {
+					if (!cert.AllowedKeyUsages.HasValue) {
+						logger.LogError("The certificate {subjDN} has no key usage attribute. It needs to be marked for usage as a CA certificate " +
+							"with key usage = KeyCertSign to be used as a signer certificate.", cert.SubjectDN);
+						return false;
+					}
+					if (!cert.AllowedKeyUsages!.Value.HasFlag(KeyUsages.KeyCertSign)) {
+						logger.LogError("The certificate {subjDN} doesn't have the KeyCertSign key usage attribute and can therefore not be used as a signer certificate.",
+							cert.SubjectDN);
+						return false;
+					}
 					cert.wrapped.CheckValidity();
 					return true;
 				}
@@ -75,6 +86,11 @@ namespace SGL.Utilities.Crypto.Certificates {
 			caCerts = new CertificateStore(new TrustedValidator(logger, ignoreValidityPeriod), caCertStoreLogger);
 			caCerts.LoadCertificatesFromEmbeddedStringConstant(pemContent);
 		}
+
+		/// <summary>
+		/// Provides an enumeration of the trusted CA certificates that have been loaded successfully.
+		/// </summary>
+		public IEnumerable<Certificate> TrustedCACertificates => caCerts.ListKnownCertificates();
 
 		/// <summary>
 		/// Checks if the given certifiacte is within its validity period, is signed by a one of the CA certifiactes trusted by this validator, and the siganture can be successfully verified.
