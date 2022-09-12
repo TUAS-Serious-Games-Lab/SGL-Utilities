@@ -115,7 +115,7 @@ namespace SGL.Utilities.Crypto.Internals {
 		}
 
 		private static void AddPurposeIfUsagePresent(KeyUsages presentUsages, KeyUsages usageToCheck, KeyPurposeID purpose, List<KeyPurposeID> purposes) {
-			if ((presentUsages & usageToCheck) != 0) {
+			if (presentUsages.HasFlag(usageToCheck)) {
 				purposes.Add(purpose);
 			}
 		}
