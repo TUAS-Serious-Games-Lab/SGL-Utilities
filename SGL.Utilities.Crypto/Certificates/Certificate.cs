@@ -2,6 +2,7 @@
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.X509;
+using Org.BouncyCastle.X509.Extension;
 using SGL.Utilities.Crypto.Internals;
 using SGL.Utilities.Crypto.Keys;
 using System;
@@ -95,6 +96,61 @@ namespace SGL.Utilities.Crypto.Certificates {
 		private (KeyIdentifier? KeyIdentifier, object? Issuer, byte[]? SerialNumber)? akidCache = null;
 
 		/// <summary>
+		/// Provides the allowed usages for the key behind the certificate, according to the KeyUsage and ExtendedKeyUsage extension of the certificate, if present.
+		/// </summary>
+		public KeyUsages? AllowedKeyUsages {
+			get {
+				if (keyUsageCache == null) {
+					var keyUsageEnc = wrapped.GetExtensionValue(X509Extensions.KeyUsage);
+					var extKeyUsageEnc = wrapped.GetExtensionValue(X509Extensions.ExtendedKeyUsage);
+					var usages = KeyUsages.NoneDefined;
+					if (keyUsageEnc != null) {
+						var keyUsageExtension = KeyUsage.GetInstance(keyUsageEnc.GetOctets());
+						var keyUsageBitFlags = keyUsageExtension.IntValue;
+						SetBitIfUsagePresent(keyUsageBitFlags, KeyUsages.DigitalSignature, ref usages);
+						SetBitIfUsagePresent(keyUsageBitFlags, KeyUsages.NonRepudiation, ref usages);
+						SetBitIfUsagePresent(keyUsageBitFlags, KeyUsages.KeyEncipherment, ref usages);
+						SetBitIfUsagePresent(keyUsageBitFlags, KeyUsages.DataEncipherment, ref usages);
+						SetBitIfUsagePresent(keyUsageBitFlags, KeyUsages.KeyAgreement, ref usages);
+						SetBitIfUsagePresent(keyUsageBitFlags, KeyUsages.KeyCertSign, ref usages);
+						SetBitIfUsagePresent(keyUsageBitFlags, KeyUsages.CrlSign, ref usages);
+						SetBitIfUsagePresent(keyUsageBitFlags, KeyUsages.EncipherOnly, ref usages);
+						SetBitIfUsagePresent(keyUsageBitFlags, KeyUsages.DecipherOnly, ref usages);
+					}
+					if (extKeyUsageEnc != null) {
+						var extKeyUsageExtension = ExtendedKeyUsage.GetInstance(extKeyUsageEnc.GetOctets());
+						SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.IdKPServerAuth, KeyUsages.ExtServerAuth, ref usages);
+						SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.IdKPClientAuth, KeyUsages.ExtClientAuth, ref usages);
+						SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.IdKPCodeSigning, KeyUsages.ExtCodeSigning, ref usages);
+						SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.IdKPEmailProtection, KeyUsages.ExtEmailProtection, ref usages);
+						SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.IdKPIpsecEndSystem, KeyUsages.ExtIpsecEndSystem, ref usages);
+						SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.IdKPIpsecTunnel, KeyUsages.ExtIpsecTunnel, ref usages);
+						SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.IdKPIpsecUser, KeyUsages.ExtIpsecUser, ref usages);
+						SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.IdKPTimeStamping, KeyUsages.ExtTimeStamping, ref usages);
+						SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.IdKPOcspSigning, KeyUsages.ExtOcspSigning, ref usages);
+						SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.IdKPSmartCardLogon, KeyUsages.ExtSmartCardLogon, ref usages);
+						SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.AnyExtendedKeyUsage, KeyUsages.ExtAnyPurpose, ref usages);
+					}
+					keyUsageCache = usages;
+				}
+				return keyUsageCache;
+			}
+		}
+
+		private static void SetBitIfUsagePresent(ExtendedKeyUsage extKeyUsages, KeyPurposeID keyPurposeId, KeyUsages usage, ref KeyUsages flagsToSet) {
+			if (extKeyUsages.HasKeyPurposeId(keyPurposeId)) {
+				flagsToSet |= usage;
+			}
+		}
+		private static void SetBitIfUsagePresent(int keyUsageBitFlags, KeyUsages usage, ref KeyUsages flagsToSet) {
+			if ((keyUsageBitFlags & (int)(usage & ~KeyUsages.AllSupportedExt)) != 0) {
+				flagsToSet |= usage;
+			}
+		}
+
+		private KeyUsages? keyUsageCache = null;
+
+		/// <summary>
 		/// Loads one certificate from the PEM-encoded data in <paramref name="reader"/>.
 		/// </summary>
 		/// <param name="reader">A reader containing at least one PEM-encoded certificate.</param>
@@ -148,10 +204,18 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// <param name="signatureDigest">The digest algorithm to use for the signature. It will internally be combined with the type of <paramref name="signerKey"/> to choose the signature algorithm.</param>
 		/// <param name="authorityKeyIdentifier">If not null, adds the AuthorityKeyIdentifier extension to the certificate, with the given key identifier. The identifier normally needs to match the <see cref="SubjectKeyIdentifier"/> of the issuer's CA certificate.</param>
 		/// <param name="generateSubjectKeyIdentifier">Indicates whether the SubjectKeyIdentifier extension shall be added. If it is added, the identifier is generated using <see cref="KeyIdentifier.KeyIdentifier(PublicKey)"/>.</param>
+		/// <param name="keyUsages">
+		/// Specifies the valid usages for the <paramref name="subjectKey"/> that the certificate shall indicate.
+		/// If no flags are set (<see cref="KeyUsages.NoneDefined"/>), the certificate will contain neither the KeyUsage, nor the ExtendedKeyUsage extension.
+		/// If flags in <see cref="KeyUsages.AllBasic"/> are set, the certificate will contain a corresponding KeyUsage extension.
+		/// If flags in <see cref="KeyUsages.AllSupportedExt"/> are set, the certificate will contain a corresponding ExtendedKeyUsage extension.
+		/// </param>
 		/// <returns>The generated and singed certificate.</returns>
 		public static Certificate Generate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, DateTime validFrom, DateTime validTo,
-			long serialNumber, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null, bool generateSubjectKeyIdentifier = false) =>
-				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validFrom, validTo, BigInteger.ValueOf(serialNumber), signatureDigest, authorityKeyIdentifier, generateSubjectKeyIdentifier);
+			long serialNumber, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null,
+			bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined) =>
+				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validFrom, validTo, BigInteger.ValueOf(serialNumber), signatureDigest,
+					authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages);
 		/// <summary>
 		/// Generates a certificate with the given contents.
 		/// </summary>
@@ -165,10 +229,18 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// <param name="signatureDigest">The digest algorithm to use for the signature. It will internally be combined with the type of <paramref name="signerKey"/> to choose the signature algorithm.</param>
 		/// <param name="authorityKeyIdentifier">If not null, adds the AuthorityKeyIdentifier extension to the certificate, with the given key identifier. The identifier normally needs to match the <see cref="SubjectKeyIdentifier"/> of the issuer's CA certificate.</param>
 		/// <param name="generateSubjectKeyIdentifier">Indicates whether the SubjectKeyIdentifier extension shall be added. If it is added, the identifier is generated using <see cref="KeyIdentifier.KeyIdentifier(PublicKey)"/>.</param>
+		/// <param name="keyUsages">
+		/// Specifies the valid usages for the <paramref name="subjectKey"/> that the certificate shall indicate.
+		/// If no flags are set (<see cref="KeyUsages.NoneDefined"/>), the certificate will contain neither the KeyUsage, nor the ExtendedKeyUsage extension.
+		/// If flags in <see cref="KeyUsages.AllBasic"/> are set, the certificate will contain a corresponding KeyUsage extension.
+		/// If flags in <see cref="KeyUsages.AllSupportedExt"/> are set, the certificate will contain a corresponding ExtendedKeyUsage extension.
+		/// </param>
 		/// <returns>The generated and singed certificate.</returns>
 		public static Certificate Generate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, DateTime validFrom, DateTime validTo,
-			byte[] serialNumber, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null, bool generateSubjectKeyIdentifier = false) =>
-				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validFrom, validTo, new BigInteger(serialNumber), signatureDigest, authorityKeyIdentifier, generateSubjectKeyIdentifier);
+			byte[] serialNumber, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null,
+			bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined) =>
+				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validFrom, validTo, new BigInteger(serialNumber), signatureDigest,
+					authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages);
 		/// <summary>
 		/// Generates a certificate with the given contents.
 		/// </summary>
@@ -183,10 +255,18 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// <param name="signatureDigest">The digest algorithm to use for the signature. It will internally be combined with the type of <paramref name="signerKey"/> to choose the signature algorithm.</param>
 		/// <param name="authorityKeyIdentifier">If not null, adds the AuthorityKeyIdentifier extension to the certificate, with the given key identifier. The identifier normally needs to match the <see cref="SubjectKeyIdentifier"/> of the issuer's CA certificate.</param>
 		/// <param name="generateSubjectKeyIdentifier">Indicates whether the SubjectKeyIdentifier extension shall be added. If it is added, the identifier is generated using <see cref="KeyIdentifier.KeyIdentifier(PublicKey)"/>.</param>
+		/// <param name="keyUsages">
+		/// Specifies the valid usages for the <paramref name="subjectKey"/> that the certificate shall indicate.
+		/// If no flags are set (<see cref="KeyUsages.NoneDefined"/>), the certificate will contain neither the KeyUsage, nor the ExtendedKeyUsage extension.
+		/// If flags in <see cref="KeyUsages.AllBasic"/> are set, the certificate will contain a corresponding KeyUsage extension.
+		/// If flags in <see cref="KeyUsages.AllSupportedExt"/> are set, the certificate will contain a corresponding ExtendedKeyUsage extension.
+		/// </param>
 		/// <returns>The generated and singed certificate.</returns>
 		public static Certificate Generate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, DateTime validFrom, DateTime validTo,
-			RandomGenerator randomSerialNumberGen, int serialNumberLength, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null, bool generateSubjectKeyIdentifier = false) =>
-				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validFrom, validTo, randomSerialNumberGen, serialNumberLength, signatureDigest, authorityKeyIdentifier, generateSubjectKeyIdentifier);
+			RandomGenerator randomSerialNumberGen, int serialNumberLength, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256,
+			KeyIdentifier? authorityKeyIdentifier = null, bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined) =>
+				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validFrom, validTo, randomSerialNumberGen, serialNumberLength,
+					signatureDigest, authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages);
 
 		/// <summary>
 		/// Generates a certificate with the given contents.
@@ -200,10 +280,18 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// <param name="signatureDigest">The digest algorithm to use for the signature. It will internally be combined with the type of <paramref name="signerKey"/> to choose the signature algorithm.</param>
 		/// <param name="authorityKeyIdentifier">If not null, adds the AuthorityKeyIdentifier extension to the certificate, with the given key identifier. The identifier normally needs to match the <see cref="SubjectKeyIdentifier"/> of the issuer's CA certificate.</param>
 		/// <param name="generateSubjectKeyIdentifier">Indicates whether the SubjectKeyIdentifier extension shall be added. If it is added, the identifier is generated using <see cref="KeyIdentifier.KeyIdentifier(PublicKey)"/>.</param>
+		/// <param name="keyUsages">
+		/// Specifies the valid usages for the <paramref name="subjectKey"/> that the certificate shall indicate.
+		/// If no flags are set (<see cref="KeyUsages.NoneDefined"/>), the certificate will contain neither the KeyUsage, nor the ExtendedKeyUsage extension.
+		/// If flags in <see cref="KeyUsages.AllBasic"/> are set, the certificate will contain a corresponding KeyUsage extension.
+		/// If flags in <see cref="KeyUsages.AllSupportedExt"/> are set, the certificate will contain a corresponding ExtendedKeyUsage extension.
+		/// </param>
 		/// <returns>The generated and singed certificate.</returns>
 		public static Certificate Generate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, TimeSpan validityDuration,
-			long serialNumber, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null, bool generateSubjectKeyIdentifier = false) =>
-				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validityDuration, BigInteger.ValueOf(serialNumber), signatureDigest, authorityKeyIdentifier, generateSubjectKeyIdentifier);
+			long serialNumber, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null,
+			bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined) =>
+				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validityDuration, BigInteger.ValueOf(serialNumber), signatureDigest,
+					authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages);
 		/// <summary>
 		/// Generates a certificate with the given contents.
 		/// </summary>
@@ -216,10 +304,18 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// <param name="signatureDigest">The digest algorithm to use for the signature. It will internally be combined with the type of <paramref name="signerKey"/> to choose the signature algorithm.</param>
 		/// <param name="authorityKeyIdentifier">If not null, adds the AuthorityKeyIdentifier extension to the certificate, with the given key identifier. The identifier normally needs to match the <see cref="SubjectKeyIdentifier"/> of the issuer's CA certificate.</param>
 		/// <param name="generateSubjectKeyIdentifier">Indicates whether the SubjectKeyIdentifier extension shall be added. If it is added, the identifier is generated using <see cref="KeyIdentifier.KeyIdentifier(PublicKey)"/>.</param>
+		/// <param name="keyUsages">
+		/// Specifies the valid usages for the <paramref name="subjectKey"/> that the certificate shall indicate.
+		/// If no flags are set (<see cref="KeyUsages.NoneDefined"/>), the certificate will contain neither the KeyUsage, nor the ExtendedKeyUsage extension.
+		/// If flags in <see cref="KeyUsages.AllBasic"/> are set, the certificate will contain a corresponding KeyUsage extension.
+		/// If flags in <see cref="KeyUsages.AllSupportedExt"/> are set, the certificate will contain a corresponding ExtendedKeyUsage extension.
+		/// </param>
 		/// <returns>The generated and singed certificate.</returns>
 		public static Certificate Generate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, TimeSpan validityDuration,
-			byte[] serialNumber, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null, bool generateSubjectKeyIdentifier = false) =>
-				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validityDuration, new BigInteger(serialNumber), signatureDigest, authorityKeyIdentifier, generateSubjectKeyIdentifier);
+			byte[] serialNumber, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null,
+			bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined) =>
+				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validityDuration, new BigInteger(serialNumber), signatureDigest,
+					authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages);
 		/// <summary>
 		/// Generates a certificate with the given contents.
 		/// </summary>
@@ -233,9 +329,17 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// <param name="signatureDigest">The digest algorithm to use for the signature. It will internally be combined with the type of <paramref name="signerKey"/> to choose the signature algorithm.</param>
 		/// <param name="authorityKeyIdentifier">If not null, adds the AuthorityKeyIdentifier extension to the certificate, with the given key identifier. The identifier normally needs to match the <see cref="SubjectKeyIdentifier"/> of the issuer's CA certificate.</param>
 		/// <param name="generateSubjectKeyIdentifier">Indicates whether the SubjectKeyIdentifier extension shall be added. If it is added, the identifier is generated using <see cref="KeyIdentifier.KeyIdentifier(PublicKey)"/>.</param>
+		/// <param name="keyUsages">
+		/// Specifies the valid usages for the <paramref name="subjectKey"/> that the certificate shall indicate.
+		/// If no flags are set (<see cref="KeyUsages.NoneDefined"/>), the certificate will contain neither the KeyUsage, nor the ExtendedKeyUsage extension.
+		/// If flags in <see cref="KeyUsages.AllBasic"/> are set, the certificate will contain a corresponding KeyUsage extension.
+		/// If flags in <see cref="KeyUsages.AllSupportedExt"/> are set, the certificate will contain a corresponding ExtendedKeyUsage extension.
+		/// </param>
 		/// <returns>The generated and singed certificate.</returns>
 		public static Certificate Generate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, TimeSpan validityDuration,
-			RandomGenerator randomSerialNumberGen, int serialNumberLength, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null, bool generateSubjectKeyIdentifier = false) =>
-				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validityDuration, randomSerialNumberGen, serialNumberLength, signatureDigest, authorityKeyIdentifier, generateSubjectKeyIdentifier);
+			RandomGenerator randomSerialNumberGen, int serialNumberLength, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256,
+			KeyIdentifier? authorityKeyIdentifier = null, bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined) =>
+				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validityDuration, randomSerialNumberGen, serialNumberLength,
+					signatureDigest, authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages);
 	}
 }
