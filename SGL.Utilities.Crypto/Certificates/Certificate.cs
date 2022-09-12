@@ -97,9 +97,9 @@ namespace SGL.Utilities.Crypto.Certificates {
 
 		/// <summary>
 		/// Provides the allowed usages for the key behind the certificate, according to the KeyUsage and ExtendedKeyUsage extension of the certificate, if present.
-		/// If both extensions are not present, <see cref="KeyUsages.NoneDefined"/> is returned.
+		/// If both extensions are not present, <see langword="null"/> is returned.
 		/// </summary>
-		public KeyUsages AllowedKeyUsages {
+		public KeyUsages? AllowedKeyUsages {
 			get {
 				if (keyUsageCache == null) {
 					var keyUsageEnc = wrapped.GetExtensionValue(X509Extensions.KeyUsage);
@@ -117,6 +117,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 						SetBitIfUsagePresent(keyUsageBitFlags, KeyUsages.CrlSign, ref usages);
 						SetBitIfUsagePresent(keyUsageBitFlags, KeyUsages.EncipherOnly, ref usages);
 						SetBitIfUsagePresent(keyUsageBitFlags, KeyUsages.DecipherOnly, ref usages);
+						keyUsageCache = usages;
 					}
 					if (extKeyUsageEnc != null) {
 						var extKeyUsageExtension = ExtendedKeyUsage.GetInstance(extKeyUsageEnc.GetOctets());
@@ -131,10 +132,10 @@ namespace SGL.Utilities.Crypto.Certificates {
 						SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.IdKPOcspSigning, KeyUsages.ExtOcspSigning, ref usages);
 						SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.IdKPSmartCardLogon, KeyUsages.ExtSmartCardLogon, ref usages);
 						SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.AnyExtendedKeyUsage, KeyUsages.ExtAnyPurpose, ref usages);
+						keyUsageCache = usages;
 					}
-					keyUsageCache = usages;
 				}
-				return keyUsageCache.Value;
+				return keyUsageCache;
 			}
 		}
 
