@@ -79,12 +79,12 @@ namespace SGL.Utilities.Crypto.Certificates {
 		}
 
 		private bool CheckCACertificate(Certificate cert) {
-			if (!cert.AllowedKeyUsages.HasValue) {
+			if (cert.AllowedKeyUsages == KeyUsages.NoneDefined) {
 				logger.LogError("The certificate {subjDN} has no key usage attribute. It needs to be marked for usage as a CA certificate " +
 					"with key usage = KeyCertSign to be used as a signer certificate.", cert.SubjectDN);
 				return false;
 			}
-			if (!cert.AllowedKeyUsages!.Value.HasFlag(KeyUsages.KeyCertSign)) {
+			if (!cert.AllowedKeyUsages!.HasFlag(KeyUsages.KeyCertSign)) {
 				logger.LogError("The certificate {subjDN} doesn't have the KeyCertSign key usage attribute and can therefore not be used as a signer certificate.",
 					cert.SubjectDN);
 				return false;

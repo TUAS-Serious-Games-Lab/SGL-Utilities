@@ -97,8 +97,9 @@ namespace SGL.Utilities.Crypto.Certificates {
 
 		/// <summary>
 		/// Provides the allowed usages for the key behind the certificate, according to the KeyUsage and ExtendedKeyUsage extension of the certificate, if present.
+		/// If both extensions are not present, <see cref="KeyUsages.NoneDefined"/> is returned.
 		/// </summary>
-		public KeyUsages? AllowedKeyUsages {
+		public KeyUsages AllowedKeyUsages {
 			get {
 				if (keyUsageCache == null) {
 					var keyUsageEnc = wrapped.GetExtensionValue(X509Extensions.KeyUsage);
@@ -133,7 +134,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 					}
 					keyUsageCache = usages;
 				}
-				return keyUsageCache;
+				return keyUsageCache.Value;
 			}
 		}
 
