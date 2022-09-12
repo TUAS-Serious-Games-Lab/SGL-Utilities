@@ -3,6 +3,7 @@ using Org.BouncyCastle.Security.Certificates;
 using SGL.Utilities.Crypto.Internals;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.ConstrainedExecution;
 
 namespace SGL.Utilities.Crypto.Certificates {
 	/// <summary>
@@ -23,16 +24,6 @@ namespace SGL.Utilities.Crypto.Certificates {
 
 			public bool CheckCertificate(Certificate cert) {
 				try {
-					if (!cert.AllowedKeyUsages.HasValue) {
-						logger.LogError("The certificate {subjDN} has no key usage attribute. It needs to be marked for usage as a CA certificate " +
-							"with key usage = KeyCertSign to be used as a signer certificate.", cert.SubjectDN);
-						return false;
-					}
-					if (!cert.AllowedKeyUsages!.Value.HasFlag(KeyUsages.KeyCertSign)) {
-						logger.LogError("The certificate {subjDN} doesn't have the KeyCertSign key usage attribute and can therefore not be used as a signer certificate.",
-							cert.SubjectDN);
-						return false;
-					}
 					cert.wrapped.CheckValidity();
 					return true;
 				}
@@ -70,7 +61,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// <param name="caCertStoreLogger">A logger to use for the internal <see cref="CertificateStore"/> that stores the CA certifiactes.</param>
 		public CACertTrustValidator(TextReader pemContent, string sourceName, bool ignoreValidityPeriod, ILogger<CACertTrustValidator> logger, ILogger<CertificateStore> caCertStoreLogger) {
 			this.logger = logger;
-			caCerts = new CertificateStore(new TrustedValidator(logger, ignoreValidityPeriod), caCertStoreLogger);
+			caCerts = new CertificateStore(new TrustedValidator(logger, ignoreValidityPeriod), caCertStoreLogger, (cert, _) => CheckCACertificate(cert));
 			caCerts.LoadCertificatesFromReader(pemContent, sourceName);
 		}
 		/// <summary>
@@ -83,8 +74,22 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// <param name="caCertStoreLogger">A logger to use for the internal <see cref="CertificateStore"/> that stores the CA certifiactes.</param>
 		public CACertTrustValidator(string pemContent, bool ignoreValidityPeriod, ILogger<CACertTrustValidator> logger, ILogger<CertificateStore> caCertStoreLogger) {
 			this.logger = logger;
-			caCerts = new CertificateStore(new TrustedValidator(logger, ignoreValidityPeriod), caCertStoreLogger);
+			caCerts = new CertificateStore(new TrustedValidator(logger, ignoreValidityPeriod), caCertStoreLogger, (cert, _) => CheckCACertificate(cert));
 			caCerts.LoadCertificatesFromEmbeddedStringConstant(pemContent);
+		}
+
+		private bool CheckCACertificate(Certificate cert) {
+			if (!cert.AllowedKeyUsages.HasValue) {
+				logger.LogError("The certificate {subjDN} has no key usage attribute. It needs to be marked for usage as a CA certificate " +
+					"with key usage = KeyCertSign to be used as a signer certificate.", cert.SubjectDN);
+				return false;
+			}
+			if (!cert.AllowedKeyUsages!.Value.HasFlag(KeyUsages.KeyCertSign)) {
+				logger.LogError("The certificate {subjDN} doesn't have the KeyCertSign key usage attribute and can therefore not be used as a signer certificate.",
+					cert.SubjectDN);
+				return false;
+			}
+			else return true;
 		}
 
 		/// <summary>

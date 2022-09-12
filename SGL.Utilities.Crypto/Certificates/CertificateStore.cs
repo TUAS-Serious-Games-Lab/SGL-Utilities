@@ -19,6 +19,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 	/// </summary>
 	public class CertificateStore {
 		private readonly ILogger<CertificateStore> logger;
+		private readonly Func<Certificate, ILogger<CertificateStore>, bool> customChecks;
 		private readonly ICertificateValidator validator;
 		private Dictionary<KeyId, Certificate> certificatesByKeyId = new Dictionary<KeyId, Certificate>();
 		private Dictionary<DistinguishedName, Certificate> certificatesBySubjectDN = new Dictionary<DistinguishedName, Certificate>();
@@ -29,9 +30,19 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// </summary>
 		/// <param name="validator">The <see cref="ICertificateValidator"/> to use to validate certificates when they are loaded into the certificate store.</param>
 		/// <param name="logger">The logger to use for logging the operations of the certificate store.</param>
-		public CertificateStore(ICertificateValidator validator, ILogger<CertificateStore> logger) {
+		public CertificateStore(ICertificateValidator validator, ILogger<CertificateStore> logger) : this(validator, logger, (_, _) => true) { }
+
+		/// <summary>
+		/// Creates a certifiacte store that uses the given <see cref="ICertificateValidator"/> to validate loaded certificates and the given logger to log information about its operations.
+		/// </summary>
+		/// <param name="validator">The <see cref="ICertificateValidator"/> to use to validate certificates when they are loaded into the certificate store.</param>
+		/// <param name="logger">The logger to use for logging the operations of the certificate store.</param>
+		/// <param name="customChecks">Allows the code using the <see cref="CertificateStore"/> to perform its own checks on the cerrtificates being loaded and
+		/// allows it to reject unwanted ones. This is intended for tasks like checking <see cref="Certificate.AllowedKeyUsages"/> for the intended purpose.</param>
+		public CertificateStore(ICertificateValidator validator, ILogger<CertificateStore> logger, Func<Certificate, ILogger<CertificateStore>, bool> customChecks) {
 			this.validator = validator;
 			this.logger = logger;
+			this.customChecks = customChecks;
 		}
 
 		/// <summary>
@@ -233,16 +244,16 @@ namespace SGL.Utilities.Crypto.Certificates {
 		public void AddCertificatesWithValidation(IEnumerable<Certificate> certificates, string sourceName) {
 			foreach (var cert in certificates) {
 				var keyid = cert.PublicKey.CalculateId();
-				if (validator.CheckCertificate(cert)) {
+				if (!validator.CheckCertificate(cert)) {
+					logger.LogWarning("The certificate with subject {subject} and key ID {keyid} from {source} failed validation. It will not be added to the certificate store.", cert.SubjectDN, keyid, sourceName);
+				}
+				else if (customChecks(cert, logger)) {
 					certificatesByKeyId[keyid] = cert;
 					certificatesBySubjectDN[cert.SubjectDN] = cert;
 					var skid = cert.SubjectKeyIdentifier;
 					if (skid != null) {
 						certificatesBySKID[skid] = cert;
 					}
-				}
-				else {
-					logger.LogWarning("The certificate with subject {subject} and key ID {keyid} from {source} failed validation. It will not be added to the certificate store.", cert.SubjectDN, keyid, sourceName);
 				}
 			}
 		}
