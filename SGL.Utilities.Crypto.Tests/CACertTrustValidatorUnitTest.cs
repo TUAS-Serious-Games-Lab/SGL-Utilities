@@ -197,10 +197,10 @@ g30Pr6mO6JjUxgDch8E=
 			recipientPublicKey = PublicKey.LoadOneFromPem(rdrR1);
 
 			signer1DN = new DistinguishedName(new KeyValuePair<string, string>[] { new("o", "SGL"), new("ou", "Utility"), new("ou", "Tests"), new("cn", "Signer 1") });
-			var caCertSigner1 = Certificate.Generate(signer1DN, signer1KeyPair.Private, signer1DN, signer1KeyPair.Public, DateTime.UtcNow.AddMinutes(-5), DateTime.UtcNow.AddHours(1), random, 128, keyUsages: KeyUsages.KeyCertSign);
+			var caCertSigner1 = Certificate.Generate(signer1DN, signer1KeyPair.Private, signer1DN, signer1KeyPair.Public, DateTime.UtcNow.AddMinutes(-5), DateTime.UtcNow.AddHours(1), random, 128, keyUsages: KeyUsages.KeyCertSign, caConstraint: (true, 0));
 
 			signer2DN = new DistinguishedName(new KeyValuePair<string, string>[] { new("o", "SGL"), new("ou", "Utility"), new("ou", "Tests"), new("cn", "Signer 2") });
-			var caCertSigner2 = Certificate.Generate(signer2DN, signer2KeyPair.Private, signer2DN, signer2KeyPair.Public, DateTime.UtcNow.AddMinutes(-5), DateTime.UtcNow.AddHours(1), random, 128, generateSubjectKeyIdentifier: true, keyUsages: KeyUsages.KeyCertSign);
+			var caCertSigner2 = Certificate.Generate(signer2DN, signer2KeyPair.Private, signer2DN, signer2KeyPair.Public, DateTime.UtcNow.AddMinutes(-5), DateTime.UtcNow.AddHours(1), random, 128, generateSubjectKeyIdentifier: true, keyUsages: KeyUsages.KeyCertSign, caConstraint: (true, 0));
 
 			using var caCertStrWriter = new StringWriter();
 			caCertSigner1.StoreToPem(caCertStrWriter);
@@ -331,7 +331,7 @@ g30Pr6mO6JjUxgDch8E=
 		public void CertificateWithoutKeyCertSignIsRejectedAsACA() {
 			var signer3KeyPair = KeyPair.GenerateEllipticCurves(random, 521);
 			var signer3DN = new DistinguishedName(new KeyValuePair<string, string>[] { new("o", "SGL"), new("ou", "Utility"), new("ou", "Tests"), new("cn", "Signer 3") });
-			var caCertSigner3 = Certificate.Generate(signer3DN, signer3KeyPair.Private, signer3DN, signer3KeyPair.Public, DateTime.UtcNow.AddMinutes(-5), DateTime.UtcNow.AddHours(1), random, 128, generateSubjectKeyIdentifier: true, keyUsages: KeyUsages.KeyAgreement | KeyUsages.KeyEncipherment | KeyUsages.DigitalSignature | KeyUsages.ExtServerAuth);
+			var caCertSigner3 = Certificate.Generate(signer3DN, signer3KeyPair.Private, signer3DN, signer3KeyPair.Public, DateTime.UtcNow.AddMinutes(-5), DateTime.UtcNow.AddHours(1), random, 128, generateSubjectKeyIdentifier: true, caConstraint: (true, 0), keyUsages: KeyUsages.KeyAgreement | KeyUsages.KeyEncipherment | KeyUsages.DigitalSignature | KeyUsages.ExtServerAuth);
 
 			using var caCertStrWriter = new StringWriter();
 			caCertSigner3.StoreToPem(caCertStrWriter);
@@ -343,10 +343,34 @@ g30Pr6mO6JjUxgDch8E=
 		public void CertificateWithoutKeyUsageIsRejectedAsACA() {
 			var signer4KeyPair = KeyPair.GenerateEllipticCurves(random, 521);
 			var signer4DN = new DistinguishedName(new KeyValuePair<string, string>[] { new("o", "SGL"), new("ou", "Utility"), new("ou", "Tests"), new("cn", "Signer 4") });
-			var caCertSigner4 = Certificate.Generate(signer4DN, signer4KeyPair.Private, signer4DN, signer4KeyPair.Public, DateTime.UtcNow.AddMinutes(-5), DateTime.UtcNow.AddHours(1), random, 128, generateSubjectKeyIdentifier: true);
+			var caCertSigner4 = Certificate.Generate(signer4DN, signer4KeyPair.Private, signer4DN, signer4KeyPair.Public, DateTime.UtcNow.AddMinutes(-5), DateTime.UtcNow.AddHours(1), random, 128, generateSubjectKeyIdentifier: true, caConstraint: (true, 0));
 
 			using var caCertStrWriter = new StringWriter();
 			caCertSigner4.StoreToPem(caCertStrWriter);
+
+			var validator = new CACertTrustValidator(caCertStrWriter.ToString(), ignoreValidityPeriod: false, loggerFactory.CreateLogger<CACertTrustValidator>(), loggerFactory.CreateLogger<CertificateStore>());
+			Assert.Empty(validator.TrustedCACertificates);
+		}
+		[Fact]
+		public void CertificateWithoutBasicConstraintsIsRejectedAsACA() {
+			var signer5KeyPair = KeyPair.GenerateEllipticCurves(random, 521);
+			var signer5DN = new DistinguishedName(new KeyValuePair<string, string>[] { new("o", "SGL"), new("ou", "Utility"), new("ou", "Tests"), new("cn", "Signer 5") });
+			var caCertSigner5 = Certificate.Generate(signer5DN, signer5KeyPair.Private, signer5DN, signer5KeyPair.Public, DateTime.UtcNow.AddMinutes(-5), DateTime.UtcNow.AddHours(1), random, 128, generateSubjectKeyIdentifier: true, keyUsages: KeyUsages.KeyCertSign);
+
+			using var caCertStrWriter = new StringWriter();
+			caCertSigner5.StoreToPem(caCertStrWriter);
+
+			var validator = new CACertTrustValidator(caCertStrWriter.ToString(), ignoreValidityPeriod: false, loggerFactory.CreateLogger<CACertTrustValidator>(), loggerFactory.CreateLogger<CertificateStore>());
+			Assert.Empty(validator.TrustedCACertificates);
+		}
+		[Fact]
+		public void CertificateWithNonCABasicConstraintsIsRejectedAsACA() {
+			var signer6KeyPair = KeyPair.GenerateEllipticCurves(random, 521);
+			var signer6DN = new DistinguishedName(new KeyValuePair<string, string>[] { new("o", "SGL"), new("ou", "Utility"), new("ou", "Tests"), new("cn", "Signer 6") });
+			var caCertSigner6 = Certificate.Generate(signer6DN, signer6KeyPair.Private, signer6DN, signer6KeyPair.Public, DateTime.UtcNow.AddMinutes(-5), DateTime.UtcNow.AddHours(1), random, 128, generateSubjectKeyIdentifier: true, keyUsages: KeyUsages.KeyCertSign, caConstraint: (false, 0));
+
+			using var caCertStrWriter = new StringWriter();
+			caCertSigner6.StoreToPem(caCertStrWriter);
 
 			var validator = new CACertTrustValidator(caCertStrWriter.ToString(), ignoreValidityPeriod: false, loggerFactory.CreateLogger<CACertTrustValidator>(), loggerFactory.CreateLogger<CertificateStore>());
 			Assert.Empty(validator.TrustedCACertificates);
