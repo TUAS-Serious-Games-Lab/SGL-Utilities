@@ -79,12 +79,12 @@ namespace SGL.Utilities.Crypto.Certificates {
 		}
 
 		private bool CheckCACertificate(Certificate cert) {
-			if (!cert.IsCA.HasValue) {
+			if (!cert.CABasicConstraints.HasValue) {
 				logger.LogError("The certificate {subjDN} has no basic constraints extension. It needs to be marked for usage as a CA certificate " +
 					"using this extension to be used as a signer certificate.", cert.SubjectDN);
 				return false;
 			}
-			if (!cert.IsCA.Value) {
+			if (!cert.CABasicConstraints.Value.IsCA) {
 				logger.LogError("The certificate {subjDN} has basic constraints extension that forbids it from being used as a CA certificate and " +
 					"thus must not be used as a signer certificate.", cert.SubjectDN);
 				return false;

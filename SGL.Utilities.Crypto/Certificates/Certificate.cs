@@ -124,44 +124,29 @@ namespace SGL.Utilities.Crypto.Certificates {
 
 		private KeyUsages? keyUsageCache = null;
 
-		private int? caPathLengthCache = null;
-
 		/// <summary>
-		/// If the BasicConstrains extension is present, and the this certificate is a CA certificate (see <see cref="IsCA"/>), provides the specified path length, i.e. how many intermediate certificates are allowed for signing.
-		/// If the extension is not present or the certificate is not marked as a CA, <see langword="null"/> is returned.
+		/// If the BasicConstrains extension is present, provides the CA-related constraints from that extension, otherwise null.
+		/// The <c>IsCA</c> property indicates whether the certificate may be used as a certificate authority, i.e. for signing certificates.
+		///	If <c>IsCA</c> is true, <c>PathLength</c> indicates the allowed number of intermediate CAs between this certificate and certificate indirectly signed by using it.
 		/// </summary>
-		public int? CAPathLength {
+		public (bool IsCA, int? PathLength)? CABasicConstraints {
 			get {
-				if (caPathLengthCache == null) {
+				if (caBasicConstraintsCache == null) {
 					var basicConstraintsEnc = wrapped.GetExtensionValue(X509Extensions.BasicConstraints);
 					if (basicConstraintsEnc != null) {
 						var basicConstraintsExtObj = BasicConstraints.GetInstance(basicConstraintsEnc.GetOctets());
 						if (basicConstraintsExtObj.IsCA()) {
-							caPathLengthCache = basicConstraintsExtObj.PathLenConstraint?.IntValueExact;
+							caBasicConstraintsCache = (true, basicConstraintsExtObj.PathLenConstraint?.IntValueExact);
+						}
+						else {
+							caBasicConstraintsCache = (false, null);
 						}
 					}
 				}
-				return caPathLengthCache;
+				return caBasicConstraintsCache;
 			}
 		}
-
-		private bool? isCACache = null;
-		/// <summary>
-		/// Indicates whether this certificate is allowed to be used as a CA certificate according to the BasicConstraints extension, if present.
-		/// If the extension is not present, null is returned and the certificate should not be considered as a CA certificate.
-		/// </summary>
-		public bool? IsCA {
-			get {
-				if (isCACache == null) {
-					var basicConstraintsEnc = wrapped.GetExtensionValue(X509Extensions.BasicConstraints);
-					if (basicConstraintsEnc != null) {
-						var basicConstraintsExtObj = BasicConstraints.GetInstance(basicConstraintsEnc.GetOctets());
-						isCACache = basicConstraintsExtObj.IsCA();
-					}
-				}
-				return isCACache;
-			}
-		}
+		private (bool IsCA, int? PathLength)? caBasicConstraintsCache = null;
 
 		/// <summary>
 		/// Loads one certificate from the PEM-encoded data in <paramref name="reader"/>.
@@ -230,7 +215,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// <returns>The generated and singed certificate.</returns>
 		public static Certificate Generate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, DateTime validFrom, DateTime validTo,
 			long serialNumber, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null,
-			bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined, (bool IsCA, int CAPathLenght)? caConstraint = null) =>
+			bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined, (bool IsCA, int? CAPathLenght)? caConstraint = null) =>
 				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validFrom, validTo, BigInteger.ValueOf(serialNumber), signatureDigest,
 					authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages, caConstraint);
 		/// <summary>
@@ -259,7 +244,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// <returns>The generated and singed certificate.</returns>
 		public static Certificate Generate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, DateTime validFrom, DateTime validTo,
 			byte[] serialNumber, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null,
-			bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined, (bool IsCA, int CAPathLenght)? caConstraint = null) =>
+			bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined, (bool IsCA, int? CAPathLenght)? caConstraint = null) =>
 				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validFrom, validTo, new BigInteger(serialNumber), signatureDigest,
 					authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages, caConstraint);
 		/// <summary>
@@ -290,7 +275,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 		public static Certificate Generate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, DateTime validFrom, DateTime validTo,
 			RandomGenerator randomSerialNumberGen, int serialNumberLength, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256,
 			KeyIdentifier? authorityKeyIdentifier = null, bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined,
-			(bool IsCA, int CAPathLenght)? caConstraint = null) =>
+			(bool IsCA, int? CAPathLenght)? caConstraint = null) =>
 				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validFrom, validTo, randomSerialNumberGen, serialNumberLength,
 					signatureDigest, authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages, caConstraint);
 
@@ -319,7 +304,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// <returns>The generated and singed certificate.</returns>
 		public static Certificate Generate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, TimeSpan validityDuration,
 			long serialNumber, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null,
-			bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined, (bool IsCA, int CAPathLenght)? caConstraint = null) =>
+			bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined, (bool IsCA, int? CAPathLenght)? caConstraint = null) =>
 				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validityDuration, BigInteger.ValueOf(serialNumber), signatureDigest,
 					authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages, caConstraint);
 		/// <summary>
@@ -347,7 +332,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// <returns>The generated and singed certificate.</returns>
 		public static Certificate Generate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, TimeSpan validityDuration,
 			byte[] serialNumber, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null,
-			bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined, (bool IsCA, int CAPathLenght)? caConstraint = null) =>
+			bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined, (bool IsCA, int? CAPathLenght)? caConstraint = null) =>
 				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validityDuration, new BigInteger(serialNumber), signatureDigest,
 					authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages, caConstraint);
 		/// <summary>
@@ -377,7 +362,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 		public static Certificate Generate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, TimeSpan validityDuration,
 			RandomGenerator randomSerialNumberGen, int serialNumberLength, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256,
 			KeyIdentifier? authorityKeyIdentifier = null, bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined,
-			(bool IsCA, int CAPathLenght)? caConstraint = null) =>
+			(bool IsCA, int? CAPathLenght)? caConstraint = null) =>
 				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validityDuration, randomSerialNumberGen, serialNumberLength,
 					signatureDigest, authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages, caConstraint);
 	}

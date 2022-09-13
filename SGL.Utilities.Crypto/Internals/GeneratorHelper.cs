@@ -65,7 +65,7 @@ namespace SGL.Utilities.Crypto.Internals {
 
 		public static Certificate GenerateCertificate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, DateTime validFrom, DateTime validTo,
 				BigInteger serialNumber, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null, bool generateSubjectKeyIdentifier = false,
-				KeyUsages keyUsages = KeyUsages.NoneDefined, (bool IsCA, int CAPathLenght)? caConstraint = null) {
+				KeyUsages keyUsages = KeyUsages.NoneDefined, (bool IsCA, int? CAPathLength)? caConstraint = null) {
 			X509V3CertificateGenerator certGen = new X509V3CertificateGenerator();
 			try {
 				certGen.SetIssuerDN(signerIdentity.wrapped);
@@ -104,7 +104,7 @@ namespace SGL.Utilities.Crypto.Internals {
 				if (caConstraint != null) {
 					BasicConstraints extObj;
 					if (caConstraint.Value.IsCA) {
-						extObj = new BasicConstraints(caConstraint.Value.CAPathLenght);
+						extObj = new BasicConstraints(caConstraint.Value.CAPathLength ?? 0);
 					}
 					else {
 						extObj = new BasicConstraints(false);
@@ -133,19 +133,19 @@ namespace SGL.Utilities.Crypto.Internals {
 		public static Certificate GenerateCertificate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey,
 			TimeSpan validityDuration, BigInteger serialNumber, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256,
 			KeyIdentifier? authorityKeyIdentifier = null, bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined,
-			(bool IsCA, int CAPathLenght)? caConstraint = null) =>
+			(bool IsCA, int? CAPathLength)? caConstraint = null) =>
 				GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, DateTime.UtcNow, DateTime.UtcNow.Add(validityDuration), serialNumber,
 					signatureDigest, authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages, caConstraint);
 		public static Certificate GenerateCertificate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey,
 			DateTime validFrom, DateTime validTo, RandomGenerator randomSerialNumberGen, int serialNumberLength, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256,
 			KeyIdentifier? authorityKeyIdentifier = null, bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined,
-			(bool IsCA, int CAPathLenght)? caConstraint = null) =>
+			(bool IsCA, int? CAPathLength)? caConstraint = null) =>
 				GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validFrom, validTo, randomSerialNumberGen.GetRandomBigInteger(serialNumberLength),
 					signatureDigest, authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages, caConstraint);
 		public static Certificate GenerateCertificate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey,
 			TimeSpan validityDuration, RandomGenerator randomSerialNumberGen, int serialNumberLength, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256,
 			KeyIdentifier? authorityKeyIdentifier = null, bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined,
-			(bool IsCA, int CAPathLenght)? caConstraint = null) =>
+			(bool IsCA, int? CAPathLength)? caConstraint = null) =>
 				GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, DateTime.UtcNow, DateTime.UtcNow.Add(validityDuration),
 					randomSerialNumberGen.GetRandomBigInteger(serialNumberLength), signatureDigest, authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages, caConstraint);
 	}
