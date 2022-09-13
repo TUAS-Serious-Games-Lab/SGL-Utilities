@@ -110,6 +110,10 @@ namespace SGL.Utilities.Crypto.Certificates {
 		}
 
 		public Certificate GenerateCertificate(Certificate signerCertificate, KeyPair signerKeyPair, CsrSigningPolicy policy) {
+			var verificationResult = Verify();
+			if (verificationResult != CertificateCheckOutcome.Valid) {
+				throw new CertificateException("The certification request failed verification.");
+			}
 			if (!signerCertificate.PublicKey.Equals(signerKeyPair.Public)) {
 				throw new ArgumentException("Given signer key pair doesn't match the given signer certificate.");
 			}
