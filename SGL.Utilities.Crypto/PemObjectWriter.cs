@@ -34,30 +34,35 @@ namespace SGL.Utilities.Crypto {
 		}
 
 		public void WriteObject(object obj) {
-			switch (obj) {
-				case PublicKey pubKey:
-					wrapped.WriteObject(pubKey.wrapped);
-					return;
-				case PrivateKey privKey:
-					checkEncryptionMembers();
-					wrapped.WriteObject(privKey.wrapped, privateKeyEncModeString, privateKeyPasswordGetter.Invoke(), random.wrapped);
-					return;
-				case KeyPair keyPair:
-					checkEncryptionMembers();
-					wrapped.WriteObject(keyPair.ToWrappedPair(), privateKeyEncModeString, privateKeyPasswordGetter.Invoke(), random.wrapped);
-					return;
-				case Certificate cert:
-					wrapped.WriteObject(cert.wrapped);
-					return;
-				// TODO: CSR => Pkcs10CertificationRequest
-				case string comment:
-					// Text between BEGIN and END lines is ignored by PEM format. We can use this to write documenting text lines inbetween.
-					// This can be useful to document which object is which.
-					rawPemWriter.WriteLine(comment);
-					return;
-				default:
-					throw new PemException("The given object type is not supported for writing into PEM data.", obj.GetType());
-			};
+			try {
+				switch (obj) {
+					case PublicKey pubKey:
+						wrapped.WriteObject(pubKey.wrapped);
+						return;
+					case PrivateKey privKey:
+						checkEncryptionMembers();
+						wrapped.WriteObject(privKey.wrapped, privateKeyEncModeString, privateKeyPasswordGetter!.Invoke(), random!.wrapped);
+						return;
+					case KeyPair keyPair:
+						checkEncryptionMembers();
+						wrapped.WriteObject(keyPair.ToWrappedPair(), privateKeyEncModeString, privateKeyPasswordGetter!.Invoke(), random!.wrapped);
+						return;
+					case Certificate cert:
+						wrapped.WriteObject(cert.wrapped);
+						return;
+					// TODO: CSR => Pkcs10CertificationRequest
+					case string comment:
+						// Text outside of BEGIN-END-blocks is ignored by PEM format. We can use this to write documenting text lines inbetween.
+						// This can be useful to document which object is which.
+						rawPemWriter.WriteLine(comment);
+						return;
+					default:
+						throw new PemException("The given object type is not supported for writing into PEM data.", obj.GetType());
+				};
+			}
+			catch (Exception ex) {
+				throw new PemException("Error while writing PEM data.", innerException: ex);
+			}
 		}
 
 		private void checkEncryptionMembers() {
