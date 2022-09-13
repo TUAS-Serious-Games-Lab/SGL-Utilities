@@ -149,13 +149,13 @@ namespace SGL.Utilities.Crypto.Certificates {
 
 		public Func<CertificateSignatureDigest> GetSignatureDigest { get; set; } = () => CertificateSignatureDigest.Sha256;
 
-		public Func<bool, bool> ShouldGenerateSubjectKeyIdentifier { get; set; } = (bool requested) => requested;
+		public Func<bool, bool> ShouldGenerateSubjectKeyIdentifier { get; set; } = requested => requested;
 
-		public Func<bool, bool> ShouldGenerateAuthorityKeyIdentifier { get; set; } = (bool requested) => requested;
+		public Func<bool, bool> ShouldGenerateAuthorityKeyIdentifier { get; set; } = requested => requested;
 
-		public Func<KeyUsages?, KeyUsages?> AcceptedKeyUsages { get; set; } = (KeyUsages? requested) => requested & ~(KeyUsages.CrlSign | KeyUsages.KeyCertSign);
+		public Func<KeyUsages?, KeyUsages?> AcceptedKeyUsages { get; set; } = requested => requested & ~(KeyUsages.CrlSign | KeyUsages.KeyCertSign);
 
-		public Func<(bool IsCA, int? PathLength)?, (bool IsCA, int? PathLength)?> AcceptedCAConstraints { get; set; } = ((bool IsCA, int? PathLength)? requested) => null;
+		public Func<(bool IsCA, int? PathLength)?, (bool IsCA, int? PathLength)?> AcceptedCAConstraints { get; set; } = requested => null;
 	}
 
 	public static class CsrSigningPolicyExtensions {
@@ -191,6 +191,10 @@ namespace SGL.Utilities.Crypto.Certificates {
 			policy.AcceptedCAConstraints = _ => forcedCAConstraints;
 			return policy;
 		}
-
+		public static CsrSigningPolicy AllowExtensionRequestsForCA(this CsrSigningPolicy policy) {
+			policy.AcceptedKeyUsages = requested => requested;
+			policy.AcceptedCAConstraints = requested => requested;
+			return policy;
+		}
 	}
 }
