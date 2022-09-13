@@ -7,6 +7,7 @@ using SGL.Utilities.Crypto.Internals;
 using SGL.Utilities.Crypto.Keys;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -129,6 +130,34 @@ namespace SGL.Utilities.Crypto.Certificates {
 				policy.GetSignatureDigest(), authorityKeyIdentifier, policy.ShouldGenerateSubjectKeyIdentifier(RequestedSubjectKeyIdentifier),
 				policy.AcceptedKeyUsages(RequestedKeyUsages) ?? KeyUsages.NoneDefined, policy.AcceptedCAConstraints(RequestedCABasicConstraints));
 		}
+
+		/// <summary>
+		/// Loads one certificate signing request from the PEM-encoded data in <paramref name="reader"/>.
+		/// </summary>
+		/// <param name="reader">A reader containing at least one PEM-encoded certificate signing request.</param>
+		/// <returns>The loaded certificate signing request.</returns>
+		/// <exception cref="PemException">When the reader either contained no PEM objects or if the PEM object that was read was no certificate signing request.</exception>
+		public static CertificateSigningRequest LoadOneFromPem(TextReader reader) => PemHelper.TryLoadCertificateSigningRequest(reader) ?? throw new PemException("Input contained no PEM objects.");
+		/// <summary>
+		/// Attempts to load one certificate signing request from the PEM-encoded data in <paramref name="reader"/>.
+		/// </summary>
+		/// <param name="reader">A reader containing at least one PEM-encoded certificate signing request.</param>
+		/// <returns>The loaded certificate signing request, or null if <paramref name="reader"/> contains not PEM objects.</returns>
+		/// <exception cref="PemException">When the the PEM object read from <paramref name="reader"/> was no certificate signing request.</exception>
+		public static CertificateSigningRequest? TryLoadOneFromPem(TextReader reader) => PemHelper.TryLoadCertificateSigningRequest(reader);
+		/// <summary>
+		/// Loads all certificate signing requests from the PEM-encoded data in <paramref name="reader"/>.
+		/// </summary>
+		/// <param name="reader">A reader containing PEM-encoded certificate signing requests.</param>
+		/// <returns>An <see cref="IEnumerable{T}"/> containing all loaded certificate signing requests.</returns>
+		/// <exception cref="PemException">When non-CSR objects were encountered in the PEM data.</exception>
+		public static IEnumerable<CertificateSigningRequest> LoadAllFromPem(TextReader reader) => PemHelper.LoadCertificateSigningRequests(reader);
+		/// <summary>
+		/// Writes the certificate signing request to <paramref name="writer"/> in PEM-encoded form.
+		/// </summary>
+		/// <param name="writer">The writer to which the certificate signing request should be written.</param>
+		public void StoreToPem(TextWriter writer) => PemHelper.Write(writer, this);
+
 	}
 
 	public class CsrSigningPolicy {

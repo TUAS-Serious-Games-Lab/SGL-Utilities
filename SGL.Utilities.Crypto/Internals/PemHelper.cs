@@ -1,11 +1,13 @@
 ﻿using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.OpenSsl;
+using Org.BouncyCastle.Pkcs;
 using Org.BouncyCastle.X509;
 using SGL.Utilities.Crypto.Certificates;
 using SGL.Utilities.Crypto.Keys;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.ConstrainedExecution;
 
 namespace SGL.Utilities.Crypto.Internals {
 	internal static class PemHelper {
@@ -216,6 +218,49 @@ namespace SGL.Utilities.Crypto.Internals {
 			}
 			catch (Exception ex) {
 				throw new PemException("Failed writing key pair to PEM writer.", innerException: ex);
+			}
+		}
+
+		internal static CertificateSigningRequest? TryLoadCertificateSigningRequest(TextReader reader) {
+			PemReader pemReader = new PemReader(reader);
+			return ReadCertificateSigningRequest(pemReader) ?? throw new PemException("Input contained no PEM objects.");
+		}
+
+		internal static IEnumerable<CertificateSigningRequest> LoadCertificateSigningRequests(TextReader reader) {
+			PemReader pemReader = new PemReader(reader);
+			CertificateSigningRequest? csr = null;
+			while ((csr = ReadCertificateSigningRequest(pemReader)) != null) {
+				yield return csr;
+			}
+		}
+
+		private static CertificateSigningRequest? ReadCertificateSigningRequest(PemReader pemReader) {
+			object pemContent;
+			try {
+				pemContent = pemReader.ReadObject();
+			}
+			catch (Exception ex) {
+				throw new PemException("Failed reading certificate signing request from PEM reader.", innerException: ex);
+			}
+			if (pemContent == null) return null;
+			if (pemContent is Pkcs10CertificationRequest csr) {
+				return new CertificateSigningRequest(csr);
+			}
+			else {
+				throw new PemException("PEM did contain an object that is not a certificate signing request.", pemContentType: pemContent.GetType());
+			}
+		}
+
+		internal static void Write(TextWriter writer, CertificateSigningRequest certificateSigningRequest) {
+			try {
+				var pemWriter = new PemWriter(writer);
+				pemWriter.WriteObject(certificateSigningRequest.wrapped);
+			}
+			catch (CryptographyException) {
+				throw;
+			}
+			catch (Exception ex) {
+				throw new PemException("Failed writing certificate signing request to PEM writer.", innerException: ex);
 			}
 		}
 	}

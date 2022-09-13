@@ -57,7 +57,7 @@ namespace SGL.Utilities.Crypto {
 					AsymmetricKeyParameter privKey when (privKey.IsPrivate && PrivateKey.IsValidWrappedType(privKey)) => new PrivateKey(privKey),
 					AsymmetricCipherKeyPair keyPair when (PublicKey.IsValidWrappedType(keyPair.Public) && PrivateKey.IsValidWrappedType(keyPair.Private)) => new KeyPair(keyPair),
 					X509Certificate cert => new Certificate(cert),
-					Pkcs10CertificationRequest csr => throw new NotImplementedException(),
+					Pkcs10CertificationRequest csr => new CertificateSigningRequest(csr),
 					_ => throw new PemException("The PEM data contained an unsupported object type.", obj.GetType())
 				};
 			}
