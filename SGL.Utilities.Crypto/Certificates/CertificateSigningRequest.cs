@@ -20,6 +20,13 @@ namespace SGL.Utilities.Crypto.Certificates {
 			this.wrapped = wrapped;
 		}
 
+		/// <inheritdoc/>
+		public override bool Equals(object? obj) => obj is CertificateSigningRequest csr && wrapped.Equals(csr.wrapped);
+		/// <inheritdoc/>
+		public override int GetHashCode() => wrapped.GetHashCode();
+		/// <inheritdoc/>
+		public override string? ToString() => wrapped.ToString();
+
 		public CertificateCheckOutcome Verify() {
 			try {
 				return wrapped.Verify() ? CertificateCheckOutcome.Valid : CertificateCheckOutcome.InvalidSignature;
