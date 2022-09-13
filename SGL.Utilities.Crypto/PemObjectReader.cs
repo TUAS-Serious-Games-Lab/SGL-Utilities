@@ -44,7 +44,7 @@ namespace SGL.Utilities.Crypto {
 		}
 
 		public IEnumerable<object> ReadAllObjects() {
-			object obj;
+			object? obj;
 			while ((obj = ReadNextObject()) != null) {
 				yield return obj;
 			}

@@ -15,9 +15,9 @@ namespace SGL.Utilities.Crypto {
 	public class PemObjectWriter {
 		private TextWriter rawPemWriter;
 		private readonly PemWriter wrapped;
-		private readonly string privateKeyEncModeString;
-		private readonly Func<char[]> privateKeyPasswordGetter;
-		private readonly RandomGenerator random;
+		private readonly string privateKeyEncModeString = "";
+		private readonly Func<char[]>? privateKeyPasswordGetter = null;
+		private readonly RandomGenerator? random = null;
 
 		public PemObjectWriter(TextWriter pemDataWriter) {
 			wrapped = new PemWriter(pemDataWriter);
