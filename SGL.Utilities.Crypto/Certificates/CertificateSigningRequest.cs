@@ -70,7 +70,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 
 		public bool RequestedAuthorityKeyIdentifier => wrapped.GetRequestedExtensions()?.GetExtensionOids()?.Contains(X509Extensions.AuthorityKeyIdentifier) ?? false;
 
-		public static CertificateSigningRequest Generate(DistinguishedName subjectDN, KeyPair subjectKeyPair, CertificateSignatureDigest digest,
+		public static CertificateSigningRequest Generate(DistinguishedName subjectDN, KeyPair subjectKeyPair, CertificateSignatureDigest digest = CertificateSignatureDigest.Sha256,
 				bool requestSubjectKeyIdentifier = false, bool requestAuthorityKeyIdentifier = false, KeyUsages? requestKeyUsages = null,
 				(bool IsCA, int? PathLength)? requestCABasicConstraints = null) {
 			X509ExtensionsGenerator generator = new X509ExtensionsGenerator();
