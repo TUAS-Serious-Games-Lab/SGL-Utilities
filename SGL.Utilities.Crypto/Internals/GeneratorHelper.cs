@@ -47,7 +47,7 @@ namespace SGL.Utilities.Crypto.Internals {
 			}
 		}
 
-		private static string GetSignerName(KeyType keyType, CertificateSignatureDigest digest) => keyType switch {
+		internal static string GetSignerName(KeyType keyType, CertificateSignatureDigest digest) => keyType switch {
 			KeyType.RSA => digest switch {
 				CertificateSignatureDigest.Sha256 => PkcsObjectIdentifiers.Sha256WithRsaEncryption.Id,
 				CertificateSignatureDigest.Sha384 => PkcsObjectIdentifiers.Sha384WithRsaEncryption.Id,
@@ -86,19 +86,7 @@ namespace SGL.Utilities.Crypto.Internals {
 					certGen.AddExtension(X509Extensions.KeyUsage, true, extObj.ToAsn1Object());
 				}
 				if ((keyUsages & KeyUsages.AllSupportedExt) != 0) {
-					List<KeyPurposeID> purposeIds = new List<KeyPurposeID>();
-					AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtAnyPurpose, KeyPurposeID.AnyExtendedKeyUsage, purposeIds);
-					AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtServerAuth, KeyPurposeID.IdKPServerAuth, purposeIds);
-					AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtClientAuth, KeyPurposeID.IdKPClientAuth, purposeIds);
-					AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtCodeSigning, KeyPurposeID.IdKPCodeSigning, purposeIds);
-					AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtEmailProtection, KeyPurposeID.IdKPEmailProtection, purposeIds);
-					AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtIpsecEndSystem, KeyPurposeID.IdKPIpsecEndSystem, purposeIds);
-					AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtIpsecTunnel, KeyPurposeID.IdKPIpsecTunnel, purposeIds);
-					AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtIpsecUser, KeyPurposeID.IdKPIpsecUser, purposeIds);
-					AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtTimeStamping, KeyPurposeID.IdKPTimeStamping, purposeIds);
-					AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtOcspSigning, KeyPurposeID.IdKPOcspSigning, purposeIds);
-					AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtSmartCardLogon, KeyPurposeID.IdKPSmartCardLogon, purposeIds);
-					var extObj = new ExtendedKeyUsage(purposeIds);
+					ExtendedKeyUsage extObj = MapKeyUsageEnumToExtensionObject(keyUsages);
 					certGen.AddExtension(X509Extensions.ExtendedKeyUsage, true, extObj.ToAsn1Object());
 				}
 				if (caConstraint != null) {
@@ -122,6 +110,23 @@ namespace SGL.Utilities.Crypto.Internals {
 			catch (Exception ex) {
 				throw new CertificateException("Failed generating certificate.", ex);
 			}
+		}
+
+		internal static ExtendedKeyUsage MapKeyUsageEnumToExtensionObject(KeyUsages keyUsages) {
+			List<KeyPurposeID> purposeIds = new List<KeyPurposeID>();
+			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtAnyPurpose, KeyPurposeID.AnyExtendedKeyUsage, purposeIds);
+			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtServerAuth, KeyPurposeID.IdKPServerAuth, purposeIds);
+			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtClientAuth, KeyPurposeID.IdKPClientAuth, purposeIds);
+			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtCodeSigning, KeyPurposeID.IdKPCodeSigning, purposeIds);
+			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtEmailProtection, KeyPurposeID.IdKPEmailProtection, purposeIds);
+			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtIpsecEndSystem, KeyPurposeID.IdKPIpsecEndSystem, purposeIds);
+			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtIpsecTunnel, KeyPurposeID.IdKPIpsecTunnel, purposeIds);
+			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtIpsecUser, KeyPurposeID.IdKPIpsecUser, purposeIds);
+			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtTimeStamping, KeyPurposeID.IdKPTimeStamping, purposeIds);
+			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtOcspSigning, KeyPurposeID.IdKPOcspSigning, purposeIds);
+			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtSmartCardLogon, KeyPurposeID.IdKPSmartCardLogon, purposeIds);
+			var extObj = new ExtendedKeyUsage(purposeIds);
+			return extObj;
 		}
 
 		private static void AddPurposeIfUsagePresent(KeyUsages presentUsages, KeyUsages usageToCheck, KeyPurposeID purpose, List<KeyPurposeID> purposes) {
