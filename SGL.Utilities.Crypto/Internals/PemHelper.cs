@@ -187,7 +187,7 @@ namespace SGL.Utilities.Crypto.Internals {
 				throw;
 			}
 			catch (Exception ex) {
-				throw new PemException("Failed writing public key to PEM writer.", innerException: ex);
+				throw new PemException("Failed writing certificate to PEM writer.", innerException: ex);
 			}
 		}
 		private static string GetEncryptionModeStr(PemEncryptionMode encMode) => encMode switch {
@@ -203,7 +203,7 @@ namespace SGL.Utilities.Crypto.Internals {
 				throw;
 			}
 			catch (Exception ex) {
-				throw new PemException("Failed writing public key to PEM writer.", innerException: ex);
+				throw new PemException("Failed writing private key to PEM writer.", innerException: ex);
 			}
 		}
 		public static void Write(TextWriter writer, KeyPair keyPair, PemEncryptionMode encMode, char[] password, RandomGenerator random) {
@@ -215,7 +215,7 @@ namespace SGL.Utilities.Crypto.Internals {
 				throw;
 			}
 			catch (Exception ex) {
-				throw new PemException("Failed writing public key to PEM writer.", innerException: ex);
+				throw new PemException("Failed writing key pair to PEM writer.", innerException: ex);
 			}
 		}
 	}
