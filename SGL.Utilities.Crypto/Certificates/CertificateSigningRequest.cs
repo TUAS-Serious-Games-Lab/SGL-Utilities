@@ -141,7 +141,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 		}
 
 		public byte[] GenerateRandomSerialNumber(int length) {
-			return Random.GetBytes(length);
+			return Random.GetRandomBigInteger(length).ToByteArray();
 		}
 
 		public Func<(DateTime From, DateTime To)> GetValidityPeriod { get; set; } = () => {
