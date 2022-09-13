@@ -36,12 +36,12 @@ namespace SGL.Utilities.Crypto.Certificates {
 		public KeyUsages? RequestedKeyUsages {
 			get {
 				var usages = KeyUsages.NoneDefined;
-				var keyUsageExt = KeyUsage.GetInstance(wrapped.GetRequestedExtensions().GetExtension(X509Extensions.KeyUsage));
+				var keyUsageExt = KeyUsage.GetInstance(wrapped.GetRequestedExtensions()?.GetExtension(X509Extensions.KeyUsage));
 				if (keyUsageExt != null) {
 					var keyUsageBitFlags = keyUsageExt.IntValue;
 					CertificateHelpers.MapBasicKeyUsageFlags(ref usages, keyUsageBitFlags);
 				}
-				var extKeyUsageExt = ExtendedKeyUsage.GetInstance(wrapped.GetRequestedExtensions().GetExtension(X509Extensions.ExtendedKeyUsage));
+				var extKeyUsageExt = ExtendedKeyUsage.GetInstance(wrapped.GetRequestedExtensions()?.GetExtension(X509Extensions.ExtendedKeyUsage));
 				if (extKeyUsageExt != null) {
 					CertificateHelpers.MapExtendedKeyUsageFlags(ref usages, extKeyUsageExt);
 				}
@@ -51,7 +51,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 
 		public (bool IsCA, int? PathLength)? RequestedCABasicConstraints {
 			get {
-				var basicConstraintsExtObj = BasicConstraints.GetInstance(wrapped.GetRequestedExtensions().GetExtension(X509Extensions.BasicConstraints));
+				var basicConstraintsExtObj = BasicConstraints.GetInstance(wrapped.GetRequestedExtensions()?.GetExtension(X509Extensions.BasicConstraints));
 				if (basicConstraintsExtObj != null) {
 					if (basicConstraintsExtObj.IsCA()) {
 						return (true, basicConstraintsExtObj.PathLenConstraint?.IntValueExact);
@@ -66,9 +66,9 @@ namespace SGL.Utilities.Crypto.Certificates {
 			}
 		}
 
-		public bool RequestedSubjectKeyIdentifier => wrapped.GetRequestedExtensions().GetExtensionOids().Contains(X509Extensions.SubjectKeyIdentifier);
+		public bool RequestedSubjectKeyIdentifier => wrapped.GetRequestedExtensions()?.GetExtensionOids()?.Contains(X509Extensions.SubjectKeyIdentifier) ?? false;
 
-		public bool RequestedAuthorityKeyIdentifier => wrapped.GetRequestedExtensions().GetExtensionOids().Contains(X509Extensions.AuthorityKeyIdentifier);
+		public bool RequestedAuthorityKeyIdentifier => wrapped.GetRequestedExtensions()?.GetExtensionOids()?.Contains(X509Extensions.AuthorityKeyIdentifier) ?? false;
 
 		public static CertificateSigningRequest Generate(DistinguishedName subjectDN, KeyPair subjectKeyPair, CertificateSignatureDigest digest,
 				bool requestSubjectKeyIdentifier = false, bool requestAuthorityKeyIdentifier = false, KeyUsages? requestKeyUsages = null,
