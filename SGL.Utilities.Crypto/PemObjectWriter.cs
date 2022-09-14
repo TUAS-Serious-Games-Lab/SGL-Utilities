@@ -80,7 +80,9 @@ namespace SGL.Utilities.Crypto {
 					case Certificate cert:
 						wrapped.WriteObject(cert.wrapped);
 						return;
-					// TODO: CSR => Pkcs10CertificationRequest
+					case CertificateSigningRequest csr:
+						wrapped.WriteObject(csr.wrapped);
+						return;
 					case string comment:
 						// Text outside of BEGIN-END-blocks is ignored by PEM format. We can use this to write documenting text lines inbetween.
 						// This can be useful to document which object is which.
