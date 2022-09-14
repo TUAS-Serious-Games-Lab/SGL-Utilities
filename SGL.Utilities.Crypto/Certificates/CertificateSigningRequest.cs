@@ -195,7 +195,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 
 		public Func<KeyUsages?, KeyUsages?> AcceptedKeyUsages { get; set; } = requested => requested & ~(KeyUsages.CrlSign | KeyUsages.KeyCertSign);
 
-		public Func<(bool IsCA, int? PathLength)?, (bool IsCA, int? PathLength)?> AcceptedCAConstraints { get; set; } = requested => null;
+		public Func<(bool IsCA, int? PathLength)?, (bool IsCA, int? PathLength)?> AcceptedCAConstraints { get; set; } = requested => (false, null);
 	}
 
 	public static class CsrSigningPolicyExtensions {
