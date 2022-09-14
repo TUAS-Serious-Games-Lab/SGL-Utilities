@@ -168,7 +168,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 	}
 
 	public class CsrSigningPolicy {
-		public RandomGenerator Random { get; set; }
+		internal RandomGenerator Random { get; set; }
 		public CsrSigningPolicy() : this(new RandomGenerator()) { }
 
 		public CsrSigningPolicy(RandomGenerator random) {
