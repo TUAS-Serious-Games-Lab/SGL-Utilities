@@ -79,4 +79,8 @@ namespace SGL.Utilities.Crypto {
 		/// <param name="innerException">The exception that caused this exception.</param>
 		public DecryptionException(string? message, Exception? innerException = null) : base(message, innerException) { }
 	}
+
+	public class SignatureException : CryptographyException {
+		public SignatureException(string? message, Exception? innerException = null) : base(message, innerException) { }
+	}
 }

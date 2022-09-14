@@ -34,5 +34,11 @@ namespace SGL.Utilities.Crypto.Signatures {
 				throw new InvalidOperationException("The verification calculator didn't return the expected result.");
 			}
 		}
+
+		public void CheckSignature(byte[] signature) {
+			if (!IsValidSignature(signature)) {
+				throw new SignatureException("Signature verification failed. The signature didn't match the given content and public key.");
+			}
+		}
 	}
 }
