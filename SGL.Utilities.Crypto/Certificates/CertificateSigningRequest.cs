@@ -180,6 +180,19 @@ namespace SGL.Utilities.Crypto.Certificates {
 			if (!signerCertificate.PublicKey.Equals(signerKeyPair.Public)) {
 				throw new ArgumentException("Given signer key pair doesn't match the given signer certificate.");
 			}
+			if (!signerCertificate.AllowedKeyUsages.HasValue) {
+				throw new CertificateException("The given signer certificate doesn't have allowed key usages defined. A certificate used for signing other certificate needs to have a KeyUsage extension with KeyCertSign.");
+			}
+			if (!signerCertificate.AllowedKeyUsages.Value.HasFlag(KeyUsages.KeyCertSign)) {
+				throw new CertificateException("The given signer certificate has a KeyUsage extension without KeyCertSign. To allow use for siging another certificate, it needs to have KeyCertSign set.");
+			}
+			if (!signerCertificate.CABasicConstraints.HasValue) {
+				throw new CertificateException("The given signer certificate doesn't have CA basic constraints defined. A certificate used for signing other certificate needs to have a BasicConstraints extension with CA=true.");
+
+			}
+			if (!signerCertificate.CABasicConstraints.Value.IsCA) {
+				throw new CertificateException("The given signer certificate has a BasicConstraints extension with CA=false. This forbids it from being used for siging another certificate.");
+			}
 			var validityPeriod = policy.GetValidityPeriod();
 			KeyIdentifier? authorityKeyIdentifier = null;
 			if (policy.ShouldGenerateAuthorityKeyIdentifier(RequestedAuthorityKeyIdentifier)) {
