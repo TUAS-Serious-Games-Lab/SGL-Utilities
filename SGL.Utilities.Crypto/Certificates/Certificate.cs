@@ -5,6 +5,7 @@ using Org.BouncyCastle.X509;
 using Org.BouncyCastle.X509.Extension;
 using SGL.Utilities.Crypto.Internals;
 using SGL.Utilities.Crypto.Keys;
+using SGL.Utilities.Crypto.Signatures;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.SymbolStore;
@@ -214,7 +215,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// </param>
 		/// <returns>The generated and singed certificate.</returns>
 		public static Certificate Generate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, DateTime validFrom, DateTime validTo,
-			long serialNumber, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null,
+			long serialNumber, SignatureDigest signatureDigest = SignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null,
 			bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined, (bool IsCA, int? CAPathLenght)? caConstraint = null) =>
 				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validFrom, validTo, BigInteger.ValueOf(serialNumber), signatureDigest,
 					authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages, caConstraint);
@@ -243,7 +244,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// </param>
 		/// <returns>The generated and singed certificate.</returns>
 		public static Certificate Generate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, DateTime validFrom, DateTime validTo,
-			byte[] serialNumber, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null,
+			byte[] serialNumber, SignatureDigest signatureDigest = SignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null,
 			bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined, (bool IsCA, int? CAPathLenght)? caConstraint = null) =>
 				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validFrom, validTo, new BigInteger(serialNumber), signatureDigest,
 					authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages, caConstraint);
@@ -273,7 +274,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// </param>
 		/// <returns>The generated and singed certificate.</returns>
 		public static Certificate Generate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, DateTime validFrom, DateTime validTo,
-			RandomGenerator randomSerialNumberGen, int serialNumberLength, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256,
+			RandomGenerator randomSerialNumberGen, int serialNumberLength, SignatureDigest signatureDigest = SignatureDigest.Sha256,
 			KeyIdentifier? authorityKeyIdentifier = null, bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined,
 			(bool IsCA, int? CAPathLenght)? caConstraint = null) =>
 				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validFrom, validTo, randomSerialNumberGen, serialNumberLength,
@@ -303,7 +304,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// </param>
 		/// <returns>The generated and singed certificate.</returns>
 		public static Certificate Generate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, TimeSpan validityDuration,
-			long serialNumber, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null,
+			long serialNumber, SignatureDigest signatureDigest = SignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null,
 			bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined, (bool IsCA, int? CAPathLenght)? caConstraint = null) =>
 				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validityDuration, BigInteger.ValueOf(serialNumber), signatureDigest,
 					authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages, caConstraint);
@@ -331,7 +332,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// </param>
 		/// <returns>The generated and singed certificate.</returns>
 		public static Certificate Generate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, TimeSpan validityDuration,
-			byte[] serialNumber, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null,
+			byte[] serialNumber, SignatureDigest signatureDigest = SignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null,
 			bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined, (bool IsCA, int? CAPathLenght)? caConstraint = null) =>
 				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validityDuration, new BigInteger(serialNumber), signatureDigest,
 					authorityKeyIdentifier, generateSubjectKeyIdentifier, keyUsages, caConstraint);
@@ -360,7 +361,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// </param>
 		/// <returns>The generated and singed certificate.</returns>
 		public static Certificate Generate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, TimeSpan validityDuration,
-			RandomGenerator randomSerialNumberGen, int serialNumberLength, CertificateSignatureDigest signatureDigest = CertificateSignatureDigest.Sha256,
+			RandomGenerator randomSerialNumberGen, int serialNumberLength, SignatureDigest signatureDigest = SignatureDigest.Sha256,
 			KeyIdentifier? authorityKeyIdentifier = null, bool generateSubjectKeyIdentifier = false, KeyUsages keyUsages = KeyUsages.NoneDefined,
 			(bool IsCA, int? CAPathLenght)? caConstraint = null) =>
 				GeneratorHelper.GenerateCertificate(signerIdentity, signerKey, subjectIdentity, subjectKey, validityDuration, randomSerialNumberGen, serialNumberLength,

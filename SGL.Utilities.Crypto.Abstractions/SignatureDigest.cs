@@ -1,9 +1,15 @@
-﻿namespace SGL.Utilities.Crypto.Certificates {
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace SGL.Utilities.Crypto.Signatures {
 	/// <summary>
-	/// Represents the digest to use for signing a cerificate.
+	/// Represents the digest to use for a signature.
 	/// The digest is combined with a signature technique suitable for the signing private key to pick the signer algorithm.
 	/// </summary>
-	public enum CertificateSignatureDigest {
+	public enum SignatureDigest {
 		/// <summary>
 		/// Represents SHA-256.
 		/// </summary>

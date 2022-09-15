@@ -1,5 +1,6 @@
 ﻿using SGL.Utilities.Crypto.Certificates;
 using SGL.Utilities.Crypto.Keys;
+using SGL.Utilities.Crypto.Signatures;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -27,8 +28,8 @@ namespace SGL.Utilities.Crypto.Tests {
 			EcKeyPair = KeyPair.GenerateEllipticCurves(Random, 521);
 			Subj1DN = new DistinguishedName(new KeyValuePair<string, string>[] { new("o", "SGL"), new("ou", "Utility"), new("ou", "Tests"), new("cn", "Test 1") });
 			Subj2DN = new DistinguishedName(new KeyValuePair<string, string>[] { new("o", "SGL"), new("ou", "Utility"), new("ou", "Tests"), new("cn", "Test 2") });
-			Certificate1 = Certificate.Generate(Subj1DN, RsaKeyPair.Private, Subj2DN, EcKeyPair.Public, TimeSpan.FromMinutes(5), Random, 128, signatureDigest: CertificateSignatureDigest.Sha256, generateSubjectKeyIdentifier: true, keyUsages: KeyUsages.KeyEncipherment);
-			Certificate2 = Certificate.Generate(Subj2DN, EcKeyPair.Private, Subj1DN, RsaKeyPair.Public, TimeSpan.FromMinutes(5), Random, 128, signatureDigest: CertificateSignatureDigest.Sha384, generateSubjectKeyIdentifier: true, keyUsages: KeyUsages.KeyEncipherment);
+			Certificate1 = Certificate.Generate(Subj1DN, RsaKeyPair.Private, Subj2DN, EcKeyPair.Public, TimeSpan.FromMinutes(5), Random, 128, signatureDigest: SignatureDigest.Sha256, generateSubjectKeyIdentifier: true, keyUsages: KeyUsages.KeyEncipherment);
+			Certificate2 = Certificate.Generate(Subj2DN, EcKeyPair.Private, Subj1DN, RsaKeyPair.Public, TimeSpan.FromMinutes(5), Random, 128, signatureDigest: SignatureDigest.Sha384, generateSubjectKeyIdentifier: true, keyUsages: KeyUsages.KeyEncipherment);
 			PasswordGetter = () => "ThisI5AT3st".ToCharArray();
 		}
 	}

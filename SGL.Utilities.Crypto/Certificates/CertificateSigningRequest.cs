@@ -5,6 +5,7 @@ using Org.BouncyCastle.Crypto.Operators;
 using Org.BouncyCastle.Pkcs;
 using SGL.Utilities.Crypto.Internals;
 using SGL.Utilities.Crypto.Keys;
+using SGL.Utilities.Crypto.Signatures;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -120,7 +121,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// <param name="requestKeyUsages">When set, requests specific key usages for <paramref name="subjectKeyPair"/>.</param>
 		/// <param name="requestCABasicConstraints">When set, requests constraints about the usage for CA purposes.</param>
 		/// <returns>The created <see cref="CertificateSigningRequest"/>.</returns>
-		public static CertificateSigningRequest Generate(DistinguishedName subjectDN, KeyPair subjectKeyPair, CertificateSignatureDigest digest = CertificateSignatureDigest.Sha256,
+		public static CertificateSigningRequest Generate(DistinguishedName subjectDN, KeyPair subjectKeyPair, SignatureDigest digest = SignatureDigest.Sha256,
 				bool requestSubjectKeyIdentifier = false, bool requestAuthorityKeyIdentifier = false, KeyUsages? requestKeyUsages = null,
 				(bool IsCA, int? PathLength)? requestCABasicConstraints = null) {
 			X509ExtensionsGenerator generator = new X509ExtensionsGenerator();
@@ -154,7 +155,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 			if (anyExtensions) {
 				attributes = new DerSet(new AttributePkcs(PkcsObjectIdentifiers.Pkcs9AtExtensionRequest, new DerSet(generator.Generate())));
 			}
-			var wrappedCSR = new Pkcs10CertificationRequest(new Asn1SignatureFactory(GeneratorHelper.GetSignerName(subjectKeyPair.Private.Type, digest), subjectKeyPair.Private.wrapped),
+			var wrappedCSR = new Pkcs10CertificationRequest(new Asn1SignatureFactory(SignatureHelper.GetSignatureAlgorithmName(subjectKeyPair.Private.Type, digest), subjectKeyPair.Private.wrapped),
 				subjectDN.wrapped, subjectKeyPair.Public.wrapped, attributes);
 			return new CertificateSigningRequest(wrappedCSR);
 		}
@@ -268,9 +269,9 @@ namespace SGL.Utilities.Crypto.Certificates {
 
 		/// <summary>
 		/// A function object that specifies the digest to use for the signature of the certificate.
-		/// Defaults to <see cref="CertificateSignatureDigest.Sha256"/>.
+		/// Defaults to <see cref="SignatureDigest.Sha256"/>.
 		/// </summary>
-		public Func<CertificateSignatureDigest> GetSignatureDigest { get; set; } = () => CertificateSignatureDigest.Sha256;
+		public Func<SignatureDigest> GetSignatureDigest { get; set; } = () => SignatureDigest.Sha256;
 
 		/// <summary>
 		/// A function object that indicates whether the SubjectKeyIdentifier extension shall be generated.
@@ -341,7 +342,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// <param name="policy">The policy object to modify.</param>
 		/// <param name="digest">The digest to use.</param>
 		/// <returns>A reference to <paramref name="policy"/> for chaining.</returns>
-		public static CsrSigningPolicy UseSignatureDigest(this CsrSigningPolicy policy, CertificateSignatureDigest digest) {
+		public static CsrSigningPolicy UseSignatureDigest(this CsrSigningPolicy policy, SignatureDigest digest) {
 			policy.GetSignatureDigest = () => digest;
 			return policy;
 		}
