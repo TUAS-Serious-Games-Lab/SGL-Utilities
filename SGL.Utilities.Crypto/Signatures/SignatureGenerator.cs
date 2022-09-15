@@ -13,17 +13,10 @@ using System.Threading.Tasks;
 
 namespace SGL.Utilities.Crypto.Signatures {
 	public class SignatureGenerator {
-		private readonly PrivateKey signerKey;
-		private readonly SignatureDigest digest;
-		// Some signature algorithms need a random source for nonces etc. If not provided, internals create a random source on the fly.
-		private readonly RandomGenerator? random;
 
 		private readonly IStreamCalculator signatureCalculator;
 
 		public SignatureGenerator(PrivateKey signerKey, SignatureDigest digest = SignatureDigest.Sha256, RandomGenerator? random = null) {
-			this.signerKey = signerKey;
-			this.digest = digest;
-			this.random = random;
 			var signatureFactory = new Asn1SignatureFactory(SignatureHelper.GetSignatureAlgorithmName(signerKey.Type, digest), signerKey.wrapped, random?.wrapped);
 			signatureCalculator = signatureFactory.CreateCalculator();
 		}

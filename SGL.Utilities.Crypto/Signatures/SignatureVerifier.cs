@@ -11,15 +11,11 @@ using System.Threading.Tasks;
 
 namespace SGL.Utilities.Crypto.Signatures {
 	public class SignatureVerifier {
-		private readonly PublicKey signerKey;
-		private readonly SignatureDigest digest;
 		private readonly IStreamCalculator verificationCalculator;
 
 		public SignatureVerifier(PublicKey signerKey, SignatureDigest digest = SignatureDigest.Sha256) {
 			var verifierFactory = new Asn1VerifierFactory(SignatureHelper.GetSignatureAlgorithmName(signerKey.Type, digest), signerKey.wrapped);
 			verificationCalculator = verifierFactory.CreateCalculator();
-			this.signerKey = signerKey;
-			this.digest = digest;
 		}
 		public void ProcessBytes(byte[] bytes) => verificationCalculator.Stream.Write(bytes, 0, bytes.Length);
 
