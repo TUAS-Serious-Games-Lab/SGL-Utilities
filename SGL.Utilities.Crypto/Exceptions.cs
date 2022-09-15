@@ -80,7 +80,15 @@ namespace SGL.Utilities.Crypto {
 		public DecryptionException(string? message, Exception? innerException = null) : base(message, innerException) { }
 	}
 
+	/// <summary>
+	/// An exception indicating the a signature check failed.
+	/// </summary>
 	public class SignatureException : CryptographyException {
+		/// <summary>
+		/// Instantiates a new exception object with the given data.
+		/// </summary>
+		/// <param name="message">The exception's error message text.</param>
+		/// <param name="innerException">The exception that caused this exception.</param>
 		public SignatureException(string? message, Exception? innerException = null) : base(message, innerException) { }
 	}
 }
