@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -78,9 +80,31 @@ namespace SGL.Utilities {
 		/// If false, it is the callers responsibility to check the status code.
 		/// </param>
 		/// <returns>A task object representing the operation, providing a <see cref="HttpResponseMessage"/> as its result.</returns>
-		protected async Task<HttpResponseMessage> SendRequest(HttpMethod httpMethod, string relativeUriPath, HttpContent? requestContent, Action<HttpRequestMessage> prepareRequest,
+		protected Task<HttpResponseMessage> SendRequest(HttpMethod httpMethod, string relativeUriPath, HttpContent? requestContent, Action<HttpRequestMessage> prepareRequest,
 				MediaTypeWithQualityHeaderValue? accept = null, CancellationToken ct = default, bool authenticated = true, bool statusCodeExceptionMapping = true) {
-			using var request = new HttpRequestMessage(httpMethod, PrefixUriPath + (PrefixUriPath.EndsWith('/') && relativeUriPath.Length != 0 ? "" : "/") + relativeUriPath);
+			return SendRequest(httpMethod, relativeUriPath, Enumerable.Empty<KeyValuePair<string, string>>(), requestContent, prepareRequest, accept, ct, authenticated, statusCodeExceptionMapping);
+		}
+		/// <summary>
+		/// Asynchronously sends a request with the specified parameters to the backend and return the response.
+		/// </summary>
+		/// <param name="httpMethod">The HTTP method / verb of the request.</param>
+		/// <param name="relativeUriPath">The path of the request, relative to <see cref="PrefixUriPath"/>.</param>
+		/// <param name="queryParameters">The query parameters to append to the request URI as key-value-pairs.</param>
+		/// <param name="requestContent">The request body content, or null if the request should have not body.</param>
+		/// <param name="prepareRequest">A delegate to apply to the request before sending, e.g. to set additional headers.</param>
+		/// <param name="accept">The mediatype for the Accept header to set, or null if no Accept header should be set or it is set through <paramref name="prepareRequest"/>.</param>
+		/// <param name="ct">A <see cref="CancellationToken"/> that allows cancelling the operation.</param>
+		/// <param name="authenticated">If true, the request will have its Authorization header set to the result of <see cref="GetAuthenticationHeaderAsync"/>.</param>
+		/// <param name="statusCodeExceptionMapping">
+		/// If true, <see cref="MapExceptionForError(HttpResponseMessage)"/> will be called if the response has <see cref="HttpResponseMessage.IsSuccessStatusCode"/> false.
+		/// If false, it is the callers responsibility to check the status code.
+		/// </param>
+		/// <returns>A task object representing the operation, providing a <see cref="HttpResponseMessage"/> as its result.</returns>
+		protected async Task<HttpResponseMessage> SendRequest(HttpMethod httpMethod, string relativeUriPath, IEnumerable<KeyValuePair<string, string>> queryParameters, HttpContent? requestContent, Action<HttpRequestMessage> prepareRequest,
+				MediaTypeWithQualityHeaderValue? accept = null, CancellationToken ct = default, bool authenticated = true, bool statusCodeExceptionMapping = true) {
+			string requestUriPath = PrefixUriPath + (PrefixUriPath.EndsWith('/') && relativeUriPath.Length != 0 ? "" : "/") + relativeUriPath;
+			requestUriPath += buildQueryString(queryParameters);
+			using var request = new HttpRequestMessage(httpMethod, requestUriPath);
 			if (requestContent != null) {
 				request.Content = requestContent;
 			}
@@ -96,6 +120,11 @@ namespace SGL.Utilities {
 				MapExceptionForError(response);
 			}
 			return response;
+		}
+
+		private static string buildQueryString(IEnumerable<KeyValuePair<string, string>> queryParameters) {
+			string paramsString = string.Join('&', queryParameters.Select(param => string.Format("{0}={1}", Uri.EscapeDataString(param.Key), Uri.EscapeDataString(param.Value))));
+			return string.IsNullOrEmpty(paramsString) ? string.Empty : "?" + paramsString;
 		}
 
 		/// <summary>
