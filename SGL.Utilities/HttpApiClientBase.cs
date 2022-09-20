@@ -80,7 +80,7 @@ namespace SGL.Utilities {
 		/// <returns>A task object representing the operation, providing a <see cref="HttpResponseMessage"/> as its result.</returns>
 		protected async Task<HttpResponseMessage> SendRequest(HttpMethod httpMethod, string relativeUriPath, HttpContent? requestContent, Action<HttpRequestMessage> prepareRequest,
 				MediaTypeWithQualityHeaderValue? accept = null, CancellationToken ct = default, bool authenticated = true, bool statusCodeExceptionMapping = true) {
-			var request = new HttpRequestMessage(httpMethod, PrefixUriPath + (PrefixUriPath.EndsWith('/') && relativeUriPath.Length != 0 ? "" : "/") + relativeUriPath);
+			using var request = new HttpRequestMessage(httpMethod, PrefixUriPath + (PrefixUriPath.EndsWith('/') && relativeUriPath.Length != 0 ? "" : "/") + relativeUriPath);
 			if (requestContent != null) {
 				request.Content = requestContent;
 			}
