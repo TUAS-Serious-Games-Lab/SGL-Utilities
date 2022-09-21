@@ -24,7 +24,7 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 	/// Parsing <see cref="PrivateKey"/>s or <see cref="KeyPair"/>s is not supported, as there is no reasonable way to provide an encryption password for reading the submitted object.
 	/// </summary>
 	public class PemInputFormatter : TextInputFormatter {
-		private static Type[] supportedTypes = new[] { typeof(string), typeof(IEnumerable<string>), typeof(Certificate), typeof(IEnumerable<Certificate>), typeof(PublicKey), typeof(IEnumerable<PublicKey>) };
+		private static Type[] supportedTypes = new[] { typeof(IEnumerable<object>), typeof(string), typeof(IEnumerable<string>), typeof(Certificate), typeof(IEnumerable<Certificate>), typeof(CertificateSigningRequest), typeof(IEnumerable<CertificateSigningRequest>), typeof(PublicKey), typeof(IEnumerable<PublicKey>) };
 
 		/// <summary>
 		/// Initializes a PemInputFormatter.
@@ -181,6 +181,29 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 					return InputFormatterResult.Failure();
 				}
 			}
+			else if (type == typeof(CertificateSigningRequest)) {
+				try {
+					var val = CertificateSigningRequest.TryLoadOneFromPem(reader);
+					if (val == null && !context.TreatEmptyInputAsDefaultValue) {
+						logger.LogError("The body contained no PEM objects.");
+						return InputFormatterResult.NoValue();
+					}
+					return InputFormatterResult.Success(val!);
+				}
+				catch (Exception ex) {
+					logger.LogError(ex, "Error while loading certificate signing request from PEM body.");
+					return InputFormatterResult.Failure();
+				}
+			}
+			else if (type == typeof(IEnumerable<CertificateSigningRequest>)) {
+				try {
+					return InputFormatterResult.Success(CertificateSigningRequest.LoadAllFromPem(reader).ToList());
+				}
+				catch (Exception ex) {
+					logger.LogError(ex, "Error while loading certificates signing requests from PEM body.");
+					return InputFormatterResult.Failure();
+				}
+			}
 			else if (type == typeof(PublicKey)) {
 				try {
 					PublicKey val = PublicKey.LoadOneFromPem(reader);
@@ -201,6 +224,16 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 				}
 				catch (Exception ex) {
 					logger.LogError(ex, "Error while loading public keys from PEM body.");
+					return InputFormatterResult.Failure();
+				}
+			}
+			else if (type == typeof(IEnumerable<object>)) {
+				try {
+					var pemReader = new PemObjectReader(reader);
+					return InputFormatterResult.Success(pemReader.ReadAllObjects().ToList());
+				}
+				catch (Exception ex) {
+					logger.LogError(ex, "Error while loading mixed object from PEM body.");
 					return InputFormatterResult.Failure();
 				}
 			}

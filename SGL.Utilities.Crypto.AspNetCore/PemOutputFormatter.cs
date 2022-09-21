@@ -20,7 +20,7 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 	/// Formatting <see cref="PrivateKey"/>s or <see cref="KeyPair"/>s is not supported, as private keys should usually not be served through an API route for security reasons and also there is no reasonable way to provide an encryption password for the formatted response.
 	/// </summary>
 	public class PemOutputFormatter : TextOutputFormatter {
-		private static Type[] supportedTypes = new[] { typeof(string), typeof(IEnumerable<string>), typeof(Certificate), typeof(IEnumerable<Certificate>), typeof(PublicKey), typeof(IEnumerable<PublicKey>) };
+		private static Type[] supportedTypes = new[] { typeof(string), typeof(IEnumerable<string>), typeof(Certificate), typeof(IEnumerable<Certificate>), typeof(CertificateSigningRequest), typeof(IEnumerable<CertificateSigningRequest>), typeof(PublicKey), typeof(IEnumerable<PublicKey>), typeof(IEnumerable<object>) };
 
 		/// <summary>
 		/// Initializes a PemOutputFormatter.
@@ -62,6 +62,15 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 						await bufferWriter.WriteLineAsync(ReadOnlyMemory<char>.Empty, ct);
 					}
 					break;
+				case CertificateSigningRequest csrVal:
+					csrVal.StoreToPem(bufferWriter);
+					break;
+				case IEnumerable<CertificateSigningRequest> csrVals:
+					foreach (var csrVal in csrVals) {
+						csrVal.StoreToPem(bufferWriter);
+						await bufferWriter.WriteLineAsync(ReadOnlyMemory<char>.Empty, ct);
+					}
+					break;
 				case PublicKey pubKeyVal:
 					pubKeyVal.StoreToPem(bufferWriter);
 					break;
@@ -70,6 +79,10 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 						pubKeyVal.StoreToPem(bufferWriter);
 						await bufferWriter.WriteLineAsync(ReadOnlyMemory<char>.Empty, ct);
 					}
+					break;
+				case IEnumerable<object> mixedObjVals:
+					var pemWriter = new PemObjectWriter(bufferWriter);
+					pemWriter.WriteAllObjects(mixedObjVals);
 					break;
 				default:
 					logger.LogError("Attempt to write unsupported object type '{type}'.", context.ObjectType?.FullName ?? "null");
