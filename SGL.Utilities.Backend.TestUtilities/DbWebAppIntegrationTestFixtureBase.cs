@@ -1,12 +1,17 @@
 ﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SGL.Utilities.Backend.TestUtilities {
 	/// <summary>
@@ -63,12 +68,33 @@ namespace SGL.Utilities.Backend.TestUtilities {
 					});
 					OverrideOptions(options);
 				});
+				services.AddSingleton(this);
+				services.AddHostedService<SeedDatabaseService>();
 				OverrideConfig(services);
-
-				using (var context = Activator.CreateInstance(typeof(TContext), db.ContextOptions) as TContext ?? throw new InvalidOperationException()) {
-					SeedDatabase(context);
-				}
 			});
+		}
+
+		private class SeedDatabaseService : IHostedService {
+			private IServiceProvider serviceProvider;
+			private DbWebAppIntegrationTestFixtureBase<TContext, TStartup> fixture;
+			private ILogger<SeedDatabaseService> logger;
+
+			public SeedDatabaseService(IServiceProvider serviceProvider, DbWebAppIntegrationTestFixtureBase<TContext, TStartup> fixture,
+				ILogger<DbWebAppIntegrationTestFixtureBase<TContext, TStartup>.SeedDatabaseService> logger) {
+				this.serviceProvider = serviceProvider;
+				this.fixture = fixture;
+				this.logger = logger;
+			}
+
+			public async Task StartAsync(CancellationToken ct) {
+				await using var scope = serviceProvider.CreateAsyncScope();
+				using var dbContext = scope.ServiceProvider.GetRequiredService<TContext>();
+				logger.LogTrace("Starting to seed database.");
+				await fixture.SeedDatabaseAsync(dbContext, scope.ServiceProvider, ct);
+				logger.LogTrace("Finished seeding database.");
+			}
+
+			public Task StopAsync(CancellationToken ct) => Task.CompletedTask;
 		}
 
 		/// <summary>
@@ -94,5 +120,25 @@ namespace SGL.Utilities.Backend.TestUtilities {
 		/// </summary>
 		/// <param name="context">The database context to which the data need to be written.</param>
 		protected virtual void SeedDatabase(TContext context) { }
+		/// <summary>
+		/// Provides a hook method for derived classes to seed test data into the in-memory testing database.
+		/// The default implementation invokes <see cref="SeedDatabase(TContext)"/>.
+		/// </summary>
+		/// <param name="context">The database context to which the data need to be written.</param>
+		/// <param name="scopedServiceProvider">The scoped service provider for dependency injection services from which <paramref name="context"/> was resolved.</param>
+		protected virtual void SeedDatabase(TContext context, IServiceProvider scopedServiceProvider) {
+			SeedDatabase(context);
+		}
+		/// <summary>
+		/// Provides a hook method for derived classes to asynchronously seed test data into the in-memory testing database.
+		/// The default implementation invokes <see cref="SeedDatabase(TContext, IServiceProvider)"/> synchronously and then completes.
+		/// </summary>
+		/// <param name="context">The database context to which the data need to be written.</param>
+		/// <param name="scopedServiceProvider">The scoped service provider for dependency injection services from which <paramref name="context"/> was resolved.</param>
+		/// <param name="ct">A cancellation token to allow cancelling the operation.</param>
+		protected virtual Task SeedDatabaseAsync(TContext context, IServiceProvider scopedServiceProvider, CancellationToken ct) {
+			SeedDatabase(context, scopedServiceProvider);
+			return Task.CompletedTask;
+		}
 	}
 }
