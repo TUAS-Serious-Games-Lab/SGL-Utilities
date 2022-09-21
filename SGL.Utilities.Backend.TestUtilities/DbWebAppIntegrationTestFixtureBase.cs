@@ -120,9 +120,22 @@ namespace SGL.Utilities.Backend.TestUtilities {
 		/// </summary>
 		/// <param name="context">The database context to which the data need to be written.</param>
 		protected virtual void SeedDatabase(TContext context) { }
+		/// <summary>
+		/// Provides a hook method for derived classes to seed test data into the in-memory testing database.
+		/// The default implementation invokes <see cref="SeedDatabase(TContext)"/>.
+		/// </summary>
+		/// <param name="context">The database context to which the data need to be written.</param>
+		/// <param name="scopedServiceProvider">The scoped service provider for dependency injection services from which <paramref name="context"/> was resolved.</param>
 		protected virtual void SeedDatabase(TContext context, IServiceProvider scopedServiceProvider) {
 			SeedDatabase(context);
 		}
+		/// <summary>
+		/// Provides a hook method for derived classes to asynchronously seed test data into the in-memory testing database.
+		/// The default implementation invokes <see cref="SeedDatabase(TContext, IServiceProvider)"/> synchronously and then completes.
+		/// </summary>
+		/// <param name="context">The database context to which the data need to be written.</param>
+		/// <param name="scopedServiceProvider">The scoped service provider for dependency injection services from which <paramref name="context"/> was resolved.</param>
+		/// <param name="ct">A cancellation token to allow cancelling the operation.</param>
 		protected virtual Task SeedDatabaseAsync(TContext context, IServiceProvider scopedServiceProvider, CancellationToken ct) {
 			SeedDatabase(context, scopedServiceProvider);
 			return Task.CompletedTask;
