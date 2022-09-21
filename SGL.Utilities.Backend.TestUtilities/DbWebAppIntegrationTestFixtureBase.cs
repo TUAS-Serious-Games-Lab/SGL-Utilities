@@ -86,16 +86,15 @@ namespace SGL.Utilities.Backend.TestUtilities {
 				this.logger = logger;
 			}
 
-			public Task StartAsync(CancellationToken cancellationToken) {
-				using var scope = serviceProvider.CreateAsyncScope();
+			public async Task StartAsync(CancellationToken ct) {
+				await using var scope = serviceProvider.CreateAsyncScope();
 				using var dbContext = scope.ServiceProvider.GetRequiredService<TContext>();
 				logger.LogTrace("Starting to seed database.");
-				fixture.SeedDatabase(dbContext);
+				await fixture.SeedDatabaseAsync(dbContext, scope.ServiceProvider, ct);
 				logger.LogTrace("Finished seeding database.");
-				return Task.CompletedTask;
 			}
 
-			public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+			public Task StopAsync(CancellationToken ct) => Task.CompletedTask;
 		}
 
 		/// <summary>
@@ -121,5 +120,12 @@ namespace SGL.Utilities.Backend.TestUtilities {
 		/// </summary>
 		/// <param name="context">The database context to which the data need to be written.</param>
 		protected virtual void SeedDatabase(TContext context) { }
+		protected virtual void SeedDatabase(TContext context, IServiceProvider scopedServiceProvider) {
+			SeedDatabase(context);
+		}
+		protected virtual Task SeedDatabaseAsync(TContext context, IServiceProvider scopedServiceProvider, CancellationToken ct) {
+			SeedDatabase(context, scopedServiceProvider);
+			return Task.CompletedTask;
+		}
 	}
 }
