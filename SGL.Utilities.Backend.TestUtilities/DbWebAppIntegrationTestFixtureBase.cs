@@ -1,12 +1,17 @@
 ﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SGL.Utilities.Backend.TestUtilities {
 	/// <summary>
@@ -63,12 +68,34 @@ namespace SGL.Utilities.Backend.TestUtilities {
 					});
 					OverrideOptions(options);
 				});
+				services.AddSingleton(this);
+				services.AddHostedService<SeedDatabaseService>();
 				OverrideConfig(services);
-
-				using (var context = Activator.CreateInstance(typeof(TContext), db.ContextOptions) as TContext ?? throw new InvalidOperationException()) {
-					SeedDatabase(context);
-				}
 			});
+		}
+
+		private class SeedDatabaseService : IHostedService {
+			private IServiceProvider serviceProvider;
+			private DbWebAppIntegrationTestFixtureBase<TContext, TStartup> fixture;
+			private ILogger<SeedDatabaseService> logger;
+
+			public SeedDatabaseService(IServiceProvider serviceProvider, DbWebAppIntegrationTestFixtureBase<TContext, TStartup> fixture,
+				ILogger<DbWebAppIntegrationTestFixtureBase<TContext, TStartup>.SeedDatabaseService> logger) {
+				this.serviceProvider = serviceProvider;
+				this.fixture = fixture;
+				this.logger = logger;
+			}
+
+			public Task StartAsync(CancellationToken cancellationToken) {
+				using var scope = serviceProvider.CreateAsyncScope();
+				using var dbContext = scope.ServiceProvider.GetRequiredService<TContext>();
+				logger.LogTrace("Starting to seed database.");
+				fixture.SeedDatabase(dbContext);
+				logger.LogTrace("Finished seeding database.");
+				return Task.CompletedTask;
+			}
+
+			public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 		}
 
 		/// <summary>
