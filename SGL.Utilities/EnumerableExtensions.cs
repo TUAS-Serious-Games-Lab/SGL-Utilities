@@ -20,6 +20,9 @@ namespace SGL.Utilities {
 		/// <param name="batchSize">The desired size for the batch arrays.</param>
 		/// <returns>An <see cref="IEnumerable{T}"/> of the batched arrays.</returns>
 		public static IEnumerable<T[]> AsArrayBatches<T>(this IEnumerable<T> source, int batchSize) {
+			if (batchSize <= 0) {
+				throw new ArgumentOutOfRangeException(nameof(batchSize), "The size of the batches must be positive.");
+			}
 			while (source.Count() > 0) {
 				var batch = source.Take(batchSize).ToArray();
 				source.Skip(batchSize);
@@ -41,6 +44,9 @@ namespace SGL.Utilities {
 		/// <remarks>This method is useful to concurrently perform asynchronous operations on many elements while enforcing a maximum concurreny limit to prevent ressource exhaustion.</remarks>
 		public static async IAsyncEnumerable<TResult> BatchAsync<TSource, TResult>(this IEnumerable<TSource> source, int batchSize,
 			Func<IEnumerable<TSource>, IEnumerable<Task<TResult>>> batchFunc, [EnumeratorCancellation] CancellationToken ct = default) {
+			if (batchSize <= 0) {
+				throw new ArgumentOutOfRangeException(nameof(batchSize), "The size of the batches must be positive.");
+			}
 			static bool getBatch(ref IEnumerable<TSource> source, int batchSize, out IEnumerable<TSource> batch, CancellationToken ct = default) {
 				batch = source.Take(batchSize);
 				source = source.Skip(batchSize);
@@ -82,6 +88,9 @@ namespace SGL.Utilities {
 		/// <returns>An <c><![CDATA[IAsyncEnumerable<TResult>]]></c> allowing asynchronous enumeration of the awaited results of the operations started in <c>mapFunc</c>.</returns>
 		/// <remarks>This method is useful to concurrently perform asynchronous operations on many elements while enforcing a maximum concurreny limit to prevent ressource exhaustion.</remarks>
 		public static async IAsyncEnumerable<TResult> MapBufferedAsync<TSource, TResult>(this IEnumerable<TSource> source, int bufferSize, Func<TSource, Task<TResult>> mapFunc, [EnumeratorCancellation] CancellationToken ct = default) {
+			if (bufferSize <= 0) {
+				throw new ArgumentOutOfRangeException(nameof(bufferSize), "The size of the buffer must be positive.");
+			}
 			var mapBuffer = new Queue<Task<TResult>>();
 			var yieldBuffer = new Queue<TResult>();
 			var sourceEnumerator = source.GetEnumerator();
