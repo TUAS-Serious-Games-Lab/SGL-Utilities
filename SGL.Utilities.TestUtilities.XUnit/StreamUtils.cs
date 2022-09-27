@@ -1,6 +1,7 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -49,6 +50,19 @@ namespace SGL.Utilities.TestUtilities.XUnit {
 			foreach (var line in reader.EnumerateLines()) {
 				output.WriteLine(line);
 			}
+		}
+
+		/// <summary>
+		/// Writes the given <paramref name="value"/> to <paramref name="output"/> as (indented) JSON text for inspection.
+		/// </summary>
+		/// <typeparam name="T">The type of the object to write.</typeparam>
+		/// <param name="output">The test case output to write to.</param>
+		/// <param name="value">The value to write as JSON.</param>
+		public static void WriteAsJson<T>(this ITestOutputHelper output, T value) {
+			using var buffer = new MemoryStream();
+			JsonSerializer.Serialize(buffer, value, new JsonSerializerOptions(JsonSerializerDefaults.Web) { WriteIndented = true });
+			buffer.Position = 0;
+			output.WriteStreamContents(buffer);
 		}
 	}
 }
