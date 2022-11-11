@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -96,7 +97,7 @@ namespace SGL.Utilities {
 		/// <param name="ct">A <see cref="CancellationToken"/> that allows cancelling the operation.</param>
 		/// <param name="authenticated">If true, the request will have its Authorization header set to the result of <see cref="GetAuthenticationHeaderAsync"/>.</param>
 		/// <param name="statusCodeExceptionMapping">
-		/// If true, <see cref="MapExceptionForError(HttpResponseMessage)"/> will be called if the response has <see cref="HttpResponseMessage.IsSuccessStatusCode"/> false.
+		/// If true, <see cref="MapExceptionForError(HttpRequestMessage, HttpResponseMessage)"/> will be called if the response has <see cref="HttpResponseMessage.IsSuccessStatusCode"/> false.
 		/// If false, it is the callers responsibility to check the status code.
 		/// </param>
 		/// <returns>A task object representing the operation, providing a <see cref="HttpResponseMessage"/> as its result.</returns>
@@ -115,9 +116,18 @@ namespace SGL.Utilities {
 				request.Headers.Accept.Add(accept);
 			}
 			prepareRequest(request);
-			var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+			HttpResponseMessage response;
+			try {
+				response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+			}
+			catch (HttpRequestException ex) {
+				throw MapExceptionForError(ex, request);
+			}
+			catch (Exception) {
+				throw;
+			}
 			if (statusCodeExceptionMapping && !response.IsSuccessStatusCode) {
-				MapExceptionForError(response);
+				MapExceptionForError(request, response);
 			}
 			return response;
 		}
@@ -130,11 +140,97 @@ namespace SGL.Utilities {
 		/// <summary>
 		/// Called by <see cref="SendRequest"/> if it is insructed to handle errors and a response has <see cref="HttpResponseMessage.IsSuccessStatusCode"/> false.
 		/// Can be overriden to customize error handling.
-		/// The default calls <see cref="HttpResponseMessage.EnsureSuccessStatusCode"/>.
+		/// The default calls <see cref="HttpResponseMessage.EnsureSuccessStatusCode"/> and wraps the thrown exception in <see cref="HttpApiResponseException"/>
+		/// with context information from <paramref name="request"/> and <paramref name="response"/>.
 		/// </summary>
+		/// <param name="request">The request that resulted in the error code response.</param>
 		/// <param name="response">The response with a non-success error code.</param>
-		protected virtual void MapExceptionForError(HttpResponseMessage response) {
-			response.EnsureSuccessStatusCode();
+		protected virtual void MapExceptionForError(HttpRequestMessage request, HttpResponseMessage response) {
+			try {
+				response.EnsureSuccessStatusCode();
+			}
+			catch (Exception ex) {
+				throw new HttpApiResponseException("Web API request failed due to error response from backend.",
+					request.Version, request.Method, request.RequestUri, response!.Version, response!.StatusCode, response, ex);
+			}
 		}
+
+		/// <summary>
+		/// Called by <see cref="SendRequest"/> if the request couldn't be sent to the server. This could be due to network, DNS or TLS issues.
+		/// The returned exception is then thrown by <see cref="SendRequest"/> to indicate the error.
+		/// The default wraps <paramref name="ex"/> in <see cref="HttpApiRequestFailedException"/> with context information from <paramref name="request"/>.
+		/// </summary>
+		/// <param name="ex">The exception thrown by <see cref="HttpClient.Send(HttpRequestMessage, HttpCompletionOption, CancellationToken)"/>.</param>
+		/// <param name="request">The request that couldn't be sent.</param>
+		/// <returns>The exception to throw.</returns>
+		protected virtual Exception MapExceptionForError(HttpRequestException ex, HttpRequestMessage request) {
+			return new HttpApiRequestFailedException("Web API request failed due to connectivity problems.", request.Version, request.Method, request.RequestUri, ex);
+		}
+	}
+
+	/// <summary>
+	/// An exception that indicates an error with a web API operation made using <see cref="HttpApiClientBase"/>.
+	/// </summary>
+	public class HttpApiException : Exception {
+		/// <summary>
+		/// Constructs an exception object with the given data.
+		/// </summary>
+		public HttpApiException(string message, Version requestVersion, HttpMethod method, Uri? requestUri, Exception? innerException) : base(message, innerException) {
+			RequestVersion = requestVersion;
+			Method = method;
+			RequestUri = requestUri;
+		}
+
+		/// <summary>
+		/// The HTTP version with which the request was attempted.
+		/// </summary>
+		public Version RequestVersion { get; }
+		/// <summary>
+		/// The HTTP method used by the request.
+		/// </summary>
+		public HttpMethod Method { get; }
+		/// <summary>
+		/// The URI of the request.
+		/// </summary>
+		public Uri? RequestUri { get; }
+	}
+
+	/// <summary>
+	/// An exception that indicates an error response to a web API request made using <see cref="HttpApiClientBase"/>.
+	/// </summary>
+	public class HttpApiResponseException : HttpApiException {
+		/// <summary>
+		/// Constructs an exception object with the given data.
+		/// </summary>
+		public HttpApiResponseException(string message, Version version, HttpMethod method, Uri? requestUri, Version responseVersion, HttpStatusCode statusCode, HttpResponseMessage? responseObject, Exception? innerException) :
+			base(message, version, method, requestUri, innerException) {
+			ResponseVersion = responseVersion;
+			StatusCode = statusCode;
+			ResponseObject = responseObject;
+		}
+		/// <summary>
+		/// The HTTP version used by server for the response.
+		/// </summary>
+		public Version ResponseVersion { get; }
+		/// <summary>
+		/// The HTTP status code of the response.
+		/// </summary>
+		public HttpStatusCode StatusCode { get; }
+		/// <summary>
+		/// The full response object.
+		/// </summary>
+		public HttpResponseMessage? ResponseObject { get; }
+	}
+
+	/// <summary>
+	/// An exception that indicates that a web API request failed, because it could not be transmitted to the server.
+	/// This can happen due to network or DNS issues or because the TLS handshake and certificate validations couldn't be completed correctly.
+	/// </summary>
+	public class HttpApiRequestFailedException : HttpApiException {
+		/// <summary>
+		/// Constructs an exception object with the given data.
+		/// </summary>
+		public HttpApiRequestFailedException(string message, Version version, HttpMethod method, Uri? requestUri, Exception? innerException) :
+			base(message, version, method, requestUri, innerException) { }
 	}
 }
