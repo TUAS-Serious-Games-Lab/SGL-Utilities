@@ -61,5 +61,16 @@ namespace SGL.Utilities {
 		public static T RandomElement<T>(this IReadOnlyCollection<T> source, System.Random rng) {
 			return source.RandomSample(1, rng).First();
 		}
+		/// <summary>
+		/// Returns the elements from <paramref name="source"/> in random order.
+		/// </summary>
+		/// <typeparam name="T">The type of the collection elements.</typeparam>
+		/// <param name="source">An enumeration containing the elements to shuffle.</param>
+		/// <param name="rng">The random generator used as the randomness source.</param>
+		/// <returns>A <see cref="List{T}"/> containing the elements from <paramref name="source"/> in random order.</returns>
+		public static List<T> Shuffle<T>(this IEnumerable<T> source, System.Random rng) {
+			return source.Select(elem => (r: rng.Next(int.MinValue, int.MaxValue), elem: elem))
+				.OrderBy(e => e.r).Select(e => e.elem).ToList();
+		}
 	}
 }
