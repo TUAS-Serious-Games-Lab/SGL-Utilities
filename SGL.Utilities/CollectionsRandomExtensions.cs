@@ -37,5 +37,29 @@ namespace SGL.Utilities {
 				--N;
 			}
 		}
+		/// <summary>
+		/// Returns a randomly drawn element from <paramref name="source"/>.
+		/// </summary>
+		/// <typeparam name="T">The type of the collection elements.</typeparam>
+		/// <param name="source">A non-empty collection to draw from.</param>
+		/// <param name="rng">The random generator used as the randomness source.</param>
+		/// <returns>A single randomly selected element from <paramref name="source"/>.</returns>
+		/// <exception cref="ArgumentException">When <paramref name="source"/> has no elements.</exception>
+		public static T RandomElement<T>(this IReadOnlyList<T> source, System.Random rng) {
+			if (source.Count == 0) throw new ArgumentException("Can't draw random item from empty collection.", nameof(source));
+			var index = rng.Next(source.Count);
+			return source[index];
+		}
+		/// <summary>
+		/// Returns a randomly drawn element from <paramref name="source"/>.
+		/// </summary>
+		/// <typeparam name="T">The type of the collection elements.</typeparam>
+		/// <param name="source">A non-empty collection to draw from.</param>
+		/// <param name="rng">The random generator used as the randomness source.</param>
+		/// <returns>A single randomly selected element from <paramref name="source"/>.</returns>
+		/// <exception cref="ArgumentException">When <paramref name="source"/> has no elements.</exception>
+		public static T RandomElement<T>(this IReadOnlyCollection<T> source, System.Random rng) {
+			return source.RandomSample(1, rng).First();
+		}
 	}
 }
