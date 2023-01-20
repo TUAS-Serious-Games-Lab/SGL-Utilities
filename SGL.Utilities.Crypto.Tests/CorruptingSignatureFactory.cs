@@ -3,6 +3,7 @@ using Org.BouncyCastle.Crypto.IO;
 using Org.BouncyCastle.Crypto.Operators;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Utilities.IO;
+using System;
 using System.IO;
 
 namespace SGL.Utilities.Crypto.Tests {
@@ -44,9 +45,19 @@ namespace SGL.Utilities.Crypto.Tests {
 				sig.CopyTo(destination, offset);
 				return sig.Length;
 			}
+
+			public int Collect(Span<byte> output) {
+				byte[] sig = Collect();
+				sig.CopyTo(output);
+				return sig.Length;
+			}
+
+			public int GetMaxResultLength() {
+				return signer.GetMaxSignatureSize();
+			}
 		}
 
-		private class CorruptingSignatureCalculator : IStreamCalculator {
+		private class CorruptingSignatureCalculator : IStreamCalculator<IBlockResult> {
 			private readonly SignerSink sink;
 			private readonly CorruptingSignatureFactory factory;
 
@@ -57,7 +68,7 @@ namespace SGL.Utilities.Crypto.Tests {
 
 			public Stream Stream => factory.CorruptPreSignature ? new CorruptingSignatureStream(sink) : sink;
 
-			public object GetResult() {
+			public IBlockResult GetResult() {
 				return factory.CorruptPostSignature ? new CorruptingSignatureResult(sink.Signer) : new DefaultSignatureResult(sink.Signer);
 			}
 		}
@@ -79,7 +90,7 @@ namespace SGL.Utilities.Crypto.Tests {
 
 		public object AlgorithmDetails => inner.AlgorithmDetails;
 
-		public IStreamCalculator CreateCalculator() {
+		public IStreamCalculator<IBlockResult> CreateCalculator() {
 			return new CorruptingSignatureCalculator(SignerUtilities.InitSigner(algorithm, forSigning: true, privateKey, random), this);
 		}
 	}
