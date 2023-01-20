@@ -20,7 +20,7 @@ namespace SGL.Utilities.Crypto.Signatures {
 	/// After calling <see cref="Sign()"/>, no more content bytes can be added.
 	/// </summary>
 	public class SignatureGenerator {
-		private readonly IStreamCalculator signatureCalculator;
+		private readonly IStreamCalculator<IBlockResult> signatureCalculator;
 
 		/// <summary>
 		/// Instantiates a signature generator using the given private key of the signer and the given digest algorithm.
@@ -62,12 +62,7 @@ namespace SGL.Utilities.Crypto.Signatures {
 			signatureCalculator.Stream.Flush();
 			signatureCalculator.Stream.Dispose();
 			var result = signatureCalculator.GetResult();
-			if (result is IBlockResult blockResult) {
-				return blockResult.Collect();
-			}
-			else {
-				throw new InvalidOperationException("The signature calculator didn't return the expected result.");
-			}
+			return result.Collect();
 		}
 	}
 }

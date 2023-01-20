@@ -18,7 +18,7 @@ namespace SGL.Utilities.Crypto.Signatures {
 	/// This finished the verification operation and after calling <see cref="IsValidSignature(byte[])"/> or <see cref="CheckSignature(byte[])"/>, no more content bytes can be added.
 	/// </summary>
 	public class SignatureVerifier {
-		private readonly IStreamCalculator verificationCalculator;
+		private readonly IStreamCalculator<IVerifier> verificationCalculator;
 
 		/// <summary>
 		/// Instantiates a signature verifier using the given public key of the signer and the given digest algorithm.
@@ -65,12 +65,7 @@ namespace SGL.Utilities.Crypto.Signatures {
 		/// </returns>
 		public bool IsValidSignature(byte[] signature) {
 			var result = verificationCalculator.GetResult();
-			if (result is IVerifier verifier) {
-				return verifier.IsVerified(signature);
-			}
-			else {
-				throw new InvalidOperationException("The verification calculator didn't return the expected result.");
-			}
+			return result.IsVerified(signature);
 		}
 
 		/// <summary>
