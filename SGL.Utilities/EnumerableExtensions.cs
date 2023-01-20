@@ -107,6 +107,15 @@ namespace SGL.Utilities {
 						mapBuffer.Enqueue(mapFunc(sourceEnumerator.Current));
 						sourceAvailable = sourceEnumerator.MoveNext();
 					}
+				}
+				catch (Exception ex) {
+					// Wrap exception and place it at end of mapBuffer for the next loop to find it:
+					mapBuffer.Enqueue(Task.FromException<TResult>(ex));
+					// Stop invoking new mapFunc calls by pretending there is no more input,
+					// as we will terminate after the throwing input anyway:
+					sourceAvailable = false;
+				}
+				try {
 					// Transfer completed Tasks to yieldBuffer if it isn't full yet.
 					while (yieldBuffer.Count < bufferSize && mapBuffer.TryPeek(out var peekTask) && peekTask.IsCompleted) {
 						progress = true;
