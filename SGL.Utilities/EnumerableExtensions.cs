@@ -86,7 +86,16 @@ namespace SGL.Utilities {
 		/// <param name="ct">A cancellation token to cancel the mapping logic.
 		/// Usually, this token should also be used in the lambda passed to <c>mapFunc</c> to also cancel the asynchronous operations initiated there.</param>
 		/// <returns>An <c><![CDATA[IAsyncEnumerable<TResult>]]></c> allowing asynchronous enumeration of the awaited results of the operations started in <c>mapFunc</c>.</returns>
-		/// <remarks>This method is useful to concurrently perform asynchronous operations on many elements while enforcing a maximum concurreny limit to prevent ressource exhaustion.</remarks>
+		/// <remarks>
+		/// This method is useful to concurrently perform asynchronous operations on many elements while enforcing a maximum concurreny limit to prevent ressource exhaustion.
+		///
+		/// Exceptions form <paramref name="mapFunc"/> are handled as follows:
+		/// All completed tasks before the one that threw are returned as values of the <see cref="IAsyncEnumerable{T}"/>.
+		/// Already started tasks after the throwing one are awaited to ensure clean termination.
+		/// If at least one of these tasks also throws an exception, the exceptions are bundled into an <see cref="AggregateException"/>, otherwise the original exception is forwarded.
+		/// <see cref="OperationCanceledException"/>s are treated as a special case, where if all exceptions are <see cref="OperationCanceledException"/>s,
+		/// they are not bundled into an <see cref="AggregateException"/>, but a new <see cref="OperationCanceledException"/> is thrown with the first caught exception as the <see cref="Exception.InnerException"/>.
+		/// </remarks>
 		public static async IAsyncEnumerable<TResult> MapBufferedAsync<TSource, TResult>(this IEnumerable<TSource> source, int bufferSize, Func<TSource, Task<TResult>> mapFunc, [EnumeratorCancellation] CancellationToken ct = default) {
 			if (bufferSize <= 0) {
 				throw new ArgumentOutOfRangeException(nameof(bufferSize), "The size of the buffer must be positive.");
