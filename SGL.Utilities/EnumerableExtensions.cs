@@ -91,24 +91,31 @@ namespace SGL.Utilities {
 			if (bufferSize <= 0) {
 				throw new ArgumentOutOfRangeException(nameof(bufferSize), "The size of the buffer must be positive.");
 			}
+			var exceptionList = new List<Exception>();
 			var mapBuffer = new Queue<Task<TResult>>();
 			var yieldBuffer = new Queue<TResult>();
-			var sourceEnumerator = source.GetEnumerator();
+			using var sourceEnumerator = source.GetEnumerator();
 			var sourceAvailable = sourceEnumerator.MoveNext();
 			// Iterate as long as we have anything that will eventually be yield returned.
 			while (sourceAvailable || mapBuffer.Count > 0 || yieldBuffer.Count > 0) {
 				ct.ThrowIfCancellationRequested();
 				bool progress = false;
-				// Map source elements if available and mapBuffer is not full.
-				while (sourceAvailable && mapBuffer.Count < bufferSize) {
-					progress = true;
-					mapBuffer.Enqueue(mapFunc(sourceEnumerator.Current));
-					sourceAvailable = sourceEnumerator.MoveNext();
+				try {
+					// Map source elements if available and mapBuffer is not full.
+					while (sourceAvailable && mapBuffer.Count < bufferSize) {
+						progress = true;
+						mapBuffer.Enqueue(mapFunc(sourceEnumerator.Current));
+						sourceAvailable = sourceEnumerator.MoveNext();
+					}
+					// Transfer completed Tasks to yieldBuffer if it isn't full yet.
+					while (yieldBuffer.Count < bufferSize && mapBuffer.TryPeek(out var peekTask) && peekTask.IsCompleted) {
+						progress = true;
+						yieldBuffer.Enqueue(await mapBuffer.Dequeue()); // Unwrap using await, doesn't suspend beacuse the task is ready.
+					}
 				}
-				// Transfer completed Tasks to yieldBuffer if it isn't full yet.
-				while (yieldBuffer.Count < bufferSize && mapBuffer.TryPeek(out var peekTask) && peekTask.IsCompleted) {
-					progress = true;
-					yieldBuffer.Enqueue(await mapBuffer.Dequeue()); // Unwrap using await, doesn't suspend beacuse the task is ready.
+				catch (Exception ex) {
+					exceptionList.Add(ex);
+					break;
 				}
 				// yield return element from yieldBuffer if available.
 				// No loop, because we should re-evaluate the above loops after the suspension by yield return.
@@ -117,9 +124,41 @@ namespace SGL.Utilities {
 					progress = true;
 					yield return result;
 				}
-				// if we made no progress at all in this iteration and the yieldBuffer is not full, await unfinished Task from mapBuffer if available.
-				// This is the point where suspension for waiting for results happens.
-				if (!progress && yieldBuffer.Count < bufferSize && mapBuffer.TryDequeue(out var dequeuedTask)) yieldBuffer.Enqueue(await dequeuedTask);
+				try {
+					// if we made no progress at all in this iteration and the yieldBuffer is not full, await unfinished Task from mapBuffer if available.
+					// This is the point where suspension for waiting for results happens.
+					if (!progress && yieldBuffer.Count < bufferSize && mapBuffer.TryDequeue(out var dequeuedTask)) yieldBuffer.Enqueue(await dequeuedTask);
+				}
+				catch (Exception ex) {
+					exceptionList.Add(ex);
+					break;
+				}
+			}
+			// If we left the main loop due to an exception:
+			if (exceptionList.Count > 0) {
+				// Drain yieldBuffer of results finished before the exception happened:
+				while (yieldBuffer.Count > 0) {
+					yield return yieldBuffer.Dequeue();
+				}
+				// Drain mapBuffer and collect other exceptions:
+				while (mapBuffer.Count > 0) {
+					try {
+						// The results of this are not yielded to not violate ordering
+						await mapBuffer.Dequeue();
+					}
+					catch (Exception ex) {
+						exceptionList.Add(ex);
+					}
+				}
+				if (exceptionList.Count == 1) {
+					throw exceptionList.First();
+				}
+				else if (exceptionList.All(ex => ex is OperationCanceledException)) {
+					throw new OperationCanceledException("At least one map task was canceled.", exceptionList.First());
+				}
+				else {
+					throw new AggregateException("Multiple map tasks threw an exception.", exceptionList);
+				}
 			}
 		}
 		/// <summary>
