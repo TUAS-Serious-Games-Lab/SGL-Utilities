@@ -48,7 +48,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 
 		private IBufferedCipher GetCipher(int streamIndex) {
 			IBufferedCipher cipher = dataMode switch {
-				DataEncryptionMode.AES_256_CCM => new BufferedAeadBlockCipher(new CcmBlockCipher(new AesEngine())),
+				DataEncryptionMode.AES_256_CCM => new BufferedAeadBlockCipher(new CcmBlockCipher(AesUtilities.CreateEngine())),
 				_ => throw new CryptographyException($"Unsupported encryption mode {dataMode}.")
 			};
 			var keyParams = new ParametersWithIV(new KeyParameter(dataKey), ivs[streamIndex]);
