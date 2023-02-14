@@ -19,5 +19,15 @@ namespace SGL.Utilities {
 		/// </returns>
 		public static TEnum[] GetPresentValues<TEnum>(this TEnum value) where TEnum : Enum =>
 			Enum.GetValues(typeof(TEnum)).OfType<TEnum>().Where(flag => value.HasFlag(flag)).ToArray();
+
+		/// <summary>
+		/// Returns whether any enum flags defined in <typeparamref name="TEnum"/> are set in <paramref name="value"/>.
+		/// This is similar to a check for inequality to 0, but ignores bits in <paramref name="value"/> that don't belong to any defined flag.
+		/// </summary>
+		/// <typeparam name="TEnum">The type of the enum to operate on.</typeparam>
+		/// <param name="value">The enum value potentially containing valid flag bits.</param>
+		/// <returns><see langword="true"/> if <paramref name="value"/> contains any valid flag, <see langword="false"/> otherwise.</returns>
+		public static bool HasAnyDefinedFlagsPresent<TEnum>(this TEnum value) where TEnum : Enum =>
+			Enum.GetValues(typeof(TEnum)).OfType<TEnum>().Any(flag => value.HasFlag(flag));
 	}
 }
