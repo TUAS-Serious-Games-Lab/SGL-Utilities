@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
@@ -26,7 +27,7 @@ namespace SGL.Utilities.Backend.Security {
 			services.Configure<JwtOptions>(config.GetSection(JwtOptions.Jwt));
 			services.AddScoped<IInternalTokenService, JwtInternalTokenService>(svc =>
 				new JwtInternalTokenService(svc.GetRequiredService<ILogger<JwtInternalTokenService>>(),
-											svc.GetRequiredService<JwtOptions>(),
+											svc.GetRequiredService<IOptions<JwtOptions>>(),
 											claims));
 			return services;
 		}
@@ -51,9 +52,9 @@ namespace SGL.Utilities.Backend.Security {
 		private readonly SigningCredentials signingCredentials;
 		private readonly JwtSecurityTokenHandler jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
 
-		public JwtInternalTokenService(ILogger<JwtInternalTokenService> logger, JwtOptions options, (string ClaimType, Func<string> GetClaimValue)[] claims) {
+		public JwtInternalTokenService(ILogger<JwtInternalTokenService> logger, IOptions<JwtOptions> options, (string ClaimType, Func<string> GetClaimValue)[] claims) {
 			this.logger = logger;
-			this.options = options;
+			this.options = options.Value;
 			this.claims = claims;
 
 			if (this.options.SymmetricKey != null) {
