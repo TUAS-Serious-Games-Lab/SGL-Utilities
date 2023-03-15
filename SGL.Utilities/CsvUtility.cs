@@ -31,7 +31,7 @@ namespace SGL.Utilities {
 				.Select(entry => string.Join(";", columns.Select(col => EscapeString(entry.TryGetValue(col, out var val) ? val : ""))))
 				.Prepend(string.Join(";", columns));
 			foreach (var line in lines) {
-				await output.WriteLineAsync(line.AsMemory(), ct);
+				await output.WriteLineAsync(line.AsMemory(), ct).ConfigureAwait(false);
 			}
 		}
 
@@ -58,17 +58,17 @@ namespace SGL.Utilities {
 		/// providing a tuple consisting of the columns from the CSV header and of a list of dictionaries representing the entries.</returns>
 		public static async Task<(List<string> Columns, List<Dictionary<string, string>> Entries)> ReadCsvAsync(TextReader input, CancellationToken ct = default) {
 			var entries = new List<Dictionary<string, string>>();
-			var headerLine = await input.ReadLineAsync();
+			var headerLine = await input.ReadLineAsync().ConfigureAwait(false);
 			ct.ThrowIfCancellationRequested();
 			if (headerLine == null) {
 				throw new InvalidDataException("Couldn't read header from CSV.");
 			}
 			var sb = new StringBuilder();
-			var columnNames = (await ParseLine(headerLine, sb, () => input.ReadLineAsync()).ToListAsync(ct)).ToList();
+			var columnNames = (await ParseLine(headerLine, sb, () => input.ReadLineAsync()).ToListAsync(ct).ConfigureAwait(false)).ToList();
 			string? line;
-			while ((line = await input.ReadLineAsync()) != null) {
+			while ((line = await input.ReadLineAsync().ConfigureAwait(false)) != null) {
 				ct.ThrowIfCancellationRequested();
-				var fields = await ParseLine(line, sb, () => input.ReadLineAsync()).ToListAsync(ct);
+				var fields = await ParseLine(line, sb, () => input.ReadLineAsync()).ToListAsync(ct).ConfigureAwait(false);
 				if (fields.Count != columnNames.Count) {
 					throw new InvalidDataException("Encountered line with incorrect field count.");
 				}
@@ -97,7 +97,7 @@ namespace SGL.Utilities {
 							sb.Append(line[pos]);
 						}
 						if (pos + 1 == line.Length) { // This field spans multiple lines, read next line and continue
-							var nextLine = await readNextLine();
+							var nextLine = await readNextLine().ConfigureAwait(false);
 							if (nextLine == null) {
 								throw new InvalidDataException("Unexpected end of quoted field");
 							}
