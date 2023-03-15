@@ -29,6 +29,18 @@ namespace SGL.Utilities.Backend.Security {
 		/// The configuration options for the <see cref="JwtLoginService"/>.
 		/// </summary>
 		public JwtLoginServiceOptions LoginService { get; set; } = new JwtLoginServiceOptions();
+		public JwtInternalTokenServiceOptions Internal { get; set; } = new JwtInternalTokenServiceOptions();
+	}
+
+	public class JwtInternalTokenServiceOptions {
+		/// <summary>
+		/// Specifies the cryptographic signing algorithm to use to sign the issued tokens.
+		/// </summary>
+		public string SigningAlgorithm { get; set; } = SecurityAlgorithms.HmacSha256;
+		/// <summary>
+		/// Specifies the expiration time for the tokens issued by <see cref="JwtInternalTokenService"/>.
+		/// </summary>
+		public TimeSpan ExpirationTime { get; set; } = TimeSpan.FromHours(1);
 	}
 
 	/// <summary>
