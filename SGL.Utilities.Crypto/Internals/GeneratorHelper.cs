@@ -100,16 +100,16 @@ namespace SGL.Utilities.Crypto.Internals {
 		internal static ExtendedKeyUsage MapKeyUsageEnumToExtensionObject(KeyUsages keyUsages) {
 			List<KeyPurposeID> purposeIds = new List<KeyPurposeID>();
 			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtAnyPurpose, KeyPurposeID.AnyExtendedKeyUsage, purposeIds);
-			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtServerAuth, KeyPurposeID.IdKPServerAuth, purposeIds);
-			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtClientAuth, KeyPurposeID.IdKPClientAuth, purposeIds);
-			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtCodeSigning, KeyPurposeID.IdKPCodeSigning, purposeIds);
-			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtEmailProtection, KeyPurposeID.IdKPEmailProtection, purposeIds);
-			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtIpsecEndSystem, KeyPurposeID.IdKPIpsecEndSystem, purposeIds);
-			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtIpsecTunnel, KeyPurposeID.IdKPIpsecTunnel, purposeIds);
-			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtIpsecUser, KeyPurposeID.IdKPIpsecUser, purposeIds);
-			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtTimeStamping, KeyPurposeID.IdKPTimeStamping, purposeIds);
-			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtOcspSigning, KeyPurposeID.IdKPOcspSigning, purposeIds);
-			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtSmartCardLogon, KeyPurposeID.IdKPSmartCardLogon, purposeIds);
+			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtServerAuth, KeyPurposeID.id_kp_serverAuth, purposeIds);
+			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtClientAuth, KeyPurposeID.id_kp_clientAuth, purposeIds);
+			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtCodeSigning, KeyPurposeID.id_kp_codeSigning, purposeIds);
+			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtEmailProtection, KeyPurposeID.id_kp_emailProtection, purposeIds);
+			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtIpsecEndSystem, KeyPurposeID.id_kp_ipsecEndSystem, purposeIds);
+			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtIpsecTunnel, KeyPurposeID.id_kp_ipsecTunnel, purposeIds);
+			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtIpsecUser, KeyPurposeID.id_kp_ipsecUser, purposeIds);
+			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtTimeStamping, KeyPurposeID.id_kp_timeStamping, purposeIds);
+			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtOcspSigning, KeyPurposeID.id_kp_OCSPSigning, purposeIds);
+			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtSmartCardLogon, KeyPurposeID.id_kp_smartcardlogon, purposeIds);
 			var extObj = new ExtendedKeyUsage(purposeIds);
 			return extObj;
 		}

@@ -16,16 +16,16 @@ namespace SGL.Utilities.Crypto.Certificates {
 		}
 
 		internal static void MapExtendedKeyUsageFlags(ref KeyUsages usages, ExtendedKeyUsage extKeyUsageExtension) {
-			SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.IdKPServerAuth, KeyUsages.ExtServerAuth, ref usages);
-			SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.IdKPClientAuth, KeyUsages.ExtClientAuth, ref usages);
-			SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.IdKPCodeSigning, KeyUsages.ExtCodeSigning, ref usages);
-			SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.IdKPEmailProtection, KeyUsages.ExtEmailProtection, ref usages);
-			SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.IdKPIpsecEndSystem, KeyUsages.ExtIpsecEndSystem, ref usages);
-			SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.IdKPIpsecTunnel, KeyUsages.ExtIpsecTunnel, ref usages);
-			SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.IdKPIpsecUser, KeyUsages.ExtIpsecUser, ref usages);
-			SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.IdKPTimeStamping, KeyUsages.ExtTimeStamping, ref usages);
-			SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.IdKPOcspSigning, KeyUsages.ExtOcspSigning, ref usages);
-			SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.IdKPSmartCardLogon, KeyUsages.ExtSmartCardLogon, ref usages);
+			SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.id_kp_serverAuth, KeyUsages.ExtServerAuth, ref usages);
+			SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.id_kp_clientAuth, KeyUsages.ExtClientAuth, ref usages);
+			SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.id_kp_codeSigning, KeyUsages.ExtCodeSigning, ref usages);
+			SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.id_kp_emailProtection, KeyUsages.ExtEmailProtection, ref usages);
+			SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.id_kp_ipsecEndSystem, KeyUsages.ExtIpsecEndSystem, ref usages);
+			SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.id_kp_ipsecTunnel, KeyUsages.ExtIpsecTunnel, ref usages);
+			SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.id_kp_ipsecUser, KeyUsages.ExtIpsecUser, ref usages);
+			SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.id_kp_timeStamping, KeyUsages.ExtTimeStamping, ref usages);
+			SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.id_kp_OCSPSigning, KeyUsages.ExtOcspSigning, ref usages);
+			SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.id_kp_smartcardlogon, KeyUsages.ExtSmartCardLogon, ref usages);
 			SetBitIfUsagePresent(extKeyUsageExtension, KeyPurposeID.AnyExtendedKeyUsage, KeyUsages.ExtAnyPurpose, ref usages);
 		}
 
