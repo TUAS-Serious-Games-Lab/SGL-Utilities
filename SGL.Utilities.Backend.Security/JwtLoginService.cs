@@ -47,11 +47,11 @@ namespace SGL.Utilities.Backend.Security {
 		/// <summary>
 		/// The issuer identification to use for the tokens issued by <see cref="JwtLoginService"/>.
 		/// </summary>
-		public string Issuer { get; set; } = "SGL Analytics";
+		public string Issuer { get; set; } = "SGL";
 		/// <summary>
 		/// The audience identification to use for the tokens issued by <see cref="JwtLoginService"/>.
 		/// </summary>
-		public string Audience { get; set; } = "SGL Analytics";
+		public string Audience { get; set; } = "SGL";
 		/// <summary>
 		/// The configuration options for the <see cref="JwtLoginService"/>.
 		/// </summary>
