@@ -49,7 +49,7 @@ namespace SGL.Utilities.Backend.Security {
 				signingCredentials = new SigningCredentials(signingKey, this.options.LoginService.SigningAlgorithm);
 			}
 			else {
-				throw new InvalidOperationException("No signing key given for JwtLoginServiceOptions.");
+				throw new InvalidOperationException("No signing key given for JwtOptions.");
 			}
 		}
 
