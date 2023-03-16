@@ -290,5 +290,21 @@ namespace SGL.Utilities {
 			}
 			while (cont);
 		}
+
+		/// <summary>
+		/// Casts the enumerable <paramref name="source"/> of non-nullable reference types to the corresponding nullable reference type.
+		/// </summary>
+		public static IEnumerable<T?> ToNullableRefs<T>(this IEnumerable<T> source) where T : class {
+			return source.Select(e => (T?)e);
+		}
+		/// <summary>
+		/// Converts the enumerable <paramref name="source"/> to an enumerable of nullable value types.
+		/// However as <paramref name="source"/> contains non-nullable elements, all resulting nullable objects have a value.
+		/// The resulting enumerable can however be used with <see cref="Enumerable.FirstOrDefault{TSource}(IEnumerable{TSource}, Func{TSource, bool})"/>
+		/// or similar methods resulting in the OrDefault-case being an empty nullable instead of the default value of the value type.
+		/// </summary>
+		public static IEnumerable<T?> ToNullables<T>(this IEnumerable<T> source) where T : struct {
+			return source.Select(e => (T?)e);
+		}
 	}
 }
