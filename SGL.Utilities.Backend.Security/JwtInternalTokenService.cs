@@ -12,10 +12,13 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SGL.Utilities.Backend.Security {
+
+#pragma warning disable CS0419 // Ambiguous reference in cref attribute
 	/// <summary>
 	/// Provides the <see cref="UseJwtInternalTokenService"/> extension method.
 	/// </summary>
 	public static class JwtInternalTokenServiceExtensions {
+#pragma warning restore CS0419 // Ambiguous reference in cref attribute
 		/// <summary>
 		/// Adds the <see cref="JwtInternalTokenService"/> as the implementation for <see cref="IInternalTokenService"/>, along with its configuration in the service collection.
 		/// </summary>
