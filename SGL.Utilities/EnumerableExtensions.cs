@@ -248,5 +248,20 @@ namespace SGL.Utilities {
 			var keys = leftIn.Select(leftKey).Concat(rightIn.Select(rightKey).Where(k => !left.Contains(k))).Distinct(keyComparer);
 			return keys.Select(k => resultSelector(k, left[k], right[k]));
 		}
+
+		/// <summary>
+		/// Enumerates the indices in <paramref name="source"/> of all elements for which <paramref name="match"/> returns <see langword="true"/>.
+		/// </summary>
+		/// <typeparam name="T">The type of the elements.</typeparam>
+		/// <param name="source">An random-accessible sequence to scan through.</param>
+		/// <param name="match">A predicate indicating whether an element matches.</param>
+		/// <returns>An <see cref="IEnumerable{T}"/> of the indices whith <paramref name="source"/> of the matching elements.</returns>
+		public static IEnumerable<int> FindIndexAll<T>(this IReadOnlyList<T> source, Predicate<T> match) {
+			for (int i = 0; i < source.Count; i++) {
+				if (match(source[i])) {
+					yield return i;
+				}
+			}
+		}
 	}
 }
