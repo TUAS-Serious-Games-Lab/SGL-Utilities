@@ -263,5 +263,32 @@ namespace SGL.Utilities {
 				}
 			}
 		}
+
+		/// <summary>
+		/// Interleaves the elements from <paramref name="a"/> and <paramref name="b"/> such that the resulting <see cref="IEnumerable{T}"/>
+		/// contains an element from <paramref name="a"/> followed by an element from <paramref name="b"/>, again followed by the next element from <paramref name="a"/> and so on.
+		/// If <paramref name="a"/> and <paramref name="b"/> contain a different number of elements, there remaining elements from the longer enumeration appear at the end consecutively.
+		/// </summary>
+		/// <typeparam name="T">The type of the elements.</typeparam>
+		/// <param name="a">The first enumerable.</param>
+		/// <param name="b">The second enumerable.</param>
+		/// <returns>The interleaved enumerable.</returns>
+		public static IEnumerable<T> Interleave<T>(this IEnumerable<T> a, IEnumerable<T> b) {
+			var enumA = a.GetEnumerator();
+			var enumB = b.GetEnumerator();
+			bool cont;
+			do {
+				cont = false;
+				if (enumA.MoveNext()) {
+					cont = true;
+					yield return enumA.Current;
+				}
+				if (enumB.MoveNext()) {
+					cont = true;
+					yield return enumB.Current;
+				}
+			}
+			while (cont);
+		}
 	}
 }
