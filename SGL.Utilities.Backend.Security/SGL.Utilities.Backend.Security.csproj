@@ -21,6 +21,10 @@
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.26.0" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\SGL.Utilities\SGL.Utilities.csproj" />
+	</ItemGroup>
+
 	<PropertyGroup>
 		<PackageId>SGL.Utilities.Backend.Security</PackageId>
 		<Version>0.0.0-dev</Version>
