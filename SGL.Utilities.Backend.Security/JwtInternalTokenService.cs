@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace SGL.Utilities.Backend.Security {
 	/// <summary>
-	/// Provides the <see cref="UseJwtInternalTokenService(IServiceCollection, IConfiguration)"/> extension method.
+	/// Provides the <see cref="UseJwtInternalTokenService"/> extension method.
 	/// </summary>
 	public static class JwtInternalTokenServiceExtensions {
 		/// <summary>
@@ -43,6 +43,9 @@ namespace SGL.Utilities.Backend.Security {
 
 	}
 
+	/// <summary>
+	/// An implementation of <see cref="IInternalTokenService"/> that issues JWT bearer tokens for internal services.
+	/// </summary>
 	public class JwtInternalTokenService : IInternalTokenService {
 		private readonly ILogger<JwtInternalTokenService> logger;
 		private readonly JwtOptions options;
@@ -52,6 +55,9 @@ namespace SGL.Utilities.Backend.Security {
 		private readonly SigningCredentials signingCredentials;
 		private readonly JwtSecurityTokenHandler jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
 
+		/// <summary>
+		/// Initializes the service using the given logger, config options, and claims to be issued.
+		/// </summary>
 		public JwtInternalTokenService(ILogger<JwtInternalTokenService> logger, IOptions<JwtOptions> options, (string ClaimType, Func<string> GetClaimValue)[] claims) {
 			this.logger = logger;
 			this.options = options.Value;
@@ -67,6 +73,9 @@ namespace SGL.Utilities.Backend.Security {
 			}
 		}
 
+		/// <summary>
+		/// Issues a JWT bearer authentication token using the <see cref="JwtOptions"/> specified at construction, containing the claims given at construction.
+		/// </summary>
 		public AuthorizationData ObtainInternalServiceAuthenticationToken() {
 			var claimObjets = claims.Select(cg => new Claim(cg.ClaimType, cg.GetClaimValue())).ToArray();
 			var expirationTime = DateTime.UtcNow.Add(options.Internal.ExpirationTime);

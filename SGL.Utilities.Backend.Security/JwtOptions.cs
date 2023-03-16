@@ -29,9 +29,15 @@ namespace SGL.Utilities.Backend.Security {
 		/// The configuration options for the <see cref="JwtLoginService"/>.
 		/// </summary>
 		public JwtLoginServiceOptions LoginService { get; set; } = new JwtLoginServiceOptions();
+		/// <summary>
+		/// The configuration options for the <see cref="JwtInternalTokenService"/>.
+		/// </summary>
 		public JwtInternalTokenServiceOptions Internal { get; set; } = new JwtInternalTokenServiceOptions();
 	}
 
+	/// <summary>
+	/// Encapsulates the configuration options for <see cref="JwtInternalTokenService"/> that are only needed on the issuing side.
+	/// </summary>
 	public class JwtInternalTokenServiceOptions {
 		/// <summary>
 		/// Specifies the cryptographic signing algorithm to use to sign the issued tokens.
