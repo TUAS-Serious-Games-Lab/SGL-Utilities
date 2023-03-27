@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -432,6 +433,44 @@ namespace SGL.Utilities {
 				tempSuffix = tempSuffixGenerator.ProduceRandomWord(8);
 			}
 			return $"{FilePath}{tempSeparator}{tempSuffix}";
+		}
+	}
+
+	/// <summary>
+	/// Provides a premade specialization of <see cref="FileDataStore{TValue}"/> for convenience.
+	/// It automatically uses <see cref="JsonSerializer"/> for (de)serialization of the values.
+	/// </summary>
+	public class JsonFileDataStore<TValue> : FileDataStore<TValue> where TValue : class {
+		private static readonly JsonSerializerOptions defaultJsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+		/// <summary>
+		/// Constructs a <see cref="JsonFileDataStore{TValue}"/> with the given parameters.
+		/// </summary>
+		/// <param name="filePath">
+		/// The path of the underlying file to use.
+		/// Temporary files and the lock file will have an appended suffix added to this path and filename.
+		/// </param>
+		/// <param name="jsonOptions">
+		/// The options to use for JSON (de)serialization.
+		/// If not given, <c>new JsonSerializerOptions(JsonSerializerDefaults.Web)</c> will be used.
+		/// </param>
+		/// <param name="concurrent">Whether to enable the concurrent mode.</param>
+		public JsonFileDataStore(string filePath, JsonSerializerOptions? jsonOptions = null, bool concurrent = false) :
+			base(filePath,
+				(stream, ct) => readContent(stream, jsonOptions, ct),
+				(stream, value, ct) => writeContent(stream, value, jsonOptions, ct),
+				concurrent) {
+		}
+		private static async Task<TValue> readContent(Stream stream, JsonSerializerOptions? jsonOptions, CancellationToken ct) {
+			if (jsonOptions == null) {
+				jsonOptions = defaultJsonOptions;
+			}
+			return await JsonSerializer.DeserializeAsync<TValue>(stream, jsonOptions, ct) ?? throw new InvalidDataException("Read null value.");
+		}
+		private static Task writeContent(Stream stream, TValue value, JsonSerializerOptions? jsonOptions, CancellationToken ct) {
+			if (jsonOptions == null) {
+				jsonOptions = defaultJsonOptions;
+			}
+			return JsonSerializer.SerializeAsync(stream, value, jsonOptions, ct);
 		}
 	}
 }

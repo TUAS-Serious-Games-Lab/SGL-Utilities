@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -464,6 +465,49 @@ namespace SGL.Utilities {
 				return new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096, useAsync: true);
 			}
 		}
-
 	}
+
+	/// <summary>
+	/// Provides a premade specialization of <see cref="FileDataMap{TKey, TValue}"/> for convenience.
+	/// It automatically uses <see cref="JsonSerializer"/> for (de)serialization of the values.
+	/// </summary>
+	public class JsonFileDataMap<TKey, TValue> : FileDataMap<TKey, TValue> where TKey : notnull where TValue : class {
+		private static readonly JsonSerializerOptions defaultJsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+		/// <summary>
+		/// Constructs a <see cref="JsonFileDataMap{TKey, TValue}"/> with the given parameters.
+		/// </summary>
+		/// <param name="directoryPath">
+		/// The path of the directory under which the values are stored.
+		/// The path of the file for each key relative to this is determined by <paramref name="getFilePath"/>.
+		/// </param>
+		/// <param name="getFilePath">
+		/// A delegate that implements the mapping of keys to relative file paths under <paramref name="directoryPath"/>.
+		/// If not given, <see cref="object.ToString"/> of the key will be used, suffixed by <c>.json</c>.
+		/// </param>
+		/// <param name="jsonOptions">
+		/// The options to use for JSON (de)serialization.
+		/// If not given, <c>new JsonSerializerOptions(JsonSerializerDefaults.Web)</c> will be used.
+		/// </param>
+		/// <param name="concurrent">Whether to enable the concurrent mode.</param>
+		public JsonFileDataMap(string directoryPath, Func<TKey, string>? getFilePath = null, JsonSerializerOptions? jsonOptions = null, bool concurrent = false) :
+			base(directoryPath,
+				(stream, ct) => readContent(stream, jsonOptions, ct),
+				(stream, value, ct) => writeContent(stream, value, jsonOptions, ct),
+				getFilePath ?? (key => $"{key}.json"),
+				concurrent) {
+		}
+		private static async Task<TValue> readContent(Stream stream, JsonSerializerOptions? jsonOptions, CancellationToken ct) {
+			if (jsonOptions == null) {
+				jsonOptions = defaultJsonOptions;
+			}
+			return await JsonSerializer.DeserializeAsync<TValue>(stream, jsonOptions, ct) ?? throw new InvalidDataException("Read null value.");
+		}
+		private static Task writeContent(Stream stream, TValue value, JsonSerializerOptions? jsonOptions, CancellationToken ct) {
+			if (jsonOptions == null) {
+				jsonOptions = defaultJsonOptions;
+			}
+			return JsonSerializer.SerializeAsync(stream, value, jsonOptions, ct);
+		}
+	}
+
 }
