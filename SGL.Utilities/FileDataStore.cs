@@ -70,6 +70,7 @@ namespace SGL.Utilities {
 		}
 		/// <summary>
 		/// Provides an event hook that is triggered after a temporary file was written, before it is moved to the final file.
+		/// Note: The event handlers are invoked from a threadpool thread. If this requires synchronization, it must be done in the handlers.
 		/// </summary>
 		public event AsyncEventHandler<TemporaryFileWrittenEventArgs>? TemporaryFileWritten;
 
@@ -82,8 +83,14 @@ namespace SGL.Utilities {
 		/// The path of the underlying file to use.
 		/// Temporary files and the lock file will have an appended suffix added to this path and filename.
 		/// </param>
-		/// <param name="readContent">A delegate that implements the logic for reading a <typeparamref name="TValue"/> from a <see cref="Stream"/> asynchronously.</param>
-		/// <param name="writeContent">A delegate that implements the logic for writing a <typeparamref name="TValue"/> to a <see cref="Stream"/> asynchronously.</param>
+		/// <param name="readContent">
+		/// A delegate that implements the logic for reading a <typeparamref name="TValue"/> from a <see cref="Stream"/> asynchronously.
+		/// Note: The delegate is invoked from a threadpool thread. If this requires synchronization, it must be done in the delegate.
+		/// </param>
+		/// <param name="writeContent">
+		/// A delegate that implements the logic for writing a <typeparamref name="TValue"/> to a <see cref="Stream"/> asynchronously.
+		/// Note: The delegate is invoked from a threadpool thread. If this requires synchronization, it must be done in the delegate.
+		/// </param>
 		/// <param name="concurrent">Whether to enable the concurrent mode.</param>
 		public FileDataStore(string filePath, Func<Stream, Task<TValue>> readContent, Func<Stream, TValue, Task> writeContent, bool concurrent = false) {
 			FilePath = filePath;
