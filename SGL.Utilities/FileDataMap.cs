@@ -56,7 +56,7 @@ namespace SGL.Utilities {
 		public event AsyncEventHandler<TemporaryFileWrittenEventArgs>? TemporaryFileWritten;
 		private StringGenerator tempSuffixGenerator = new StringGenerator();
 
-		public FileDataMap(string directoryPath, Func<Stream, Task<TValue>> readContent, Func<Stream, TValue, Task> writeContent, Func<TKey, string>? getFilePath = null) {
+		public FileDataMap(string directoryPath, Func<Stream, Task<TValue>> readContent, Func<Stream, TValue, Task> writeContent, Func<TKey, string>? getFilePath = null, bool concurrent = false) {
 			DirectoryPath = directoryPath;
 			this.readContent = readContent;
 			this.writeContent = writeContent;
@@ -64,6 +64,7 @@ namespace SGL.Utilities {
 				getFilePath = key => key.ToString();
 			}
 			this.getFilePath = getFilePath;
+			this.concurrent = concurrent;
 		}
 
 		public Task<bool> IsPresentAsync(TKey key, CancellationToken ct = default) {
