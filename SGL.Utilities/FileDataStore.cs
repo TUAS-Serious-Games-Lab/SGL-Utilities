@@ -49,8 +49,8 @@ namespace SGL.Utilities {
 		/// </summary>
 		public string FileTerminology { get; set; } = "file";
 
-		private Func<Stream, Task<TValue>> readContent;
-		private Func<Stream, TValue, Task> writeContent;
+		private Func<Stream, CancellationToken, Task<TValue>> readContent;
+		private Func<Stream, TValue, CancellationToken, Task> writeContent;
 		private readonly bool concurrent;
 
 		/// <summary>
@@ -95,7 +95,7 @@ namespace SGL.Utilities {
 		/// Note: The delegate is invoked from a threadpool thread. If this requires synchronization, it must be done in the delegate.
 		/// </param>
 		/// <param name="concurrent">Whether to enable the concurrent mode.</param>
-		public FileDataStore(string filePath, Func<Stream, Task<TValue>> readContent, Func<Stream, TValue, Task> writeContent, bool concurrent = false) {
+		public FileDataStore(string filePath, Func<Stream, CancellationToken, Task<TValue>> readContent, Func<Stream, TValue, CancellationToken, Task> writeContent, bool concurrent = false) {
 			FilePath = filePath;
 			this.readContent = readContent;
 			this.writeContent = writeContent;
@@ -233,7 +233,7 @@ namespace SGL.Utilities {
 			try {
 				await using (var tempFileStream = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true)) {
 					ct.ThrowIfCancellationRequested();
-					await writeContent(tempFileStream, value);
+					await writeContent(tempFileStream, value, ct);
 				}
 			}
 			catch (OperationCanceledException) {
@@ -324,7 +324,7 @@ namespace SGL.Utilities {
 					if (fileStream == null) {
 						return null;
 					}
-					return await readContent(fileStream);
+					return await readContent(fileStream, ct);
 				}
 			}, ct);
 		}
@@ -356,7 +356,7 @@ namespace SGL.Utilities {
 									if (fileStream == null) {
 										throw new InvalidOperationException("Can't update stored value because no value is stored.");
 									}
-									value = await readContent(fileStream);
+									value = await readContent(fileStream, ct);
 								}
 								update(value);
 								var tempFile = GetTempFilePath();
@@ -388,7 +388,7 @@ namespace SGL.Utilities {
 						if (fileStream == null) {
 							throw new InvalidOperationException("Can't update stored value because no value is stored.");
 						}
-						value = await readContent(fileStream);
+						value = await readContent(fileStream, ct);
 					}
 					update(value);
 					var tempFile = GetTempFilePath();

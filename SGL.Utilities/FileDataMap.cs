@@ -52,8 +52,8 @@ namespace SGL.Utilities {
 		/// </summary>
 		public string FileTerminology { get; set; } = "file {key}";
 
-		private Func<Stream, Task<TValue>> readContent;
-		private Func<Stream, TValue, Task> writeContent;
+		private Func<Stream, CancellationToken, Task<TValue>> readContent;
+		private Func<Stream, TValue, CancellationToken, Task> writeContent;
 		private Func<TKey, string> getFilePath;
 		private readonly bool concurrent;
 
@@ -108,7 +108,7 @@ namespace SGL.Utilities {
 		/// Note: Unlike <paramref name="readContent"/> and <paramref name="writeContent"/>, this delegate is invoked on the calling thread of each operation method.
 		/// </param>
 		/// <param name="concurrent">Whether to enable the concurrent mode.</param>
-		public FileDataMap(string directoryPath, Func<Stream, Task<TValue>> readContent, Func<Stream, TValue, Task> writeContent, Func<TKey, string>? getFilePath = null, bool concurrent = false) {
+		public FileDataMap(string directoryPath, Func<Stream, CancellationToken, Task<TValue>> readContent, Func<Stream, TValue, CancellationToken, Task> writeContent, Func<TKey, string>? getFilePath = null, bool concurrent = false) {
 			DirectoryPath = directoryPath;
 			this.readContent = readContent;
 			this.writeContent = writeContent;
@@ -262,7 +262,7 @@ namespace SGL.Utilities {
 					if (fileStream == null) {
 						return null;
 					}
-					return await readContent(fileStream);
+					return await readContent(fileStream, ct);
 				}
 			}, ct);
 		}
@@ -295,7 +295,7 @@ namespace SGL.Utilities {
 									if (fileStream == null) {
 										throw new InvalidOperationException("Can't update stored value because no value is stored.");
 									}
-									value = await readContent(fileStream);
+									value = await readContent(fileStream, ct);
 								}
 								update(value);
 								var tempFile = GetTempFilePath(filePath);
@@ -327,7 +327,7 @@ namespace SGL.Utilities {
 						if (fileStream == null) {
 							throw new InvalidOperationException("Can't update stored value because no value is stored.");
 						}
-						value = await readContent(fileStream);
+						value = await readContent(fileStream, ct);
 					}
 					update(value);
 					var tempFile = GetTempFilePath(filePath);
@@ -376,7 +376,7 @@ namespace SGL.Utilities {
 			try {
 				await using (var tempFileStream = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true)) {
 					ct.ThrowIfCancellationRequested();
-					await writeContent(tempFileStream, value);
+					await writeContent(tempFileStream, value, ct);
 				}
 			}
 			catch (OperationCanceledException) {
