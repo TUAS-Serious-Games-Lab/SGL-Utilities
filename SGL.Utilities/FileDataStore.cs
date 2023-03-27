@@ -16,7 +16,10 @@ namespace SGL.Utilities {
 	///
 	/// Write operations are protected against failures resulting in incomplete files by writing to a temporary file first and then atomically replacing the old file.
 	///
-	/// There is also (still experimantal) optional support for concurrent file access using a lock file for write-write synchronization and
+	/// None of the I/O operations run on the calling thread of the operation methods of this class,
+	/// instead all I/O is dispatched to the threadpool, even those where only synchronous APIs are available, like opening a file stream.
+	///
+	/// There is also (still experimental) optional support for concurrent file access using a lock file for write-write synchronization and
 	/// retry loops with file sharing restrictions for read-write and write-read synchronization.
 	/// </summary>
 	/// <typeparam name="TValue">The type of the value to store, must be a non-nullable reference type.</typeparam>
@@ -299,7 +302,7 @@ namespace SGL.Utilities {
 		/// In this case, the write deledgate can just copy to the temp file stream and reading the content can be done using this method,
 		/// bypassing the read delegate and allowing streamed read access.
 		/// Using <see cref="GetValueAsync(CancellationToken)"/> for this would require copying the content into a <see cref="MemoryStream"/>
-		/// because the there, the file is closed at the end of the call.
+		/// because there, the file is closed at the end of the call.
 		/// With this method, it is the responsibility of the caller to close / dispose the returned stream object.
 		/// In such cases, the benefit of using <see cref="FileDataStore{TValue}"/> over direct file access is the automation of temp file handling on the writing side.
 		/// </summary>
