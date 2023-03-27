@@ -197,6 +197,7 @@ namespace SGL.Utilities {
 				var tempFile = GetTempFilePath(filePath);
 				ct.ThrowIfCancellationRequested();
 				try {
+					Directory.CreateDirectory(Path.GetDirectoryName(filePath));
 					if (concurrent) {
 						using var ctsDelay = new CancellationTokenSource(WaitTimeout);
 						using var ctsCombined = CancellationTokenSource.CreateLinkedTokenSource(ct, ctsDelay.Token);
