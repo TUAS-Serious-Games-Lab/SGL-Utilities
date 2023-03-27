@@ -74,6 +74,27 @@ namespace SGL.Utilities.Tests {
 			Assert.Equal(new[] { "This", "is", "a", "test" }, readValue2.List);
 		}
 		[Fact]
+		public async Task RemovingValuesMakesThemNotPresentAndPreventsReadingBack() {
+			var fds = new FileDataMap<TestKey, TestData>(TestDir, TestData.DeserializeAsync, TestData.SerializeAsync, MapKey);
+			fds.Logger = loggerFactory.CreateLogger("Test");
+			var key1 = new TestKey { Level1 = "abc", Level2 = "bcd" };
+			var key2 = new TestKey { Level1 = "xyz", Level2 = "wxy" };
+
+			await fds.StoreValueAsync(key1, new TestData { Name = "Alice", Number = 12345, List = new List<string> { "Hello", "World" } });
+			await fds.StoreValueAsync(key2, new TestData { Name = "Bob", Number = 23456, List = new List<string> { "This", "is", "a", "test" } });
+			Assert.True(await fds.IsPresentAsync(key1));
+			Assert.True(await fds.IsPresentAsync(key2));
+			await fds.RemoveAsync(key1);
+			Assert.False(await fds.IsPresentAsync(key1));
+			var readValue1 = await fds.GetValueAsync(key1);
+			Assert.Null(readValue1);
+			Assert.True(await fds.IsPresentAsync(key2));
+			await fds.RemoveAsync(key2);
+			Assert.False(await fds.IsPresentAsync(key2));
+			var readValue2 = await fds.GetValueAsync(key2);
+			Assert.Null(readValue2);
+		}
+		[Fact]
 		public async Task StoredValuesCanBeOverwritten() {
 			var fds = new FileDataMap<TestKey, TestData>(TestDir, TestData.DeserializeAsync, TestData.SerializeAsync, MapKey);
 			fds.Logger = loggerFactory.CreateLogger("Test");

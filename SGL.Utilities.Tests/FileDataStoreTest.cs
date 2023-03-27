@@ -48,6 +48,17 @@ namespace SGL.Utilities.Tests {
 			Assert.Equal(new[] { "Hello", "World" }, readValue.List);
 		}
 		[Fact]
+		public async Task ClearingValueMakesItNotPresentAndPreventsReading() {
+			var fds = new FileDataStore<TestData>(TestFile, TestData.DeserializeAsync, TestData.SerializeAsync);
+			fds.Logger = loggerFactory.CreateLogger("Test");
+			await fds.StoreValueAsync(new TestData { Name = "John Doe", Number = 12345, List = new List<string> { "Hello", "World" } });
+			Assert.True(await fds.IsPresentAsync());
+			await fds.ClearAsync();
+			Assert.False(await fds.IsPresentAsync());
+			var readValue = await fds.GetValueAsync();
+			Assert.Null(readValue);
+		}
+		[Fact]
 		public async Task StoredValueCanBeOverwritten() {
 			var fds = new FileDataStore<TestData>(TestFile, TestData.DeserializeAsync, TestData.SerializeAsync);
 			fds.Logger = loggerFactory.CreateLogger("Test");
