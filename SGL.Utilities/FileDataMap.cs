@@ -105,6 +105,7 @@ namespace SGL.Utilities {
 		/// </param>
 		/// <param name="getFilePath">
 		/// A delegate that implements the mapping of keys to relative file paths under <paramref name="directoryPath"/>.
+		/// If not given, <see cref="object.ToString"/> of the key will be used.
 		/// Note: Unlike <paramref name="readContent"/> and <paramref name="writeContent"/>, this delegate is invoked on the calling thread of each operation method.
 		/// </param>
 		/// <param name="concurrent">Whether to enable the concurrent mode.</param>
@@ -126,7 +127,7 @@ namespace SGL.Utilities {
 		/// <param name="ct">A <see cref="CancellationToken"/> to allow canceling the operation.</param>
 		/// <returns>A <see cref="Task{TResult}"/> for the operation, containing bool indicating whether the file is present.</returns>
 		public Task<bool> IsPresentAsync(TKey key, CancellationToken ct = default) {
-			var filePath = getFilePath(key);
+			var filePath = Path.Combine(DirectoryPath, getFilePath(key));
 			return Task.Run(() => {
 				try {
 					return File.Exists(filePath);
@@ -145,7 +146,7 @@ namespace SGL.Utilities {
 		/// <param name="ct">A <see cref="CancellationToken"/> to allow canceling the operation.</param>
 		/// <returns>A <see cref="Task{TResult}"/> for the operation.</returns>
 		public Task RemoveAsync(TKey key, CancellationToken ct = default) {
-			var filePath = getFilePath(key);
+			var filePath = Path.Combine(DirectoryPath, getFilePath(key));
 			return Task.Run(async () => {
 				try {
 					if (File.Exists(filePath)) {
@@ -191,7 +192,7 @@ namespace SGL.Utilities {
 		/// <param name="ct">A <see cref="CancellationToken"/> to allow canceling the operation.</param>
 		/// <returns>A <see cref="Task{TResult}"/> for the operation.</returns>
 		public Task StoreValueAsync(TKey key, TValue value, CancellationToken ct = default) {
-			var filePath = getFilePath(key);
+			var filePath = Path.Combine(DirectoryPath, getFilePath(key));
 			return Task.Run(async () => {
 				var tempFile = GetTempFilePath(filePath);
 				ct.ThrowIfCancellationRequested();
@@ -250,7 +251,7 @@ namespace SGL.Utilities {
 		/// <returns>A <see cref="Task{TResult}"/> for the operation, containing a readable <see cref="Stream"/> for the underlying file,
 		/// or null if no file is present for <paramref name="key"/>.</returns>
 		public Task<Stream?> OpenRawReadAsync(TKey key, CancellationToken ct = default) {
-			var filePath = getFilePath(key);
+			var filePath = Path.Combine(DirectoryPath, getFilePath(key));
 			return Task.Run(() => OpenRawReadInnerAsync(key, filePath, ct), ct);
 		}
 		/// <summary>
@@ -260,7 +261,7 @@ namespace SGL.Utilities {
 		/// <param name="ct">A <see cref="CancellationToken"/> to allow canceling the operation.</param>
 		/// <returns>A <see cref="Task{TResult}"/> for the operation, containing the read value, or null if no file is present for <paramref name="key"/>.</returns>
 		public Task<TValue?> GetValueAsync(TKey key, CancellationToken ct = default) {
-			var filePath = getFilePath(key);
+			var filePath = Path.Combine(DirectoryPath, getFilePath(key));
 			return Task.Run(async Task<TValue?> () => {
 				try {
 					await using (var fileStream = await OpenRawReadInnerAsync(key, filePath, ct)) {
@@ -291,7 +292,7 @@ namespace SGL.Utilities {
 		/// <returns>A <see cref="Task{TResult}"/> for the operation.</returns>
 		/// <exception cref="InvalidOperationException">If there was no previous value for <paramref name="key"/> that could be updated.</exception>
 		public Task UpdateValueAsync(TKey key, Action<TValue> update, CancellationToken ct = default) {
-			var filePath = getFilePath(key);
+			var filePath = Path.Combine(DirectoryPath, getFilePath(key));
 			return Task.Run(async () => {
 				if (!File.Exists(filePath)) {
 					throw new InvalidOperationException("Can't update stored value because no value is stored.");
