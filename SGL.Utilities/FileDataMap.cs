@@ -227,6 +227,7 @@ namespace SGL.Utilities {
 				}
 				catch {
 					DeleteTemporary(tempFile);
+					throw;
 				}
 			}, ct);
 		}
@@ -298,8 +299,14 @@ namespace SGL.Utilities {
 								}
 								update(value);
 								var tempFile = GetTempFilePath(filePath);
-								await WriteTemporary(key, value, tempFile, ct);
-								MakeFilePermanent(key, filePath, tempFile, ct);
+								try {
+									await WriteTemporary(key, value, tempFile, ct);
+									MakeFilePermanent(key, filePath, tempFile, ct);
+								}
+								catch {
+									DeleteTemporary(tempFile);
+									throw;
+								}
 							}
 							break;
 						}
@@ -324,8 +331,14 @@ namespace SGL.Utilities {
 					}
 					update(value);
 					var tempFile = GetTempFilePath(filePath);
-					await WriteTemporary(key, value, tempFile, ct);
-					MakeFilePermanent(key, filePath, tempFile, ct);
+					try {
+						await WriteTemporary(key, value, tempFile, ct);
+						MakeFilePermanent(key, filePath, tempFile, ct);
+					}
+					catch {
+						DeleteTemporary(tempFile);
+						throw;
+					}
 				}
 			}, ct);
 		}
