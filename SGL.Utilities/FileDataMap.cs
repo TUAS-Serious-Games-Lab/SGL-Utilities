@@ -171,7 +171,7 @@ namespace SGL.Utilities {
 						else {
 							File.Delete(filePath);
 						}
-						Logger.LogInformation("Successfully removed " + FileTerminology + ".", key);
+						Logger.LogDebug("Successfully removed " + FileTerminology + ".", key);
 					}
 				}
 				catch (OperationCanceledException) {
@@ -224,9 +224,13 @@ namespace SGL.Utilities {
 						await WriteTemporary(key, value, tempFile, ct);
 						MakeFilePermanent(key, filePath, tempFile, ct);
 					}
+					Logger.LogDebug("Successfully stored " + FileTerminology + ".", key);
 				}
-				catch {
+				catch (Exception ex) {
 					DeleteTemporary(tempFile);
+					if (ex is not OperationCanceledException) {
+						Logger.LogError(ex, "Storing " + FileTerminology + " failed.");
+					}
 					throw;
 				}
 			}, ct);
@@ -258,11 +262,20 @@ namespace SGL.Utilities {
 		public Task<TValue?> GetValueAsync(TKey key, CancellationToken ct = default) {
 			var filePath = getFilePath(key);
 			return Task.Run(async Task<TValue?> () => {
-				await using (var fileStream = await OpenRawReadInnerAsync(key, filePath, ct)) {
-					if (fileStream == null) {
-						return null;
+				try {
+					await using (var fileStream = await OpenRawReadInnerAsync(key, filePath, ct)) {
+						if (fileStream == null) {
+							return null;
+						}
+						return await readContent(fileStream, ct);
 					}
-					return await readContent(fileStream, ct);
+				}
+				catch (OperationCanceledException) {
+					throw;
+				}
+				catch (Exception ex) {
+					Logger.LogError(ex, "Reading " + FileTerminology + " failed.", key);
+					throw;
 				}
 			}, ct);
 		}
@@ -283,62 +296,72 @@ namespace SGL.Utilities {
 				if (!File.Exists(filePath)) {
 					throw new InvalidOperationException("Can't update stored value because no value is stored.");
 				}
-				if (concurrent) {
-					using var ctsDelay = new CancellationTokenSource(WaitTimeout);
-					using var ctsCombined = CancellationTokenSource.CreateLinkedTokenSource(ct, ctsDelay.Token);
-					ct = ctsCombined.Token;
-					while (true) {
-						try {
-							await using (var lockFile = await AcquireLock(filePath, ct)) {
-								TValue value;
-								await using (var fileStream = await OpenRawReadInnerAsync(key, filePath, ct)) {
-									if (fileStream == null) {
-										throw new InvalidOperationException("Can't update stored value because no value is stored.");
+				try {
+					if (concurrent) {
+						using var ctsDelay = new CancellationTokenSource(WaitTimeout);
+						using var ctsCombined = CancellationTokenSource.CreateLinkedTokenSource(ct, ctsDelay.Token);
+						ct = ctsCombined.Token;
+						while (true) {
+							try {
+								await using (var lockFile = await AcquireLock(filePath, ct)) {
+									TValue value;
+									await using (var fileStream = await OpenRawReadInnerAsync(key, filePath, ct)) {
+										if (fileStream == null) {
+											throw new InvalidOperationException("Can't update stored value because no value is stored.");
+										}
+										value = await readContent(fileStream, ct);
 									}
-									value = await readContent(fileStream, ct);
+									update(value);
+									var tempFile = GetTempFilePath(filePath);
+									try {
+										await WriteTemporary(key, value, tempFile, ct);
+										MakeFilePermanent(key, filePath, tempFile, ct);
+									}
+									catch {
+										DeleteTemporary(tempFile);
+										throw;
+									}
 								}
-								update(value);
-								var tempFile = GetTempFilePath(filePath);
-								try {
-									await WriteTemporary(key, value, tempFile, ct);
-									MakeFilePermanent(key, filePath, tempFile, ct);
-								}
-								catch {
-									DeleteTemporary(tempFile);
-									throw;
-								}
+								break;
 							}
-							break;
-						}
-						catch (IOException ex) when (ex.GetType() == typeof(IOException)) {
-							Logger.LogInformation(ex, "Couldn't store " + FileTerminology + " due to I/O error, file may be in use, will retry.");
-							await Task.Delay(PollingInterval, ct);
-						}
-						// For some reason, File.Move(...,true) reports a locked target file as UnauthorizedAccessException:
-						catch (UnauthorizedAccessException ex) {
-							Logger.LogInformation(ex, "Couldn't store " + FileTerminology + " due to I/O error, file may be in use, will retry.");
-							await Task.Delay(PollingInterval, ct);
+							catch (IOException ex) when (ex.GetType() == typeof(IOException)) {
+								Logger.LogInformation(ex, "Couldn't store " + FileTerminology + " due to I/O error, file may be in use, will retry.");
+								await Task.Delay(PollingInterval, ct);
+							}
+							// For some reason, File.Move(...,true) reports a locked target file as UnauthorizedAccessException:
+							catch (UnauthorizedAccessException ex) {
+								Logger.LogInformation(ex, "Couldn't store " + FileTerminology + " due to I/O error, file may be in use, will retry.");
+								await Task.Delay(PollingInterval, ct);
+							}
 						}
 					}
+					else {
+						TValue value;
+						await using (var fileStream = await OpenRawReadInnerAsync(key, filePath, ct)) {
+							if (fileStream == null) {
+								throw new InvalidOperationException("Can't update stored value because no value is stored.");
+							}
+							value = await readContent(fileStream, ct);
+						}
+						update(value);
+						var tempFile = GetTempFilePath(filePath);
+						try {
+							await WriteTemporary(key, value, tempFile, ct);
+							MakeFilePermanent(key, filePath, tempFile, ct);
+						}
+						catch {
+							DeleteTemporary(tempFile);
+							throw;
+						}
+					}
+					Logger.LogDebug("Successfully updated " + FileTerminology + ".", key);
 				}
-				else {
-					TValue value;
-					await using (var fileStream = await OpenRawReadInnerAsync(key, filePath, ct)) {
-						if (fileStream == null) {
-							throw new InvalidOperationException("Can't update stored value because no value is stored.");
-						}
-						value = await readContent(fileStream, ct);
-					}
-					update(value);
-					var tempFile = GetTempFilePath(filePath);
-					try {
-						await WriteTemporary(key, value, tempFile, ct);
-						MakeFilePermanent(key, filePath, tempFile, ct);
-					}
-					catch {
-						DeleteTemporary(tempFile);
-						throw;
-					}
+				catch (OperationCanceledException) {
+					throw;
+				}
+				catch (Exception ex) {
+					Logger.LogError(ex, "Updating " + FileTerminology + " failed.", key);
+					throw;
 				}
 			}, ct);
 		}

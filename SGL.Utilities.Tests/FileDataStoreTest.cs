@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using SGL.Utilities.TestUtilities.XUnit;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,13 +9,16 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace SGL.Utilities.Tests {
 	public class FileDataStoreTest {
 		private const string TestFile = "FileDataStoreTest.json";
+		private ILoggerFactory loggerFactory;
 
-		public FileDataStoreTest() {
+		public FileDataStoreTest(ITestOutputHelper output) {
 			File.Delete(TestFile);
+			loggerFactory = LoggerFactory.Create(builder => builder.AddXUnit(() => output).SetMinimumLevel(LogLevel.Trace));
 		}
 
 		public class TestData {
@@ -32,6 +37,7 @@ namespace SGL.Utilities.Tests {
 		[Fact]
 		public async Task StoredValueIsPresentAndCanBeReadBack() {
 			var fds = new FileDataStore<TestData>(TestFile, TestData.DeserializeAsync, TestData.SerializeAsync);
+			fds.Logger = loggerFactory.CreateLogger("Test");
 			Assert.False(await fds.IsPresentAsync());
 			await fds.StoreValueAsync(new TestData { Name = "John Doe", Number = 12345, List = new List<string> { "Hello", "World" } });
 			Assert.True(await fds.IsPresentAsync());
@@ -44,6 +50,7 @@ namespace SGL.Utilities.Tests {
 		[Fact]
 		public async Task StoredValueCanBeOverwritten() {
 			var fds = new FileDataStore<TestData>(TestFile, TestData.DeserializeAsync, TestData.SerializeAsync);
+			fds.Logger = loggerFactory.CreateLogger("Test");
 			await fds.StoreValueAsync(new TestData { Name = "John Doe", Number = 12345, List = new List<string> { "Hello", "World" } });
 			Assert.True(await fds.IsPresentAsync());
 			await fds.StoreValueAsync(new TestData { Name = "Jane Doe", Number = 54321, List = new List<string> { "This", "is", "a", "Test" } });
@@ -56,6 +63,7 @@ namespace SGL.Utilities.Tests {
 		[Fact]
 		public async Task StoredValueCanBeUpdated() {
 			var fds = new FileDataStore<TestData>(TestFile, TestData.DeserializeAsync, TestData.SerializeAsync);
+			fds.Logger = loggerFactory.CreateLogger("Test");
 			await fds.StoreValueAsync(new TestData { Name = "John Doe", Number = 12345, List = new List<string> { "Hello", "World" } });
 			Assert.True(await fds.IsPresentAsync());
 			await fds.UpdateValueAsync(val => {
@@ -78,6 +86,7 @@ namespace SGL.Utilities.Tests {
 					throw new Exception("Whoops,something went wrong!");
 				}
 			});
+			fds.Logger = loggerFactory.CreateLogger("Test");
 			await fds.StoreValueAsync(new TestData { Name = "John Doe", Number = 12345, List = new List<string> { "Hello", "World" } });
 			Assert.True(await fds.IsPresentAsync());
 			fail = true;
@@ -97,6 +106,7 @@ namespace SGL.Utilities.Tests {
 					throw new Exception("Whoops,something went wrong!");
 				}
 			});
+			fds.Logger = loggerFactory.CreateLogger("Test");
 			await fds.StoreValueAsync(new TestData { Name = "John Doe", Number = 12345, List = new List<string> { "Hello", "World" } });
 			Assert.True(await fds.IsPresentAsync());
 			fail = true;
