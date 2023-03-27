@@ -51,19 +51,19 @@ namespace SGL.Utilities.Tests {
 
 		[Fact]
 		public async Task StoredValuesIsPresentAndCanBeReadBack() {
-			var fds = new FileDataMap<TestKey, TestData>(TestDir, TestData.DeserializeAsync, TestData.SerializeAsync, MapKey);
-			fds.Logger = loggerFactory.CreateLogger("Test");
+			var fdm = new FileDataMap<TestKey, TestData>(TestDir, TestData.DeserializeAsync, TestData.SerializeAsync, MapKey);
+			fdm.Logger = loggerFactory.CreateLogger("Test");
 			var key1 = new TestKey { Level1 = "abc", Level2 = "bcd" };
 			var key2 = new TestKey { Level1 = "xyz", Level2 = "wxy" };
 
-			Assert.False(await fds.IsPresentAsync(key1));
-			Assert.False(await fds.IsPresentAsync(key2));
-			await fds.StoreValueAsync(key1, new TestData { Name = "Alice", Number = 12345, List = new List<string> { "Hello", "World" } });
-			await fds.StoreValueAsync(key2, new TestData { Name = "Bob", Number = 23456, List = new List<string> { "This", "is", "a", "test" } });
-			Assert.True(await fds.IsPresentAsync(key1));
-			Assert.True(await fds.IsPresentAsync(key2));
-			var readValue1 = await fds.GetValueAsync(key1);
-			var readValue2 = await fds.GetValueAsync(key2);
+			Assert.False(await fdm.IsPresentAsync(key1));
+			Assert.False(await fdm.IsPresentAsync(key2));
+			await fdm.StoreValueAsync(key1, new TestData { Name = "Alice", Number = 12345, List = new List<string> { "Hello", "World" } });
+			await fdm.StoreValueAsync(key2, new TestData { Name = "Bob", Number = 23456, List = new List<string> { "This", "is", "a", "test" } });
+			Assert.True(await fdm.IsPresentAsync(key1));
+			Assert.True(await fdm.IsPresentAsync(key2));
+			var readValue1 = await fdm.GetValueAsync(key1);
+			var readValue2 = await fdm.GetValueAsync(key2);
 			Assert.NotNull(readValue1);
 			Assert.NotNull(readValue2);
 			Assert.Equal("Alice", readValue1.Name);
@@ -75,42 +75,42 @@ namespace SGL.Utilities.Tests {
 		}
 		[Fact]
 		public async Task RemovingValuesMakesThemNotPresentAndPreventsReadingBack() {
-			var fds = new FileDataMap<TestKey, TestData>(TestDir, TestData.DeserializeAsync, TestData.SerializeAsync, MapKey);
-			fds.Logger = loggerFactory.CreateLogger("Test");
+			var fdm = new FileDataMap<TestKey, TestData>(TestDir, TestData.DeserializeAsync, TestData.SerializeAsync, MapKey);
+			fdm.Logger = loggerFactory.CreateLogger("Test");
 			var key1 = new TestKey { Level1 = "abc", Level2 = "bcd" };
 			var key2 = new TestKey { Level1 = "xyz", Level2 = "wxy" };
 
-			await fds.StoreValueAsync(key1, new TestData { Name = "Alice", Number = 12345, List = new List<string> { "Hello", "World" } });
-			await fds.StoreValueAsync(key2, new TestData { Name = "Bob", Number = 23456, List = new List<string> { "This", "is", "a", "test" } });
-			Assert.True(await fds.IsPresentAsync(key1));
-			Assert.True(await fds.IsPresentAsync(key2));
-			await fds.RemoveAsync(key1);
-			Assert.False(await fds.IsPresentAsync(key1));
-			var readValue1 = await fds.GetValueAsync(key1);
+			await fdm.StoreValueAsync(key1, new TestData { Name = "Alice", Number = 12345, List = new List<string> { "Hello", "World" } });
+			await fdm.StoreValueAsync(key2, new TestData { Name = "Bob", Number = 23456, List = new List<string> { "This", "is", "a", "test" } });
+			Assert.True(await fdm.IsPresentAsync(key1));
+			Assert.True(await fdm.IsPresentAsync(key2));
+			await fdm.RemoveAsync(key1);
+			Assert.False(await fdm.IsPresentAsync(key1));
+			var readValue1 = await fdm.GetValueAsync(key1);
 			Assert.Null(readValue1);
-			Assert.True(await fds.IsPresentAsync(key2));
-			await fds.RemoveAsync(key2);
-			Assert.False(await fds.IsPresentAsync(key2));
-			var readValue2 = await fds.GetValueAsync(key2);
+			Assert.True(await fdm.IsPresentAsync(key2));
+			await fdm.RemoveAsync(key2);
+			Assert.False(await fdm.IsPresentAsync(key2));
+			var readValue2 = await fdm.GetValueAsync(key2);
 			Assert.Null(readValue2);
 		}
 		[Fact]
 		public async Task StoredValuesCanBeOverwritten() {
-			var fds = new FileDataMap<TestKey, TestData>(TestDir, TestData.DeserializeAsync, TestData.SerializeAsync, MapKey);
-			fds.Logger = loggerFactory.CreateLogger("Test");
+			var fdm = new FileDataMap<TestKey, TestData>(TestDir, TestData.DeserializeAsync, TestData.SerializeAsync, MapKey);
+			fdm.Logger = loggerFactory.CreateLogger("Test");
 			var key1 = new TestKey { Level1 = "abc", Level2 = "bcd" };
 			var key2 = new TestKey { Level1 = "xyz", Level2 = "wxy" };
 
-			Assert.False(await fds.IsPresentAsync(key1));
-			Assert.False(await fds.IsPresentAsync(key2));
-			await fds.StoreValueAsync(key1, new TestData { Name = "Alice", Number = 12345, List = new List<string> { "Hello", "World" } });
-			await fds.StoreValueAsync(key2, new TestData { Name = "Bob", Number = 23456, List = new List<string> { "This", "is", "a", "test" } });
-			Assert.True(await fds.IsPresentAsync(key1));
-			Assert.True(await fds.IsPresentAsync(key2));
-			await fds.StoreValueAsync(key1, new TestData { Name = "Carol", Number = 34567, List = new List<string> { "Test", "Test" } });
-			await fds.StoreValueAsync(key2, new TestData { Name = "Dave", Number = 45678, List = new List<string> { "Hello World!" } });
-			var readValue1 = await fds.GetValueAsync(key1);
-			var readValue2 = await fds.GetValueAsync(key2);
+			Assert.False(await fdm.IsPresentAsync(key1));
+			Assert.False(await fdm.IsPresentAsync(key2));
+			await fdm.StoreValueAsync(key1, new TestData { Name = "Alice", Number = 12345, List = new List<string> { "Hello", "World" } });
+			await fdm.StoreValueAsync(key2, new TestData { Name = "Bob", Number = 23456, List = new List<string> { "This", "is", "a", "test" } });
+			Assert.True(await fdm.IsPresentAsync(key1));
+			Assert.True(await fdm.IsPresentAsync(key2));
+			await fdm.StoreValueAsync(key1, new TestData { Name = "Carol", Number = 34567, List = new List<string> { "Test", "Test" } });
+			await fdm.StoreValueAsync(key2, new TestData { Name = "Dave", Number = 45678, List = new List<string> { "Hello World!" } });
+			var readValue1 = await fdm.GetValueAsync(key1);
+			var readValue2 = await fdm.GetValueAsync(key2);
 			Assert.NotNull(readValue1);
 			Assert.NotNull(readValue2);
 			Assert.Equal("Carol", readValue1.Name);
@@ -122,28 +122,28 @@ namespace SGL.Utilities.Tests {
 		}
 		[Fact]
 		public async Task StoredValueCanBeUpdated() {
-			var fds = new FileDataMap<TestKey, TestData>(TestDir, TestData.DeserializeAsync, TestData.SerializeAsync, MapKey);
-			fds.Logger = loggerFactory.CreateLogger("Test");
+			var fdm = new FileDataMap<TestKey, TestData>(TestDir, TestData.DeserializeAsync, TestData.SerializeAsync, MapKey);
+			fdm.Logger = loggerFactory.CreateLogger("Test");
 			var key1 = new TestKey { Level1 = "abc", Level2 = "bcd" };
 			var key2 = new TestKey { Level1 = "xyz", Level2 = "wxy" };
 
-			Assert.False(await fds.IsPresentAsync(key1));
-			Assert.False(await fds.IsPresentAsync(key2));
-			await fds.StoreValueAsync(key1, new TestData { Name = "Alice", Number = 12345, List = new List<string> { "Hello", "World" } });
-			await fds.StoreValueAsync(key2, new TestData { Name = "Bob", Number = 23456, List = new List<string> { "This", "is", "a", "test" } });
-			Assert.True(await fds.IsPresentAsync(key1));
-			Assert.True(await fds.IsPresentAsync(key2));
-			await fds.UpdateValueAsync(key1, data => {
+			Assert.False(await fdm.IsPresentAsync(key1));
+			Assert.False(await fdm.IsPresentAsync(key2));
+			await fdm.StoreValueAsync(key1, new TestData { Name = "Alice", Number = 12345, List = new List<string> { "Hello", "World" } });
+			await fdm.StoreValueAsync(key2, new TestData { Name = "Bob", Number = 23456, List = new List<string> { "This", "is", "a", "test" } });
+			Assert.True(await fdm.IsPresentAsync(key1));
+			Assert.True(await fdm.IsPresentAsync(key2));
+			await fdm.UpdateValueAsync(key1, data => {
 				data.Name = new string(data.Name.Reverse().ToArray());
 				data.Number++;
 				data.List.Add("!!");
 			});
-			await fds.UpdateValueAsync(key2, data => {
+			await fdm.UpdateValueAsync(key2, data => {
 				data.Name = "Dave";
 				data.List.Add("!!!");
 			});
-			var readValue1 = await fds.GetValueAsync(key1);
-			var readValue2 = await fds.GetValueAsync(key2);
+			var readValue1 = await fdm.GetValueAsync(key1);
+			var readValue2 = await fdm.GetValueAsync(key2);
 			Assert.NotNull(readValue1);
 			Assert.NotNull(readValue2);
 			Assert.Equal("ecilA", readValue1.Name);
@@ -156,21 +156,21 @@ namespace SGL.Utilities.Tests {
 		[Fact]
 		public async Task FailedStoreLeavesOriginalValueIntact() {
 			bool fail = false;
-			var fds = new FileDataMap<TestKey, TestData>(TestDir, TestData.DeserializeAsync, async (stream, val, ct) => {
+			var fdm = new FileDataMap<TestKey, TestData>(TestDir, TestData.DeserializeAsync, async (stream, val, ct) => {
 				await TestData.SerializeAsync(stream, val, ct);
 				if (fail) {
 					throw new Exception("Whoops,something went wrong!");
 				}
 			}, MapKey);
-			fds.Logger = loggerFactory.CreateLogger("Test");
+			fdm.Logger = loggerFactory.CreateLogger("Test");
 			var key = new TestKey { Level1 = "abc", Level2 = "bcd" };
 
-			Assert.False(await fds.IsPresentAsync(key));
-			await fds.StoreValueAsync(key, new TestData { Name = "Alice", Number = 12345, List = new List<string> { "Hello", "World" } });
-			Assert.True(await fds.IsPresentAsync(key));
+			Assert.False(await fdm.IsPresentAsync(key));
+			await fdm.StoreValueAsync(key, new TestData { Name = "Alice", Number = 12345, List = new List<string> { "Hello", "World" } });
+			Assert.True(await fdm.IsPresentAsync(key));
 			fail = true;
-			await Assert.ThrowsAnyAsync<Exception>(async () => await fds.StoreValueAsync(key, new TestData { Name = "Carol", Number = 34567, List = new List<string> { "Test", "Test" } }));
-			var readValue1 = await fds.GetValueAsync(key);
+			await Assert.ThrowsAnyAsync<Exception>(async () => await fdm.StoreValueAsync(key, new TestData { Name = "Carol", Number = 34567, List = new List<string> { "Test", "Test" } }));
+			var readValue1 = await fdm.GetValueAsync(key);
 			Assert.NotNull(readValue1);
 			Assert.Equal("Alice", readValue1.Name);
 			Assert.Equal(12345, readValue1.Number);
@@ -179,25 +179,25 @@ namespace SGL.Utilities.Tests {
 		[Fact]
 		public async Task FailedUpdateLeavesOriginalValueIntact() {
 			bool fail = false;
-			var fds = new FileDataMap<TestKey, TestData>(TestDir, TestData.DeserializeAsync, async (stream, val, ct) => {
+			var fdm = new FileDataMap<TestKey, TestData>(TestDir, TestData.DeserializeAsync, async (stream, val, ct) => {
 				await TestData.SerializeAsync(stream, val, ct);
 				if (fail) {
 					throw new Exception("Whoops,something went wrong!");
 				}
 			}, MapKey);
-			fds.Logger = loggerFactory.CreateLogger("Test");
+			fdm.Logger = loggerFactory.CreateLogger("Test");
 			var key = new TestKey { Level1 = "abc", Level2 = "bcd" };
 
-			Assert.False(await fds.IsPresentAsync(key));
-			await fds.StoreValueAsync(key, new TestData { Name = "Alice", Number = 12345, List = new List<string> { "Hello", "World" } });
-			Assert.True(await fds.IsPresentAsync(key));
+			Assert.False(await fdm.IsPresentAsync(key));
+			await fdm.StoreValueAsync(key, new TestData { Name = "Alice", Number = 12345, List = new List<string> { "Hello", "World" } });
+			Assert.True(await fdm.IsPresentAsync(key));
 			fail = true;
-			await Assert.ThrowsAnyAsync<Exception>(async () => await fds.UpdateValueAsync(key, data => {
+			await Assert.ThrowsAnyAsync<Exception>(async () => await fdm.UpdateValueAsync(key, data => {
 				data.Name.Reverse();
 				data.Number++;
 				data.List.Add("!!");
 			}));
-			var readValue1 = await fds.GetValueAsync(key);
+			var readValue1 = await fdm.GetValueAsync(key);
 			Assert.NotNull(readValue1);
 			Assert.Equal("Alice", readValue1.Name);
 			Assert.Equal(12345, readValue1.Number);
