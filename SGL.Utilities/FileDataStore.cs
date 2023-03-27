@@ -35,7 +35,7 @@ namespace SGL.Utilities {
 		public event AsyncEventHandler<TemporaryFileWrittenEventArgs>? TemporaryFileWritten;
 		private StringGenerator tempSuffixGenerator = new StringGenerator();
 
-		public FileDataStore(string filePath, Func<Stream, Task<TValue>> readContent, Func<Stream, TValue, Task> writeContent, bool concurrent) {
+		public FileDataStore(string filePath, Func<Stream, Task<TValue>> readContent, Func<Stream, TValue, Task> writeContent, bool concurrent = false) {
 			FilePath = filePath;
 			this.readContent = readContent;
 			this.writeContent = writeContent;
@@ -221,7 +221,7 @@ namespace SGL.Utilities {
 		}
 
 		public Task<Stream?> OpenRawReadAsync(CancellationToken ct = default) {
-			return Task.Run(() => OpenRawReadInnerAsync(ct));
+			return Task.Run(() => OpenRawReadInnerAsync(ct), ct);
 		}
 		public Task<TValue?> GetValueAsync(CancellationToken ct = default) {
 			return Task.Run(async Task<TValue?> () => {
