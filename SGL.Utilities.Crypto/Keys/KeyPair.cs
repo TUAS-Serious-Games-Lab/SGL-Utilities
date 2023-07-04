@@ -1,8 +1,10 @@
-﻿using Org.BouncyCastle.Crypto;
+﻿using Org.BouncyCastle.Asn1.X9;
+using Org.BouncyCastle.Crypto;
 using SGL.Utilities.Crypto.Internals;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace SGL.Utilities.Crypto.Keys {
 	/// <summary>
@@ -113,5 +115,19 @@ namespace SGL.Utilities.Crypto.Keys {
 		/// <returns>The generated key pair.</returns>
 		public static KeyPair Generate(RandomGenerator random, KeyType type, int keyLength, string? curveName = null) => GeneratorHelper.GenerateKeyPair(random, type, keyLength, curveName);
 
+		/// <summary>
+		/// Lists the names and key lengths of the supported named standard elliptic curves.
+		/// The names can be passed to the <c>curveName</c> parameter in <see cref="GenerateEllipticCurves(RandomGenerator, int, string?)"/>.
+		/// The key lengths can e.g. be used for sorting purposes.
+		/// </summary>
+		/// <returns>The list name and key length tuples.</returns>
+		public static IEnumerable<(string Name, int KeyLength)> GetSupportedNamedEllipticCurves() =>
+			ECNamedCurveTable.Names.Select(name => (Name: name, ECNamedCurveTable.GetByName(name).N.BitLength));
+		/// <summary>
+		/// Lists the names of the supported named standard elliptic curves.
+		/// Theses names can be passed to the <c>curveName</c> parameter in <see cref="GenerateEllipticCurves(RandomGenerator, int, string?)"/>.
+		/// </summary>
+		/// <returns>The list of unique names.</returns>
+		public static IList<string> GetSupportedNamedEllipticCurveNames() => ECNamedCurveTable.Names.ToList();
 	}
 }
