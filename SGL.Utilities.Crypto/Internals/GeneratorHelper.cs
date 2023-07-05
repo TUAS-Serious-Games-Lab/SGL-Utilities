@@ -37,7 +37,7 @@ namespace SGL.Utilities.Crypto.Internals {
 				return new KeyPair(keyGen.GenerateKeyPair());
 			}
 			catch (Exception ex) {
-				throw new KeyException("Failed generating Elliptic Curves key pair.", ex);
+				throw new KeyException("Failed generating RSA key pair.", ex);
 			}
 		}
 		public static KeyPair GenerateKeyPair(RandomGenerator random, KeyType type, int keyLength, string? paramSetName = null) {
