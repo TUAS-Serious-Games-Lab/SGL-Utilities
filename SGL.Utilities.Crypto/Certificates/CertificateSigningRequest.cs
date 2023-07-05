@@ -22,6 +22,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 	/// </summary>
 	public class CertificateSigningRequest {
 		internal Pkcs10CertificationRequest wrapped;
+		private KeyId? cachedKeyId;
 
 		internal CertificateSigningRequest(Pkcs10CertificationRequest wrapped) {
 			this.wrapped = wrapped;
@@ -32,7 +33,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// <inheritdoc/>
 		public override int GetHashCode() => wrapped.GetHashCode();
 		/// <inheritdoc/>
-		public override string? ToString() => wrapped.ToString();
+		public override string? ToString() => $"{SubjectDN} | {cachedKeyId ??= SubjectPublicKey.CalculateId()}";
 
 		/// <summary>
 		/// Verifies the subject's signature on the certificate.
