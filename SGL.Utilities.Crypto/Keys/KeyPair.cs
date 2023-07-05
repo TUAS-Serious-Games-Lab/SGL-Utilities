@@ -96,7 +96,7 @@ namespace SGL.Utilities.Crypto.Keys {
 		/// <returns>The generated key pair.</returns>
 		public static KeyPair GenerateRSA(RandomGenerator random, int keyLength) => GeneratorHelper.GenerateRsaKeyPair(random, keyLength);
 		/// <summary>
-		/// Generates a new Elliptic Curves key pair of the given key length.
+		/// Generates a new Elliptic Curves key pair of the given key length or using the given curve.
 		/// The curve used can either be specified explicitly in <paramref name="curveName"/>, or a suitable default curve for the given key length is used otherwise.
 		/// </summary>
 		/// <param name="random">The random generator to use for generating the key pair.</param>
@@ -104,6 +104,13 @@ namespace SGL.Utilities.Crypto.Keys {
 		/// <param name="curveName">The name of the named curve parameter set to use.</param>
 		/// <returns>The generated key pair.</returns>
 		public static KeyPair GenerateEllipticCurves(RandomGenerator random, int keyLength, string? curveName = null) => GeneratorHelper.GenerateEcKeyPair(random, keyLength, curveName);
+		/// <summary>
+		/// Generates a new Elliptic Curves key pair using the given curve.
+		/// </summary>
+		/// <param name="random">The random generator to use for generating the key pair.</param>
+		/// <param name="curveName">The name of the named curve parameter set to use.</param>
+		/// <returns>The generated key pair.</returns>
+		public static KeyPair GenerateEllipticCurves(RandomGenerator random, string curveName) => GeneratorHelper.GenerateEcKeyPair(random, 0, curveName ?? throw new ArgumentNullException(nameof(curveName)));
 		/// <summary>
 		/// Generates a new key pair of the given key length and of the type specified by <paramref name="type"/>.
 		/// If <paramref name="type"/> is <see cref="KeyType.EllipticCurves"/>, the curve used can either be specified explicitly in <paramref name="curveName"/>, or a suitable default curve for the given key length is used otherwise.
