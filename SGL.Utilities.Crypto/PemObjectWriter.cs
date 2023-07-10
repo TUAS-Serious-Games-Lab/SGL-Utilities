@@ -21,6 +21,7 @@ namespace SGL.Utilities.Crypto {
 		private readonly string privateKeyEncModeString = "";
 		private readonly Func<char[]>? privateKeyPasswordGetter = null;
 		private readonly RandomGenerator? random = null;
+		private readonly bool allowUnencryptedSecrets = false;
 
 		/// <summary>
 		/// Contructs a PEM writer to write to <paramref name="pemDataWriter"/>.
@@ -46,10 +47,15 @@ namespace SGL.Utilities.Crypto {
 		public PemObjectWriter(TextWriter pemDataWriter, PemEncryptionMode privateKeyEncryptionMode, Func<char[]> privateKeyPasswordGetter, RandomGenerator random) {
 			rawPemWriter = pemDataWriter;
 			wrapped = new PemWriter(pemDataWriter);
-			privateKeyEncModeString = privateKeyEncryptionMode switch {
-				PemEncryptionMode.AES_256_CBC => "AES-256-CBC",
-				_ => throw new PemException($"Unsupported PEM encryption mode {privateKeyEncryptionMode}")
-			};
+			if (privateKeyEncryptionMode == PemEncryptionMode.UNENCRYPTED) {
+				allowUnencryptedSecrets = true;
+			}
+			else {
+				privateKeyEncModeString = privateKeyEncryptionMode switch {
+					PemEncryptionMode.AES_256_CBC => "AES-256-CBC",
+					_ => throw new PemException($"Unsupported PEM encryption mode {privateKeyEncryptionMode}")
+				};
+			}
 			this.privateKeyPasswordGetter = privateKeyPasswordGetter;
 			this.random = random;
 		}
@@ -70,12 +76,22 @@ namespace SGL.Utilities.Crypto {
 						wrapped.WriteObject(pubKey.wrapped);
 						return;
 					case PrivateKey privKey:
-						checkEncryptionMembers();
-						wrapped.WriteObject(privKey.wrapped, privateKeyEncModeString, privateKeyPasswordGetter!.Invoke(), random!.wrapped);
+						if (allowUnencryptedSecrets) {
+							wrapped.WriteObject(privKey.wrapped);
+						}
+						else {
+							checkEncryptionMembers();
+							wrapped.WriteObject(privKey.wrapped, privateKeyEncModeString, privateKeyPasswordGetter!.Invoke(), random!.wrapped);
+						}
 						return;
 					case KeyPair keyPair:
-						checkEncryptionMembers();
-						wrapped.WriteObject(keyPair.ToWrappedPair(), privateKeyEncModeString, privateKeyPasswordGetter!.Invoke(), random!.wrapped);
+						if (allowUnencryptedSecrets) {
+							wrapped.WriteObject(keyPair.ToWrappedPair());
+						}
+						else {
+							checkEncryptionMembers();
+							wrapped.WriteObject(keyPair.ToWrappedPair(), privateKeyEncModeString, privateKeyPasswordGetter!.Invoke(), random!.wrapped);
+						}
 						return;
 					case Certificate cert:
 						wrapped.WriteObject(cert.wrapped);

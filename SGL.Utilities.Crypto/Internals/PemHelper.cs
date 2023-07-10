@@ -199,7 +199,12 @@ namespace SGL.Utilities.Crypto.Internals {
 		public static void Write(TextWriter writer, PrivateKey privKey, PemEncryptionMode encMode, char[] password, RandomGenerator random) {
 			try {
 				var pemWriter = new PemWriter(writer);
-				pemWriter.WriteObject(privKey.wrapped, GetEncryptionModeStr(encMode), password, random.wrapped);
+				if (encMode == PemEncryptionMode.UNENCRYPTED) {
+					pemWriter.WriteObject(privKey.wrapped);
+				}
+				else {
+					pemWriter.WriteObject(privKey.wrapped, GetEncryptionModeStr(encMode), password, random.wrapped);
+				}
 			}
 			catch (CryptographyException) {
 				throw;
@@ -211,7 +216,12 @@ namespace SGL.Utilities.Crypto.Internals {
 		public static void Write(TextWriter writer, KeyPair keyPair, PemEncryptionMode encMode, char[] password, RandomGenerator random) {
 			try {
 				var pemWriter = new PemWriter(writer);
-				pemWriter.WriteObject(keyPair.ToWrappedPair(), GetEncryptionModeStr(encMode), password, random.wrapped);
+				if (encMode == PemEncryptionMode.UNENCRYPTED) {
+					pemWriter.WriteObject(keyPair.ToWrappedPair());
+				}
+				else {
+					pemWriter.WriteObject(keyPair.ToWrappedPair(), GetEncryptionModeStr(encMode), password, random.wrapped);
+				}
 			}
 			catch (CryptographyException) {
 				throw;
