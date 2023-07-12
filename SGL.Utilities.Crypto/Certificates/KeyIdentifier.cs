@@ -1,6 +1,7 @@
 ﻿using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.X509;
 using SGL.Utilities.Crypto.Keys;
+using System.Text;
 
 namespace SGL.Utilities.Crypto.Certificates {
 	/// <summary>
@@ -39,7 +40,17 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// <inheritdoc/>
 		public override int GetHashCode() => wrapped.GetHashCode();
 		/// <inheritdoc/>
-		public override string? ToString() => wrapped.ToString();
+		public override string? ToString() {
+			var ident = wrapped.GetKeyIdentifier();
+			if (ident == null) return null;
+			var hex = new StringBuilder(ident.Length * 3 - 1);
+			bool first = true;
+			foreach (byte b in ident) {
+				hex.AppendFormat(first ? "{0:x2}" : ":{0:x2}", b);
+				first = false;
+			}
+			return hex.ToString();
+		}
 
 		/// <summary>
 		/// Provides access to the raw key identifier byte.
