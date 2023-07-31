@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SGL.Utilities {
 	/// <summary>
@@ -40,6 +42,14 @@ namespace SGL.Utilities {
 		/// Clients that are responsible for the user authentication will update this after the relevant API calls for authentication succeed and usually have it initially empty.
 		/// </summary>
 		AuthorizationData? Authorization { get; set; }
+
+		/// <summary>
+		/// Updates <see cref="Authorization"/> under an asynchronous lock to ensure safe access if it is used concurrently between multiple operations.
+		/// </summary>
+		/// <param name="value">The new value to assign to <see cref="Authorization"/>.</param>
+		/// <param name="ct">A <see cref="CancellationToken"/> that allows cancelling the waiting for the lock.</param>
+		/// <returns>A task object representing the operation.</returns>
+		Task SetAuthorizationLockedAsync(AuthorizationData? value, CancellationToken ct = default);
 
 		/// <summary>
 		/// An event triggered when a request method finds <see cref="Authorization"/> to be expired (or close to expiring).

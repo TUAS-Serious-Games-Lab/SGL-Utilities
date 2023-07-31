@@ -47,7 +47,7 @@ namespace SGL.Utilities {
 		}
 
 		/// <summary>
-		/// Update <see cref="Authorization"/> under an asynchronous lock to ensure safe access if the property is used concurrently between multiple operations.
+		/// Updates <see cref="Authorization"/> under an asynchronous lock to ensure safe access if the property is used concurrently between multiple operations.
 		/// This method asynchronously waits to acquire the lock, updates the variable and then immediately drops the lock.
 		/// </summary>
 		/// <param name="value">The new value to assign to <see cref="Authorization"/>.</param>
