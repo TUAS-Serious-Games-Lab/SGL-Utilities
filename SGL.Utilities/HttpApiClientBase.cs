@@ -47,6 +47,19 @@ namespace SGL.Utilities {
 		}
 
 		/// <summary>
+		/// Update <see cref="Authorization"/> under an asynchronous lock to ensure safe access if the property is used concurrently between multiple operations.
+		/// This method asynchronously waits to acquire the lock, updates the variable and then immediately drops the lock.
+		/// </summary>
+		/// <param name="value">The new value to assign to <see cref="Authorization"/>.</param>
+		/// <param name="ct">A <see cref="CancellationToken"/> that allows cancelling the waiting for the lock.</param>
+		/// <returns>A task object representing the operation.</returns>
+		public async Task SetAuthorizationLockedAsync(AuthorizationData? value, CancellationToken ct = default) {
+			using (var lockHandle = await authorizationLock.WaitAsyncWithScopedRelease(ct)) {
+				Authorization = value;
+			}
+		}
+
+		/// <summary>
 		/// Gets an <see cref="AuthenticationHeaderValue"/> object from <see cref="Authorization"/> for a request.
 		/// If <see cref="Authorization"/> is expired, <see cref="AuthorizationExpired"/> is triggered to allow refreshing the token.
 		/// </summary>
