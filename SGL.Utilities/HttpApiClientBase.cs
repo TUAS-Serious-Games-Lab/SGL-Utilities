@@ -102,7 +102,10 @@ namespace SGL.Utilities {
 		/// Asynchronously sends a request with the specified parameters to the backend and return the response.
 		/// </summary>
 		/// <param name="httpMethod">The HTTP method / verb of the request.</param>
-		/// <param name="relativeUriPath">The path of the request, relative to <see cref="PrefixUriPath"/>.</param>
+		/// <param name="relativeUriPath">
+		/// The path of the request, relative to <see cref="PrefixUriPath"/>,
+		/// or an absolute URL if <see cref="PrefixUriPath"/> is empty.
+		/// </param>
 		/// <param name="queryParameters">The query parameters to append to the request URI as key-value-pairs.</param>
 		/// <param name="requestContent">The request body content, or null if the request should have not body.</param>
 		/// <param name="prepareRequest">A delegate to apply to the request before sending, e.g. to set additional headers.</param>
@@ -116,7 +119,8 @@ namespace SGL.Utilities {
 		/// <returns>A task object representing the operation, providing a <see cref="HttpResponseMessage"/> as its result.</returns>
 		protected async Task<HttpResponseMessage> SendRequest(HttpMethod httpMethod, string relativeUriPath, IEnumerable<KeyValuePair<string, string>> queryParameters, HttpContent? requestContent, Action<HttpRequestMessage> prepareRequest,
 				MediaTypeWithQualityHeaderValue? accept = null, CancellationToken ct = default, bool authenticated = true, bool statusCodeExceptionMapping = true) {
-			string requestUriPath = PrefixUriPath + (!PrefixUriPath.EndsWith('/') && relativeUriPath.Length != 0 ? "/" : "") + relativeUriPath;
+			string requestUriPath = PrefixUriPath +
+				((!string.IsNullOrWhiteSpace(PrefixUriPath) && !PrefixUriPath.EndsWith('/') && relativeUriPath.Length != 0) ? "/" : "") + relativeUriPath;
 			requestUriPath += buildQueryString(queryParameters);
 			using var request = new HttpRequestMessage(httpMethod, requestUriPath);
 			if (requestContent != null) {
