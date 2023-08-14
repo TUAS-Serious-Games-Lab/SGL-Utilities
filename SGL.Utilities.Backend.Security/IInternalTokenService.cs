@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SGL.Utilities.Backend.Security {
 	/// <summary>
-	/// Specifies the interface for serviecs that provide authentication tokens for internal inter-service communication.
+	/// Specifies the interface for services that provide authentication tokens for internal inter-service communication.
 	/// </summary>
 	public interface IInternalTokenService {
 		/// <summary>
