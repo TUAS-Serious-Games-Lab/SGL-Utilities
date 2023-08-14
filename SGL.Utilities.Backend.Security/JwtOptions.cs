@@ -33,6 +33,10 @@ namespace SGL.Utilities.Backend.Security {
 		/// The configuration options for the <see cref="JwtInternalTokenService"/>.
 		/// </summary>
 		public JwtInternalTokenServiceOptions Internal { get; set; } = new JwtInternalTokenServiceOptions();
+		/// <summary>
+		/// The configuration options for the <see cref="JwtExplicitTokenService"/>.
+		/// </summary>
+		public JwtExplicitTokenServiceOptions Explicit { get; set; } = new JwtExplicitTokenServiceOptions();
 	}
 
 	/// <summary>
@@ -45,6 +49,20 @@ namespace SGL.Utilities.Backend.Security {
 		public string SigningAlgorithm { get; set; } = SecurityAlgorithms.HmacSha256;
 		/// <summary>
 		/// Specifies the expiration time for the tokens issued by <see cref="JwtInternalTokenService"/>.
+		/// </summary>
+		public TimeSpan ExpirationTime { get; set; } = TimeSpan.FromHours(1);
+	}
+
+	/// <summary>
+	/// Encapsulates the configuration options for <see cref="JwtExplicitTokenService"/> that are only needed on the issuing side.
+	/// </summary>
+	public class JwtExplicitTokenServiceOptions {
+		/// <summary>
+		/// Specifies the cryptographic signing algorithm to use to sign the issued tokens.
+		/// </summary>
+		public string SigningAlgorithm { get; set; } = SecurityAlgorithms.HmacSha256;
+		/// <summary>
+		/// Specifies the expiration time for the tokens issued by <see cref="JwtExplicitTokenService"/>.
 		/// </summary>
 		public TimeSpan ExpirationTime { get; set; } = TimeSpan.FromHours(1);
 	}
