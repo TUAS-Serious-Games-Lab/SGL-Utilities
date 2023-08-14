@@ -49,7 +49,7 @@ namespace SGL.Utilities.Backend.Security {
 
 			if (this.options.SymmetricKey != null) {
 				signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(this.options.SymmetricKey));
-				signingCredentials = new SigningCredentials(signingKey, this.options.Explicit.SigningAlgorithm);
+				signingCredentials = new SigningCredentials(signingKey, this.options.Explicit.SigningAlgorithm ?? this.options.LoginService.SigningAlgorithm);
 				logger.LogTrace("Instantiated JwtExplicitTokenService using symmetric key.");
 			}
 			else {
@@ -64,7 +64,7 @@ namespace SGL.Utilities.Backend.Security {
 		/// <returns>The authentication token, wrapped in an <see cref="AuthorizationData"/> struct.</returns>
 		public AuthorizationData IssueAuthenticationToken(params (string Type, string Value)[] claims) {
 			var claimObjets = claims.Select(c => new Claim(c.Type, c.Value)).ToArray();
-			var expirationTime = DateTime.UtcNow.Add(options.Explicit.ExpirationTime);
+			var expirationTime = DateTime.UtcNow.Add(options.Explicit.ExpirationTime ?? options.LoginService.ExpirationTime);
 			var token = new JwtSecurityToken(
 				issuer: options.Issuer,
 				audience: options.Audience,

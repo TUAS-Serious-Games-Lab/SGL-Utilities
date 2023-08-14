@@ -59,12 +59,14 @@ namespace SGL.Utilities.Backend.Security {
 	public class JwtExplicitTokenServiceOptions {
 		/// <summary>
 		/// Specifies the cryptographic signing algorithm to use to sign the issued tokens.
+		/// If left empty, <see cref="JwtLoginServiceOptions.SigningAlgorithm"/> is used.
 		/// </summary>
-		public string SigningAlgorithm { get; set; } = SecurityAlgorithms.HmacSha256;
+		public string? SigningAlgorithm { get; set; } = null;
 		/// <summary>
 		/// Specifies the expiration time for the tokens issued by <see cref="JwtExplicitTokenService"/>.
+		/// If left empty, <see cref="JwtLoginServiceOptions.ExpirationTime"/> is used.
 		/// </summary>
-		public TimeSpan ExpirationTime { get; set; } = TimeSpan.FromHours(1);
+		public TimeSpan? ExpirationTime { get; set; } = null;
 	}
 
 	/// <summary>
