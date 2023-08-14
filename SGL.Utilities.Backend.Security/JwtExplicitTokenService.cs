@@ -60,11 +60,23 @@ namespace SGL.Utilities.Backend.Security {
 		/// <summary>
 		/// Issues a JWT bearer authentication token using the <see cref="JwtOptions"/> specified at construction, containing the given claims.
 		/// </summary>
+		/// <param name="latestExpirationTime">
+		/// Timestamp until which the token shall be valid at the longest.
+		/// If provided, the actual expiration time of the token is the earlier timestamp out of this and <see cref="JwtExplicitTokenServiceOptions.ExpirationTime"/> after time of issuing.
+		/// </param>
 		/// <param name="claims">Claims to put into the issued token.</param>
 		/// <returns>The authentication token, wrapped in an <see cref="AuthorizationData"/> struct.</returns>
-		public AuthorizationData IssueAuthenticationToken(params (string Type, string Value)[] claims) {
+		public AuthorizationData IssueAuthenticationToken(DateTime? latestExpirationTime, params (string Type, string Value)[] claims) {
 			var claimObjets = claims.Select(c => new Claim(c.Type, c.Value)).ToArray();
 			var expirationTime = DateTime.UtcNow.Add(options.Explicit.ExpirationTime ?? options.LoginService.ExpirationTime);
+			if (latestExpirationTime != null) {
+				if (latestExpirationTime.Value.Kind != DateTimeKind.Utc) {
+					latestExpirationTime = latestExpirationTime.Value.ToUniversalTime();
+				}
+				if (expirationTime > latestExpirationTime.Value) {
+					expirationTime = latestExpirationTime.Value;
+				}
+			}
 			var token = new JwtSecurityToken(
 				issuer: options.Issuer,
 				audience: options.Audience,
