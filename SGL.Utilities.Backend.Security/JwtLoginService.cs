@@ -17,7 +17,8 @@ namespace SGL.Utilities.Backend.Security {
 	/// </summary>
 	public static class JwtLoginServiceExtensions {
 		/// <summary>
-		/// Adds the <see cref="JwtLoginService"/> as the implementation for <see cref="ILoginService"/>, along with its configuration in the service collection.
+		/// Adds the <see cref="JwtLoginService"/> as the implementation for <see cref="ILoginService"/> and
+		/// <see cref="ILoginAuthenticationService"/>, along with its configuration in the service collection.
 		/// </summary>
 		/// <param name="services">The service collection to add to.</param>
 		/// <param name="config">The root configuration obejct to obtain configuration options from.</param>
@@ -25,14 +26,15 @@ namespace SGL.Utilities.Backend.Security {
 		public static IServiceCollection UseJwtLoginService(this IServiceCollection services, IConfiguration config) {
 			services.Configure<JwtOptions>(config.GetSection(JwtOptions.Jwt));
 			services.AddScoped<ILoginService, JwtLoginService>();
+			services.AddScoped<ILoginAuthenticationService, JwtLoginService>();
 			return services;
 		}
 	}
 
 	/// <summary>
-	/// An implementation of <see cref="ILoginService"/> that issues JWT bearer tokens upon successful authentication.
+	/// An implementation of <see cref="ILoginAuthenticationService"/> and <see cref="ILoginService"/> that issues JWT bearer tokens upon successful authentication.
 	/// </summary>
-	public class JwtLoginService : ILoginService {
+	public class JwtLoginService : ILoginAuthenticationService, ILoginService {
 		private ILogger<JwtLoginService> logger;
 		private JwtOptions options;
 		private SecurityKey signingKey;
@@ -56,15 +58,15 @@ namespace SGL.Utilities.Backend.Security {
 		/// <summary>
 		/// Starts a fixed delay timer with the duration configured in <see cref="JwtLoginServiceOptions.FailureDelay"/> and with the given cancellation token.
 		/// </summary>
-		/// <returns>An <see cref="ILoginService.IDelayHandle"/> encapsulating the wait timer.</returns>
-		public ILoginService.IDelayHandle StartFixedFailureDelay(CancellationToken ct = default) {
+		/// <returns>An <see cref="ILoginServiceBase.IDelayHandle"/> encapsulating the wait timer.</returns>
+		public ILoginServiceBase.IDelayHandle StartFixedFailureDelay(CancellationToken ct = default) {
 			// On failure, always wait for this fixed delay starting here.
 			// This should mitigate timing attacks for detecting whether the failure is
 			// due to non-existent user or due to incorrect secret.
 			// This also slows down brute-force attacks.
 			// The task is created here and passed into LoginAsync to optionally allow callers
 			// to capture it and await it to also delay related failures outside the login service's responsibility.
-			return new ILoginService.DelayHandle(Task.Delay(options.LoginService.FailureDelay, ct));
+			return new ILoginServiceBase.DelayHandle(Task.Delay(options.LoginService.FailureDelay, ct));
 		}
 
 		/// <summary>
@@ -72,11 +74,11 @@ namespace SGL.Utilities.Backend.Security {
 		/// and upon success, issues a JWT bearer token with a <c>userid</c> claim for the user's id, as well as the additional claims specified in <c>additionalClaims</c>.
 		/// </summary>
 		/// <returns>A task representing the operation with a result of <see langword="null"/> for failed attempts and with a string containing a JWT bearer authorization token for a successful login.</returns>
-		public async Task<string?> LoginAsync<TUserId, TUser>(TUserId userId, string providedPlainSecret,
+		public async Task<AuthorizationData?> LoginAsync<TUserId, TUser>(TUserId userId, string providedPlainSecret,
 			Func<TUserId, Task<TUser?>> lookupUserAsync,
 			Func<TUser, string> getHashedSecret,
 			Func<TUser, string, Task> updateHashedSecretAsync,
-			ILoginService.IDelayHandle fixedFailureDelay, CancellationToken ct = default,
+			ILoginAuthenticationService.IDelayHandle fixedFailureDelay, CancellationToken ct = default,
 			params (string ClaimType, Func<TUser, string> GetClaimValue)[] additionalClaims) {
 
 			bool secretCorrect = false;
@@ -122,7 +124,12 @@ namespace SGL.Utilities.Backend.Security {
 			);
 			var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 			logger.LogInformation("Login succeeded for user {userId}.", userId);
-			return tokenString;
+			return new AuthorizationData(new AuthorizationToken(AuthorizationTokenScheme.Bearer, tokenString), token.ValidTo);
+		}
+
+		async Task<string?> ILoginService.LoginAsync<TUserId, TUser>(TUserId userId, string providedPlainSecret, Func<TUserId, Task<TUser?>> lookupUserAsync, Func<TUser, string> getHashedSecret, Func<TUser, string, Task> updateHashedSecretAsync, ILoginService.IDelayHandle fixedFailureDelay, CancellationToken ct, params (string ClaimType, Func<TUser, string> GetClaimValue)[] additionalClaims) where TUser : default {
+			var authData = await LoginAsync(userId, providedPlainSecret, lookupUserAsync, getHashedSecret, updateHashedSecretAsync, fixedFailureDelay, ct, additionalClaims);
+			return authData.HasValue ? authData.Value.Token.Value : null;
 		}
 	}
 }
