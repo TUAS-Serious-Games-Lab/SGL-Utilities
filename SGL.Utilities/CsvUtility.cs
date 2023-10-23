@@ -29,7 +29,7 @@ namespace SGL.Utilities {
 		public static async Task WriteCsvAsync(TextWriter output, List<string> columns, List<Dictionary<string, string>> entries, CancellationToken ct = default) {
 			var lines = entries
 				.Select(entry => string.Join(";", columns.Select(col => EscapeString(entry.TryGetValue(col, out var val) ? val : ""))))
-				.Prepend(string.Join(";", columns));
+				.Prepend(string.Join(";", columns.Select(EscapeString)));
 			foreach (var line in lines) {
 				await output.WriteLineAsync(line.AsMemory(), ct).ConfigureAwait(false);
 			}
