@@ -143,10 +143,28 @@ namespace SGL.Utilities {
 			catch (Exception) {
 				throw;
 			}
+			await PreprocessResponseAsync(request, response);
 			if (statusCodeExceptionMapping && !response.IsSuccessStatusCode) {
 				MapExceptionForError(request, response);
 			}
 			return response;
+		}
+
+		/// <summary>
+		/// Is called in <see cref="SendRequest"/> when a <paramref name="response"/> was received from the server for a given <paramref name="request"/> 
+		/// to allow deriving classes to override preprocessing of the response object.
+		/// It is called before status code exception mapping and before returning the response object.
+		/// The default implementation calls <see cref="HttpContent.LoadIntoBufferAsync()"/> on the response content for non-success responses.
+		/// This is intended to ensure that the response body is read from the socket, even if the body provided in the exception is not touched.
+		/// Doing this is relevant on some <see cref="System.Net.Http.HttpClient"/> implementations to avoid clogging the socket, preventing it from being used for further requests.
+		/// </summary>
+		/// <param name="request">The request object to which the response belongs.</param>
+		/// <param name="response">The response object to perform preprocessing on.</param>
+		/// <returns>A task representing the asynchronous preprocessing operation.</returns>
+		protected virtual async Task PreprocessResponseAsync(HttpRequestMessage request, HttpResponseMessage response) {
+			if (!response.IsSuccessStatusCode) {
+				await response.Content.LoadIntoBufferAsync();
+			}
 		}
 
 		private static string buildQueryString(IEnumerable<KeyValuePair<string, string>> queryParameters) {
