@@ -24,9 +24,11 @@ namespace SGL.Utilities {
 		public event AsyncEventHandler<AuthorizationExpiredEventArgs>? AuthorizationExpired;
 
 		/// <summary>
-		/// The URI path under which this client operates with <see cref="SendRequest"/>.
+		/// The URI path under which this client operates with <see cref="SendRequest(HttpMethod, string, IEnumerable{KeyValuePair{string, string}}, HttpContent?, Action{HttpRequestMessage}, MediaTypeWithQualityHeaderValue?, CancellationToken, bool, bool)"/> 
+		/// and <see cref="SendRequest(HttpMethod, string, HttpContent?, Action{HttpRequestMessage}, MediaTypeWithQualityHeaderValue?, CancellationToken, bool, bool)"/>.
 		/// It can be relative to the <see cref="HttpClient.BaseAddress"/> of <see cref="HttpClient"/>.
-		/// The relative path in <see cref="SendRequest"/> is appended under this.
+		/// The relative path in <see cref="SendRequest(HttpMethod, string, IEnumerable{KeyValuePair{string, string}}, HttpContent?, Action{HttpRequestMessage}, MediaTypeWithQualityHeaderValue?, CancellationToken, bool, bool)"/> 
+		/// and <see cref="SendRequest(HttpMethod, string, HttpContent?, Action{HttpRequestMessage}, MediaTypeWithQualityHeaderValue?, CancellationToken, bool, bool)"/> is appended under this.
 		/// </summary>
 		protected string PrefixUriPath { get; }
 
@@ -90,7 +92,7 @@ namespace SGL.Utilities {
 		/// <param name="ct">A <see cref="CancellationToken"/> that allows cancelling the operation.</param>
 		/// <param name="authenticated">If true, the request will have its Authorization header set to the result of <see cref="GetAuthenticationHeaderAsync"/>.</param>
 		/// <param name="statusCodeExceptionMapping">
-		/// If true, <see cref="MapExceptionForError(HttpResponseMessage)"/> will be called if the response has <see cref="HttpResponseMessage.IsSuccessStatusCode"/> false.
+		/// If true, <see cref="MapExceptionForError(HttpRequestMessage, HttpResponseMessage)"/> will be called if the response has <see cref="HttpResponseMessage.IsSuccessStatusCode"/> false.
 		/// If false, it is the callers responsibility to check the status code.
 		/// </param>
 		/// <returns>A task object representing the operation, providing a <see cref="HttpResponseMessage"/> as its result.</returns>
@@ -140,6 +142,7 @@ namespace SGL.Utilities {
 			catch (HttpRequestException ex) {
 				throw MapExceptionForError(ex, request);
 			}
+
 			catch (Exception) {
 				throw;
 			}
@@ -151,7 +154,9 @@ namespace SGL.Utilities {
 		}
 
 		/// <summary>
-		/// Is called in <see cref="SendRequest"/> when a <paramref name="response"/> was received from the server for a given <paramref name="request"/> 
+		/// Is called in <see cref="SendRequest(HttpMethod, string, IEnumerable{KeyValuePair{string, string}}, HttpContent?, Action{HttpRequestMessage}, MediaTypeWithQualityHeaderValue?, CancellationToken, bool, bool)"/> 
+		/// and <see cref="SendRequest(HttpMethod, string, HttpContent?, Action{HttpRequestMessage}, MediaTypeWithQualityHeaderValue?, CancellationToken, bool, bool)"/> 
+		/// when a <paramref name="response"/> was received from the server for a given <paramref name="request"/> 
 		/// to allow deriving classes to override preprocessing of the response object.
 		/// It is called before status code exception mapping and before returning the response object.
 		/// The default implementation calls <see cref="HttpContent.LoadIntoBufferAsync()"/> on the response content for non-success responses.
@@ -173,7 +178,8 @@ namespace SGL.Utilities {
 		}
 
 		/// <summary>
-		/// Called by <see cref="SendRequest"/> if it is insructed to handle errors and a response has <see cref="HttpResponseMessage.IsSuccessStatusCode"/> false.
+		/// Called by <see cref="SendRequest(HttpMethod, string, IEnumerable{KeyValuePair{string, string}}, HttpContent?, Action{HttpRequestMessage}, MediaTypeWithQualityHeaderValue?, CancellationToken, bool, bool)"/> 
+		/// and <see cref="SendRequest(HttpMethod, string, HttpContent?, Action{HttpRequestMessage}, MediaTypeWithQualityHeaderValue?, CancellationToken, bool, bool)"/> if it is instructed to handle errors and a response has <see cref="HttpResponseMessage.IsSuccessStatusCode"/> false.
 		/// Can be overriden to customize error handling.
 		/// The default calls <see cref="HttpResponseMessage.EnsureSuccessStatusCode"/> and wraps the thrown exception in <see cref="HttpApiResponseException"/>
 		/// with context information from <paramref name="request"/> and <paramref name="response"/>.
@@ -191,8 +197,10 @@ namespace SGL.Utilities {
 		}
 
 		/// <summary>
-		/// Called by <see cref="SendRequest"/> if the request couldn't be sent to the server. This could be due to network, DNS or TLS issues.
-		/// The returned exception is then thrown by <see cref="SendRequest"/> to indicate the error.
+		/// Called by <see cref="SendRequest(HttpMethod, string, IEnumerable{KeyValuePair{string, string}}, HttpContent?, Action{HttpRequestMessage}, MediaTypeWithQualityHeaderValue?, CancellationToken, bool, bool)"/> 
+		/// and <see cref="SendRequest(HttpMethod, string, HttpContent?, Action{HttpRequestMessage}, MediaTypeWithQualityHeaderValue?, CancellationToken, bool, bool)"/> if the request couldn't be sent to the server. This could be due to network, DNS or TLS issues.
+		/// The returned exception is then thrown by <see cref="SendRequest(HttpMethod, string, IEnumerable{KeyValuePair{string, string}}, HttpContent?, Action{HttpRequestMessage}, MediaTypeWithQualityHeaderValue?, CancellationToken, bool, bool)"/> 
+		/// or <see cref="SendRequest(HttpMethod, string, HttpContent?, Action{HttpRequestMessage}, MediaTypeWithQualityHeaderValue?, CancellationToken, bool, bool)"/> to indicate the error.
 		/// The default wraps <paramref name="ex"/> in <see cref="HttpApiRequestFailedException"/> with context information from <paramref name="request"/>.
 		/// </summary>
 		/// <param name="ex">The exception thrown by <see cref="HttpClient.Send(HttpRequestMessage, HttpCompletionOption, CancellationToken)"/>.</param>
