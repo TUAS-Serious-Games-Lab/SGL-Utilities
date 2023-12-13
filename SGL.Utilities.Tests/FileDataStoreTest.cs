@@ -27,10 +27,10 @@ namespace SGL.Utilities.Tests {
 			public List<string> List { get; set; }
 
 			public static async Task<TestData> DeserializeAsync(Stream stream, CancellationToken ct) {
-				return await JsonSerializer.DeserializeAsync<TestData>(stream) ?? throw new Exception("Read null value");
+				return await JsonSerializer.DeserializeAsync<TestData>(stream, cancellationToken: ct) ?? throw new Exception("Read null value");
 			}
 			public static Task SerializeAsync(Stream stream, TestData data, CancellationToken ct) {
-				return JsonSerializer.SerializeAsync(stream, data);
+				return JsonSerializer.SerializeAsync(stream, data, cancellationToken: ct);
 			}
 		}
 

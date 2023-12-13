@@ -29,7 +29,7 @@ namespace SGL.Utilities.Backend.AspNetCore.Tests {
 				Mapping = new Dictionary<string, int> {
 					["x"] = 123,
 					["y"] = 234,
-					["x"] = 345,
+					["z"] = 345,
 					["answer"] = 42
 				}
 			};

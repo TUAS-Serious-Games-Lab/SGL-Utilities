@@ -129,7 +129,7 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 					string trimmedLine = line.TrimStart();
 					bool beginLine = trimmedLine.StartsWith("-----BEGIN");
 					bool endLine = !beginLine && trimmedLine.StartsWith("-----END");
-					if (sb == null & beginLine) { // Not current object, found begin of object
+					if (sb == null && beginLine) { // No current object, found begin of object
 						sb = sbBuff.Clear();// Start object with string builder
 						sb.AppendLine(line);
 					}

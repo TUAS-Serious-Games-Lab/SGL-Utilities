@@ -28,8 +28,8 @@ namespace SGL.Utilities.EntityFrameworkCore {
 			return true;
 		}
 
-		private static int computeHashCode(ValueComparer elementValueComparer, T[] e) {
-			return e.Aggregate(104179, (h, e) => HashCode.Combine(h, e));
+		private static int ComputeHashCode(ValueComparer elementValueComparer, T[] e) {
+			return e.Aggregate(104179, (h, e) => HashCode.Combine(h, elementValueComparer.GetHashCode(e)));
 		}
 
 		private static T[] makeSnapshot(ValueComparer elementValueComparer, T[] e) {

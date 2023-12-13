@@ -23,9 +23,10 @@ namespace SGL.Utilities {
 			if (batchSize <= 0) {
 				throw new ArgumentOutOfRangeException(nameof(batchSize), "The size of the batches must be positive.");
 			}
-			while (source.Count() > 0) {
-				var batch = source.Take(batchSize).ToArray();
-				source.Skip(batchSize);
+			var src = source;
+			while (src.Any()) {
+				var batch = src.Take(batchSize).ToArray();
+				src = src.Skip(batchSize);
 				yield return batch;
 			}
 		}
