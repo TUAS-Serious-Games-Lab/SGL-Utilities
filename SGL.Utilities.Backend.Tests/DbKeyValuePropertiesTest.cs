@@ -27,7 +27,7 @@ namespace SGL.Utilities.Backend.Tests {
 				return prop;
 			}
 
-			public static Aggregate Create(string label) => new Aggregate { Id = Guid.NewGuid(), Label = label, Parts = new List<Part>(), Properties = new List<PropDef>() };
+			public static Aggregate Create(string label) => new() { Id = Guid.NewGuid(), Label = label, Parts = new List<Part>(), Properties = new List<PropDef>() };
 		}
 
 		public class Part {
@@ -40,7 +40,7 @@ namespace SGL.Utilities.Backend.Tests {
 				PropertiesUtility.ValidateProperties(this, io => io.Properties, io => io.Aggregate.Properties);
 			}
 
-			public static Part Create(Aggregate aggregate, string label) => new Part { Id = Guid.NewGuid(), Label = label, Aggregate = aggregate, Properties = new List<PropInst>() };
+			public static Part Create(Aggregate aggregate, string label) => new() { Id = Guid.NewGuid(), Label = label, Aggregate = aggregate, Properties = new List<PropInst>() };
 
 			public PropInst SetProperty(string name, object? value) => PropertiesUtility.SetKeyValueProperty(this, name, value,
 					io => io.Properties, io => io.Aggregate.Properties, (def, owner) => PropInst.Create<PropInst>(def, owner));
@@ -73,11 +73,11 @@ namespace SGL.Utilities.Backend.Tests {
 	}
 
 	public class DbKeyValuePropertiesTest : IDisposable {
-		TestDatabase<KeyValuePropertiesTestContext> testDb = new();
+		readonly TestDatabase<KeyValuePropertiesTestContext> testDb = new();
 
 		public void Dispose() => testDb.Dispose();
 
-		private KeyValuePropertiesTestContext createContext() {
+		private KeyValuePropertiesTestContext CreateContext() {
 			return new KeyValuePropertiesTestContext(testDb.ContextOptions);
 		}
 
@@ -102,13 +102,13 @@ namespace SGL.Utilities.Backend.Tests {
 
 			part.ValidateProperties();
 
-			using (var context = createContext()) {
+			using (var context = CreateContext()) {
 				context.Add(agg);
 				context.Add(part);
 				await context.SaveChangesAsync();
 			}
 
-			using (var context = createContext()) {
+			using (var context = CreateContext()) {
 				var readAgg = await context.Aggregates.FindAsync(agg.Id);
 				Assert.NotNull(readAgg);
 				Assert.Equal(agg.Id, readAgg!.Id);
@@ -184,12 +184,12 @@ namespace SGL.Utilities.Backend.Tests {
 			part.SetProperty("Date", date);
 			part.SetProperty("Guid", guid);
 
-			using (var context = createContext()) {
+			using (var context = CreateContext()) {
 				context.Aggregates.Add(agg);
 				context.Parts.Add(part);
 				await context.SaveChangesAsync();
 			}
-			using (var context = createContext()) {
+			using (var context = CreateContext()) {
 				var readPart = await context.Parts.Where(p => p.Label == "Part 1").Include(p => p.Properties).SingleOrDefaultAsync();
 				Assert.NotNull(readPart);
 				Assert.Equal(1234, readPart!.GetProperty("Number"));
@@ -218,13 +218,13 @@ namespace SGL.Utilities.Backend.Tests {
 			};
 			part.ValidateProperties();
 			part.SetProperties(dict);
-			using (var context = createContext()) {
+			using (var context = CreateContext()) {
 				context.Aggregates.Add(agg);
 				context.Parts.Add(part);
 				await context.SaveChangesAsync();
 			}
 
-			using (var context = createContext()) {
+			using (var context = CreateContext()) {
 				var readPart = await context.Parts.Where(p => p.Label == "Part 1").Include(p => p.Properties).SingleOrDefaultAsync();
 				Assert.NotNull(readPart);
 				IDictionary<string, object?> props = readPart!.GetProperties();

@@ -9,32 +9,27 @@ namespace SGL.Utilities {
 	/// </summary>
 	public static class DictionaryDataMapping {
 		private readonly static MethodInfo dictToMappingDict =
-			typeof(DictionaryDataMapping).GetMethod(nameof(dictToMappingDictionary), BindingFlags.NonPublic | BindingFlags.Static) ??
-				throw new MissingMethodException(nameof(DictionaryDataMapping), nameof(dictToMappingDictionary));
+			typeof(DictionaryDataMapping).GetMethod(nameof(DictToMappingDictionary), BindingFlags.NonPublic | BindingFlags.Static) ??
+				throw new MissingMethodException(nameof(DictionaryDataMapping), nameof(DictToMappingDictionary));
 
-		private static object dictToMappingDictionary<K, V>(IDictionary<K, V> dict) {
-			return dict.ToDictionary(kvp => objectToDataMappingKey(kvp.Key) ?? "null", kvp => objectToDataMapping(kvp.Value));
+		private static object DictToMappingDictionary<K, V>(IDictionary<K, V> dict) {
+			return dict.ToDictionary(kvp => ObjectToDataMappingKey(kvp.Key) ?? "null", kvp => ObjectToDataMapping(kvp.Value));
 		}
-		private static bool isDict(Type type, out Type iface) {
+		private static bool IsDict(Type type, out Type iface) {
 			iface = type;
 			var ifaces = type.GetInterfaces().Where(iface => iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IDictionary<,>));
-			if (ifaces.Count() == 0) return false;
+			if (!ifaces.Any()) return false;
 			iface = ifaces.Single();
 			return true;
 		}
 
-		private static string objectToDataMappingKey(object? obj) {
-			switch (obj) {
-				case null:
-					return "null";
-				case DateTime dt:
-					return dt.ToString("O");
-				default:
-					return obj?.ToString() ?? "null";
-			}
-		}
+		private static string ObjectToDataMappingKey(object? obj) => obj switch {
+			null => "null",
+			DateTime dt => dt.ToString("O"),
+			_ => obj?.ToString() ?? "null",
+		};
 
-		private static object? objectToDataMapping(object? obj) {
+		private static object? ObjectToDataMapping(object? obj) {
 			Type type = obj?.GetType() ?? typeof(object);
 			switch (obj) {
 				case null:
@@ -51,11 +46,11 @@ namespace SGL.Utilities {
 					return dict;
 				case IList<object?> list:
 					return list;
-				case object when isDict(type, out var iface):
+				case object when IsDict(type, out var iface):
 					return dictToMappingDict.MakeGenericMethod(iface.GenericTypeArguments).Invoke(null, new object[] { obj });
 				case IEnumerable<object?> e:
-					return e.Select(elem => objectToDataMapping(elem)).ToList();
-				case object when type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy).Count() > 0:
+					return e.Select(elem => ObjectToDataMapping(elem)).ToList();
+				case object when type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy).Length > 0:
 					return ToDataMappingDictionary(obj);
 				default:
 					throw new InvalidOperationException($"Don't know how to map type {type.Name}.");
@@ -83,7 +78,7 @@ namespace SGL.Utilities {
 			var type = obj.GetType();
 			var props = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy);
 			var filteredProps = props.Where(topLevelPropertyFilter);
-			return filteredProps.ToDictionary(pi => pi.Name, pi => objectToDataMapping(pi.GetValue(obj)));
+			return filteredProps.ToDictionary(pi => pi.Name, pi => ObjectToDataMapping(pi.GetValue(obj)));
 		}
 
 		/// <summary>

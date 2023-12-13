@@ -6,7 +6,7 @@ namespace SGL.Utilities {
 	/// <summary>
 	/// Encapsulates an <see cref="AuthorizationToken"/> along with its expiry time.
 	/// </summary>
-	public struct AuthorizationData {
+	public readonly struct AuthorizationData {
 		/// <summary>
 		/// The actual authorization token to use for making API requests.
 		/// </summary>

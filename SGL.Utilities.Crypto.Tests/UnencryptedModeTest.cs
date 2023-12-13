@@ -6,7 +6,7 @@ using Xunit;
 
 namespace SGL.Utilities.Crypto.Tests {
 	public class UnencryptedModeTest {
-		private readonly RandomGenerator random = new RandomGenerator();
+		private readonly RandomGenerator random = new();
 
 		[Fact]
 		public void UnencryptedModeUsingDirectMethodPassesDataThroughUnchanged() {

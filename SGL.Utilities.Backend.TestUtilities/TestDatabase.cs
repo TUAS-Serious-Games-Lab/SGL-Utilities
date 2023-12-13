@@ -22,8 +22,8 @@ namespace SGL.Utilities.Backend.TestUtilities {
 		/// </summary>
 		public DbContextOptions<TContext> ContextOptions { get; }
 
-		private string? dataSourceName = null;
-		private ILoggerFactory? loggerFactory = null;
+		private readonly string? dataSourceName = null;
+		private readonly ILoggerFactory? loggerFactory = null;
 
 		/// <summary>
 		/// Creates an sqlite in-memory database and applies the schema specified by the database context type to it.
@@ -52,7 +52,7 @@ namespace SGL.Utilities.Backend.TestUtilities {
 		public TestDatabase(string dataSourceName, ILoggerFactory? loggerFactory = null) {
 			this.loggerFactory = loggerFactory;
 			this.dataSourceName = dataSourceName;
-			Connection = new SqliteConnection(makeConnectionStringShared(dataSourceName));
+			Connection = new SqliteConnection(MakeConnectionStringShared(dataSourceName));
 			Connection.Open();
 			var optionsBuilder = new DbContextOptionsBuilder<TContext>();
 			ApplyDbContextOptions(optionsBuilder);
@@ -62,7 +62,7 @@ namespace SGL.Utilities.Backend.TestUtilities {
 			}
 		}
 
-		private static string makeConnectionStringShared(string dataSourceName) {
+		private static string MakeConnectionStringShared(string dataSourceName) {
 			return $"Data Source={dataSourceName};Mode=Memory;Cache=Shared";
 		}
 
@@ -77,7 +77,7 @@ namespace SGL.Utilities.Backend.TestUtilities {
 		/// <returns>A reference to <paramref name="builder"/> for chaining.</returns>
 		public DbContextOptionsBuilder ApplyDbContextOptions(DbContextOptionsBuilder builder, Action<SqliteDbContextOptionsBuilder>? sqliteOptions = null) {
 			if (dataSourceName != null) {
-				builder.UseSqlite(makeConnectionStringShared(dataSourceName), sqliteOptions);
+				builder.UseSqlite(MakeConnectionStringShared(dataSourceName), sqliteOptions);
 				if (loggerFactory != null) {
 					builder.UseLoggerFactory(loggerFactory);
 				}

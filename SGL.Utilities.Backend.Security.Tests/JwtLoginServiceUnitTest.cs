@@ -13,17 +13,15 @@ using Xunit.Sdk;
 
 namespace SGL.Utilities.Backend.Security.Tests {
 	public class JwtLoginServiceUnitTest {
-		private ITestOutputHelper output;
-		private ILoggerFactory loggerFactory;
-		private JwtOptions options;
-		private ILoginService loginService;
-		private JwtTokenValidator tokenValidator;
-		private TimeSpan delayTolerance = TimeSpan.FromMilliseconds(16);
+		private readonly ILoggerFactory loggerFactory;
+		private readonly JwtOptions options;
+		private readonly ILoginService loginService;
+		private readonly JwtTokenValidator tokenValidator;
+		private readonly TimeSpan delayTolerance = TimeSpan.FromMilliseconds(16);
 
 		private class User { }
 
 		public JwtLoginServiceUnitTest(ITestOutputHelper output) {
-			this.output = output;
 			loggerFactory = LoggerFactory.Create(c => c.AddXUnit(output).SetMinimumLevel(LogLevel.Trace));
 			options = new JwtOptions() {
 				Audience = "JwtLoginServiceUnitTest",

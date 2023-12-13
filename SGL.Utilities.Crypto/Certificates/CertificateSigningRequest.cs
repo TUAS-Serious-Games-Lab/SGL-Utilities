@@ -53,12 +53,12 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// <summary>
 		/// The public key of the requesting subject.
 		/// </summary>
-		public PublicKey SubjectPublicKey => new PublicKey(wrapped.GetPublicKey());
+		public PublicKey SubjectPublicKey => new(wrapped.GetPublicKey());
 
 		/// <summary>
 		/// The distinguished name identifying the requesting subject.
 		/// </summary>
-		public DistinguishedName SubjectDN => new DistinguishedName(wrapped.GetCertificationRequestInfo().Subject);
+		public DistinguishedName SubjectDN => new(wrapped.GetCertificationRequestInfo().Subject);
 
 		/// <summary>
 		/// If the certificate signing request requests specific usages of the associated key pair to be allowed by the certificate using the KeyUsage and ExtendedKeyUsage extensions,
@@ -125,15 +125,15 @@ namespace SGL.Utilities.Crypto.Certificates {
 		public static CertificateSigningRequest Generate(DistinguishedName subjectDN, KeyPair subjectKeyPair, SignatureDigest digest = SignatureDigest.Sha256,
 				bool requestSubjectKeyIdentifier = false, bool requestAuthorityKeyIdentifier = false, KeyUsages? requestKeyUsages = null,
 				(bool IsCA, int? PathLength)? requestCABasicConstraints = null) {
-			X509ExtensionsGenerator generator = new X509ExtensionsGenerator();
+			var generator = new X509ExtensionsGenerator();
 			bool anyExtensions = false;
 			if (requestSubjectKeyIdentifier) {
 				anyExtensions = true;
-				generator.AddExtension(X509Extensions.SubjectKeyIdentifier, true, new byte[0]);
+				generator.AddExtension(X509Extensions.SubjectKeyIdentifier, true, Array.Empty<byte>());
 			}
 			if (requestAuthorityKeyIdentifier) {
 				anyExtensions = true;
-				generator.AddExtension(X509Extensions.AuthorityKeyIdentifier, true, new byte[0]);
+				generator.AddExtension(X509Extensions.AuthorityKeyIdentifier, true, Array.Empty<byte>());
 			}
 			if (requestKeyUsages.HasValue && (requestKeyUsages.Value & KeyUsages.AllBasic) != 0) {
 				anyExtensions = true;
@@ -194,7 +194,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 			if (!signerCertificate.CABasicConstraints.Value.IsCA) {
 				throw new CertificateException("The given signer certificate has a BasicConstraints extension with CA=false. This forbids it from being used for siging another certificate.");
 			}
-			var validityPeriod = policy.GetValidityPeriod();
+			var (ValidFrom, ValidTo) = policy.GetValidityPeriod();
 			KeyIdentifier? authorityKeyIdentifier = null;
 			if (policy.ShouldGenerateAuthorityKeyIdentifier(RequestedAuthorityKeyIdentifier)) {
 				authorityKeyIdentifier = signerCertificate.SubjectKeyIdentifier;
@@ -202,7 +202,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 					throw new InvalidOperationException("Policy indicates that AuthorityKeyIdentifier extension shall be generated, but signer certificate doesn't have SubjectKeyIdentifier.");
 				}
 			}
-			return Certificate.Generate(signerCertificate.SubjectDN, signerKeyPair.Private, SubjectDN, SubjectPublicKey, validityPeriod.From, validityPeriod.To, policy.GetSerialNumber(),
+			return Certificate.Generate(signerCertificate.SubjectDN, signerKeyPair.Private, SubjectDN, SubjectPublicKey, ValidFrom, ValidTo, policy.GetSerialNumber(),
 				policy.GetSignatureDigest(), authorityKeyIdentifier, policy.ShouldGenerateSubjectKeyIdentifier(RequestedSubjectKeyIdentifier),
 				policy.AcceptedKeyUsages(RequestedKeyUsages) ?? KeyUsages.NoneDefined, policy.AcceptedCAConstraints(RequestedCABasicConstraints));
 		}

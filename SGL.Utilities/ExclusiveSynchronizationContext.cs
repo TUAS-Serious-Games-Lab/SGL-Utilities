@@ -17,8 +17,8 @@ namespace SGL.Utilities {
 	/// </summary>
 	public class ExclusiveSynchronizationContext : SynchronizationContext {
 		private readonly SynchronizationContext backingContext;
-		private readonly object lockObj = new object();
-		private readonly ConcurrentQueue<(SendOrPostCallback Callback, object? State)> queue = new ConcurrentQueue<(SendOrPostCallback Callback, object? State)>();
+		private readonly object lockObj = new();
+		private readonly ConcurrentQueue<(SendOrPostCallback Callback, object? State)> queue = new();
 
 		/// <summary>
 		/// Creates a new exclusive synchronization context, that uses <see cref="SynchronizationContext.Current"/> as the backing context.
@@ -66,10 +66,10 @@ namespace SGL.Utilities {
 		/// <param name="state">The state object to pass to the callback.</param>
 		public override void Post(SendOrPostCallback callback, object? state) {
 			queue.Enqueue((callback, state));
-			backingContext.Post(s => (s as ExclusiveSynchronizationContext)?.pump(), this);
+			backingContext.Post(s => (s as ExclusiveSynchronizationContext)?.Pump(), this);
 		}
 
-		private void pump() {
+		private void Pump() {
 			lock (lockObj) {
 				while (queue.TryDequeue(out var element)) {
 					element.Callback(element.State);

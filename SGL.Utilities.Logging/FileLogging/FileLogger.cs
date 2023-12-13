@@ -4,8 +4,8 @@ using System.Collections.Generic;
 
 namespace SGL.Utilities.Logging.FileLogging {
 	internal class FileLogger : ILogger {
-		private string categoryName;
-		private FileLoggingProvider provider;
+		private readonly string categoryName;
+		private readonly FileLoggingProvider provider;
 		private LogLevel MinLogLevel { get; }
 
 		public FileLogger(string categoryName, FileLoggingProvider provider, LogLevel minLogLevel) {

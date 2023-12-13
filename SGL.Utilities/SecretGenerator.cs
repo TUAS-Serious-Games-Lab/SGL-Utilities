@@ -8,15 +8,15 @@ namespace SGL.Utilities {
 	/// </summary>
 	public class SecretGenerator {
 #if NETSTANDARD
-		private RNGCryptoServiceProvider rngCsp = new RNGCryptoServiceProvider();
-		private object lockObject = new object();
+		private readonly RNGCryptoServiceProvider rngCsp = new();
+		private readonly object lockObject = new();
 #endif
 		private SecretGenerator() { }
 
 		/// <summary>
 		/// Provides a singleton instance of the <see cref="SecretGenerator"/>.
 		/// </summary>
-		public static SecretGenerator Instance = new SecretGenerator();
+		public static readonly SecretGenerator Instance = new();
 
 		/// <summary>
 		/// Generates the given number of bytes of randomness and returns them encoded using base64.

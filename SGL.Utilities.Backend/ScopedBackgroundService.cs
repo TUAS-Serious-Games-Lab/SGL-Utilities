@@ -28,7 +28,7 @@ namespace SGL.Utilities.Backend {
 	/// because they are added as singletons and lifetime rules of the DI container forbid singleton services from accessing scoped services.
 	/// </remarks>
 	public class ScopingBackgroundService<TService> : BackgroundService where TService : IScopedBackgroundService {
-		IServiceProvider services;
+		readonly IServiceProvider services;
 
 		/// <summary>
 		/// Instantieates the <see cref="ScopingBackgroundService{TService}"/> using the given dependency injection service provider.

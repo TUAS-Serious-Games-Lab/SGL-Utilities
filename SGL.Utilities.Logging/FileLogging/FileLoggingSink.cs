@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace SGL.Utilities.Logging.FileLogging {
 	internal class FileLoggingSink : IDisposable, IAsyncDisposable {
-		private NamedPlaceholderFormatter<LogMessage> baseDirectoryFormatter;
-		private NamedPlaceholderFormatter<LogMessage> normalMessageFormatter;
-		private NamedPlaceholderFormatter<LogMessage> exceptionMessageFormatter;
-		private NamedPlaceholderFormatter<LogMessage> fileNameFormatter;
-		private NamedPlaceholderFormatter<LogMessage>? fileNameFormatterFixedTime;
-		private bool timeBased;
+		private readonly NamedPlaceholderFormatter<LogMessage> baseDirectoryFormatter;
+		private readonly NamedPlaceholderFormatter<LogMessage> normalMessageFormatter;
+		private readonly NamedPlaceholderFormatter<LogMessage> exceptionMessageFormatter;
+		private readonly NamedPlaceholderFormatter<LogMessage> fileNameFormatter;
+		private readonly NamedPlaceholderFormatter<LogMessage>? fileNameFormatterFixedTime;
+		private readonly bool timeBased;
 
 		public FileLoggingSink(FileLoggingSinkOptions options,
 			NamedPlaceholderFormatter<LogMessage> baseDirectoryFormatter, NamedPlaceholderFormatter<LogMessage> normalMessageFormatter,
@@ -37,13 +37,13 @@ namespace SGL.Utilities.Logging.FileLogging {
 			}
 		}
 
-		FileLoggingSinkOptions options;
-		private IDictionary<string, (string Path, StreamWriter Writer)>? timeBasedWriters;
-		private IDictionary<string, StreamWriter>? normalWriters;
-		private List<StreamWriter> closeList = new();
-		private StringBuilder stringBuilder = new();
+		private readonly FileLoggingSinkOptions options;
+		private readonly IDictionary<string, (string Path, StreamWriter Writer)>? timeBasedWriters;
+		private readonly IDictionary<string, StreamWriter>? normalWriters;
+		private readonly List<StreamWriter> closeList = new();
+		private readonly StringBuilder stringBuilder = new();
 
-		private string sanitizePath(string filename) => new string(filename.Select(c => c switch {
+		private string SanitizePath(string filename) => new(filename.Select(c => c switch {
 			'.' => c,
 			'-' => c,
 			'(' => c,
@@ -56,16 +56,16 @@ namespace SGL.Utilities.Logging.FileLogging {
 			_ => '_'
 		}).ToArray());
 
-		private async ValueTask<StreamWriter> getWriterAsync(LogMessage msg) {
+		private async ValueTask<StreamWriter> GetWriterAsync(LogMessage msg) {
 			stringBuilder.Clear();
-			var baseDirectory = sanitizePath(baseDirectoryFormatter.AppendFormattedTo(stringBuilder, msg).ToString());
+			var baseDirectory = SanitizePath(baseDirectoryFormatter.AppendFormattedTo(stringBuilder, msg).ToString());
 			stringBuilder.Clear();
-			var filename = sanitizePath(fileNameFormatter.AppendFormattedTo(stringBuilder, msg).ToString());
+			var filename = SanitizePath(fileNameFormatter.AppendFormattedTo(stringBuilder, msg).ToString());
 			var path = Path.Combine(baseDirectory, filename);
 			var dir = Path.GetDirectoryName(path);
 			if (timeBased) {
 				stringBuilder.Clear();
-				var timeIndependentFilenameSlug = sanitizePath(fileNameFormatterFixedTime!.AppendFormattedTo(stringBuilder, msg).ToString());
+				var timeIndependentFilenameSlug = SanitizePath(fileNameFormatterFixedTime!.AppendFormattedTo(stringBuilder, msg).ToString());
 				if (timeBasedWriters!.TryGetValue(timeIndependentFilenameSlug, out var writerEntry)) {
 					if (path == writerEntry.Path) {
 						return writerEntry.Writer;
@@ -97,14 +97,14 @@ namespace SGL.Utilities.Logging.FileLogging {
 			}
 		}
 
-		private async ValueTask processPendingClosesAsync() {
+		private async ValueTask ProcessPendingClosesAsync() {
 			foreach (var writer in closeList) {
 				await writer.DisposeAsync();
 			}
 			closeList.Clear();
 		}
 
-		private bool filter(LogMessage msg) {
+		private bool Filter(LogMessage msg) {
 			if (msg.Level < options.MinLevel) return false;
 			return options.Categories.Count == 0 && options.CategoryContains.Count == 0 ||
 				options.Categories.Contains(msg.Category) ||
@@ -112,9 +112,9 @@ namespace SGL.Utilities.Logging.FileLogging {
 		}
 
 		public async Task WriteAsync(LogMessage msg) {
-			if (!filter(msg)) return;
-			var writer = await getWriterAsync(msg);
-			await processPendingClosesAsync();
+			if (!Filter(msg)) return;
+			var writer = await GetWriterAsync(msg);
+			await ProcessPendingClosesAsync();
 			stringBuilder.Clear();
 			if (msg.Exception != null) {
 				exceptionMessageFormatter.AppendFormattedTo(stringBuilder, msg);
@@ -145,7 +145,7 @@ namespace SGL.Utilities.Logging.FileLogging {
 			}
 			timeBasedWriters?.Clear();
 			normalWriters?.Clear();
-			await processPendingClosesAsync();
+			await ProcessPendingClosesAsync();
 		}
 	}
 }

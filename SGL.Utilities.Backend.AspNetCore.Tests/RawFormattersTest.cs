@@ -63,7 +63,7 @@ namespace SGL.Utilities.Backend.AspNetCore.Tests {
 	[ApiController]
 	public class RawFormattersTestController : ControllerBase {
 
-		private RawFormattersTestFixture fixture;
+		private readonly RawFormattersTestFixture fixture;
 
 		public RawFormattersTestController(RawFormattersTestFixture fixture) {
 			this.fixture = fixture;
@@ -86,11 +86,9 @@ namespace SGL.Utilities.Backend.AspNetCore.Tests {
 
 	public class RawFormattersTest : IClassFixture<RawFormattersTestFixture> {
 		private readonly RawFormattersTestFixture fixture;
-		private readonly ITestOutputHelper output;
 
 		public RawFormattersTest(RawFormattersTestFixture fixture, ITestOutputHelper output) {
 			this.fixture = fixture;
-			this.output = output;
 			fixture.Output = output;
 		}
 
@@ -98,8 +96,9 @@ namespace SGL.Utilities.Backend.AspNetCore.Tests {
 		public async Task PlainTextInputFormattingCorrectlyReadsBody() {
 			using var client = fixture.CreateClient();
 			var content = new StringContent(fixture.TestString);
-			var request = new HttpRequestMessage(HttpMethod.Post, "api/raw-formatters-test/echo/string");
-			request.Content = content;
+			var request = new HttpRequestMessage(HttpMethod.Post, "api/raw-formatters-test/echo/string") {
+				Content = content
+			};
 			var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead);
 			response.EnsureSuccessStatusCode();
 			var responseBody = await response.Content.ReadAsStringAsync();

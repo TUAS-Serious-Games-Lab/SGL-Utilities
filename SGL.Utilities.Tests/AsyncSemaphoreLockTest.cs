@@ -38,14 +38,15 @@ namespace SGL.Utilities.Tests {
 		public async Task LockProvidesMutalExclusionForCriticalSection() {
 			var lck = new AsyncSemaphoreLock();
 			var operationOrder = new StringBuilder();
-			async Task testOperation(AsyncSemaphoreLock l, StringBuilder opOrder, char opId, bool waitBefore, int intenalDelay) {
+
+			static async Task testOperation(AsyncSemaphoreLock l, StringBuilder opOrder, char opId, bool waitBefore, int intenalDelay) {
 				if (waitBefore) {
 					await Task.Delay(100);
 				}
-				using (var handle = await lck.WaitAsyncWithScopedRelease()) {
-					operationOrder.Append(opId);
+				using (var handle = await l.WaitAsyncWithScopedRelease()) {
+					opOrder.Append(opId);
 					await Task.Delay(intenalDelay);
-					operationOrder.Append(opId);
+					opOrder.Append(opId);
 				}
 			}
 			{

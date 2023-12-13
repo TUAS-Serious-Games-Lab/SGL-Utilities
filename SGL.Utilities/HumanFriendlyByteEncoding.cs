@@ -74,16 +74,16 @@ namespace SGL.Utilities {
 	/// </list>
 	/// </remarks>
 	public static class HumanFriendlyByteEncoding {
-		private static char[] bitsToCharMapping = new char[] {
+		private static readonly char[] bitsToCharMapping = new char[] {
 				'0','1','2','3','4','5','6','7','8','9',
 				'A','C','D','E','F','G','H','J','K','M',
 				'N','P','Q','R','S','T','U','V','W','X',
 				'Y','Z'
 			};
-		private static Dictionary<char, byte> charToBitsMapping;
-		private static char[] extraBlockBytesToPrefixMapping = new char[] { '?', '&', '%', '*', '#' };
-		private static int[] extraBlockBytesToExtraBlockCharsMapping = new int[] { 0, 2, 4, 5, 7 };
-		private static Dictionary<char, byte> prefixToExtraBlockBytesMapping;
+		private static readonly Dictionary<char, byte> charToBitsMapping;
+		private static readonly char[] extraBlockBytesToPrefixMapping = new char[] { '?', '&', '%', '*', '#' };
+		private static readonly int[] extraBlockBytesToExtraBlockCharsMapping = new int[] { 0, 2, 4, 5, 7 };
+		private static readonly Dictionary<char, byte> prefixToExtraBlockBytesMapping;
 		private const int blockBytes = 5;
 		private const int digitBits = 5;
 		private const int blockChars = 8;
@@ -140,9 +140,9 @@ namespace SGL.Utilities {
 		/// </summary>
 		/// <param name="input">The input to encode</param>
 		/// <returns>The bytes encoded to characters as a string.</returns>
-		public static string GetString(byte[] input) => new string(GetChars(input));
+		public static string GetString(byte[] input) => new(GetChars(input));
 
-		private static byte charToBits(char c) {
+		private static byte CharToBits(char c) {
 			if (charToBitsMapping.TryGetValue(c, out var bits)) {
 				return bits;
 			}
@@ -160,8 +160,7 @@ namespace SGL.Utilities {
 			if (input.Length == 0) {
 				return Array.Empty<byte>();
 			}
-			byte extraBlockBytes = 0;
-			if (!prefixToExtraBlockBytesMapping.TryGetValue(input[0], out extraBlockBytes)) {
+			if (!prefixToExtraBlockBytesMapping.TryGetValue(input[0], out byte extraBlockBytes)) {
 				throw new InvalidEncodingCharacterException(input[0], prefixToExtraBlockBytesMapping.Keys);
 			}
 			int extraBlockChars = extraBlockBytesToExtraBlockCharsMapping[extraBlockBytes];
@@ -173,7 +172,7 @@ namespace SGL.Utilities {
 			for (int block = 0; block < blocks; ++block) {
 				long buffer = 0;
 				for (int charIndex = 0; charIndex < blockChars; ++charIndex) {
-					buffer |= (long)charToBits(input[1 + block * blockChars + charIndex]) << charIndex * digitBits;
+					buffer |= (long)CharToBits(input[1 + block * blockChars + charIndex]) << charIndex * digitBits;
 				}
 				for (int byteIndex = 0; byteIndex < blockBytes; ++byteIndex) {
 					result[block * blockBytes + byteIndex] = (byte)(buffer >> byteIndex * 8 & 0xFFL);
@@ -181,7 +180,7 @@ namespace SGL.Utilities {
 			}
 			long extraBuffer = 0;
 			for (int charIndex = 0; charIndex < extraBlockChars; ++charIndex) {
-				extraBuffer |= (long)charToBits(input[1 + blocks * blockChars + charIndex]) << charIndex * digitBits;
+				extraBuffer |= (long)CharToBits(input[1 + blocks * blockChars + charIndex]) << charIndex * digitBits;
 			}
 			for (int byteIndex = 0; byteIndex < extraBlockBytes; ++byteIndex) {
 				result[blocks * blockBytes + byteIndex] = (byte)(extraBuffer >> byteIndex * 8 & 0xFFL);

@@ -9,8 +9,8 @@ namespace SGL.Utilities.Backend.TestUtilities {
 	/// A utility class that simplifies validating JWT bearer tokens for testing purposes.
 	/// </summary>
 	public class JwtTokenValidator {
-		private JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
-		private TokenValidationParameters tokenValidationParameters;
+		private readonly JwtSecurityTokenHandler tokenHandler = new();
+		private readonly TokenValidationParameters tokenValidationParameters;
 
 		/// <summary>
 		/// Instantiates the token validator using the given validation parameters.

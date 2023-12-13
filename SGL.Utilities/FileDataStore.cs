@@ -50,8 +50,8 @@ namespace SGL.Utilities {
 		/// </summary>
 		public string FileTerminology { get; set; } = "file";
 
-		private Func<Stream, CancellationToken, Task<TValue>> readContent;
-		private Func<Stream, TValue, CancellationToken, Task> writeContent;
+		private readonly Func<Stream, CancellationToken, Task<TValue>> readContent;
+		private readonly Func<Stream, TValue, CancellationToken, Task> writeContent;
 		private readonly bool concurrent;
 
 		/// <summary>
@@ -78,7 +78,7 @@ namespace SGL.Utilities {
 		/// </summary>
 		public event AsyncEventHandler<TemporaryFileWrittenEventArgs>? TemporaryFileWritten;
 
-		private StringGenerator tempSuffixGenerator = new StringGenerator();
+		private readonly StringGenerator tempSuffixGenerator = new();
 
 		/// <summary>
 		/// Constructs a <see cref="FileDataStore{TValue}"/> with the given parameters.
@@ -324,7 +324,7 @@ namespace SGL.Utilities {
 		/// <param name="ct">A <see cref="CancellationToken"/> to allow canceling the operation.</param>
 		/// <returns>A <see cref="Task{TResult}"/> for the operation, containing the read value, or null if no file is present.</returns>
 		public Task<TValue?> GetValueAsync(CancellationToken ct = default) {
-			return Task.Run(async Task<TValue?> () => {
+			return Task.Run(async Task<TValue?>? () => {
 				try {
 					await using (var fileStream = await OpenRawReadInnerAsync(ct)) {
 						if (fileStream == null) {
@@ -441,7 +441,7 @@ namespace SGL.Utilities {
 	/// It automatically uses <see cref="JsonSerializer"/> for (de)serialization of the values.
 	/// </summary>
 	public class JsonFileDataStore<TValue> : FileDataStore<TValue> where TValue : class {
-		private static readonly JsonSerializerOptions defaultJsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+		private static readonly JsonSerializerOptions defaultJsonOptions = new(JsonSerializerDefaults.Web);
 		/// <summary>
 		/// Constructs a <see cref="JsonFileDataStore{TValue}"/> with the given parameters.
 		/// </summary>
@@ -456,20 +456,16 @@ namespace SGL.Utilities {
 		/// <param name="concurrent">Whether to enable the concurrent mode.</param>
 		public JsonFileDataStore(string filePath, JsonSerializerOptions? jsonOptions = null, bool concurrent = false) :
 			base(filePath,
-				(stream, ct) => readContent(stream, jsonOptions, ct),
-				(stream, value, ct) => writeContent(stream, value, jsonOptions, ct),
+				(stream, ct) => ReadContent(stream, jsonOptions, ct),
+				(stream, value, ct) => WriteContent(stream, value, jsonOptions, ct),
 				concurrent) {
 		}
-		private static async Task<TValue> readContent(Stream stream, JsonSerializerOptions? jsonOptions, CancellationToken ct) {
-			if (jsonOptions == null) {
-				jsonOptions = defaultJsonOptions;
-			}
+		private static async Task<TValue> ReadContent(Stream stream, JsonSerializerOptions? jsonOptions, CancellationToken ct) {
+			jsonOptions ??= defaultJsonOptions;
 			return await JsonSerializer.DeserializeAsync<TValue>(stream, jsonOptions, ct) ?? throw new InvalidDataException("Read null value.");
 		}
-		private static Task writeContent(Stream stream, TValue value, JsonSerializerOptions? jsonOptions, CancellationToken ct) {
-			if (jsonOptions == null) {
-				jsonOptions = defaultJsonOptions;
-			}
+		private static Task WriteContent(Stream stream, TValue value, JsonSerializerOptions? jsonOptions, CancellationToken ct) {
+			jsonOptions ??= defaultJsonOptions;
 			return JsonSerializer.SerializeAsync(stream, value, jsonOptions, ct);
 		}
 	}

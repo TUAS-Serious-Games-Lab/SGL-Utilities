@@ -13,11 +13,11 @@ namespace SGL.Utilities.EntityFrameworkCore {
 		/// <param name="elementValueComparer">The <see cref="ValueComparer{T}"/> to use on the elements.</param>
 		public ArrayValueComparer(ValueComparer elementValueComparer) :
 			base(
-				(a, b) => checkEqual(elementValueComparer, a, b),
-				(e) => computeHashCode(elementValueComparer, e),
-				(e) => makeSnapshot(elementValueComparer, e)) { }
+				(a, b) => CheckEqual(elementValueComparer, a, b),
+				(e) => ComputeHashCode(elementValueComparer, e),
+				(e) => MakeSnapshot(elementValueComparer, e)) { }
 
-		private static bool checkEqual(ValueComparer elementValueComparer, T[]? a, T[]? b) {
+		private static bool CheckEqual(ValueComparer elementValueComparer, T[]? a, T[]? b) {
 			if (a == null || b == null) return a == b;
 			if (a.Length != b.Length) return false;
 			for (int i = 0; i < a.Length; ++i) {
@@ -32,7 +32,7 @@ namespace SGL.Utilities.EntityFrameworkCore {
 			return e.Aggregate(104179, (h, e) => HashCode.Combine(h, elementValueComparer.GetHashCode(e)));
 		}
 
-		private static T[] makeSnapshot(ValueComparer elementValueComparer, T[] e) {
+		private static T[] MakeSnapshot(ValueComparer elementValueComparer, T[] e) {
 			var res = new T[e.Length];
 			for (int i = 0; i < e.Length; ++i) {
 				res[i] = (T)elementValueComparer.Snapshot(e[i])!;

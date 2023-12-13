@@ -13,7 +13,7 @@ namespace SGL.Utilities {
 	/// and released when the <see cref="LockFile"/> object is disposed.
 	/// </summary>
 	public class LockFile : IDisposable, IAsyncDisposable {
-		private FileStream stream;
+		private readonly FileStream stream;
 		private LockFile(FileStream stream) {
 			this.stream = stream;
 		}

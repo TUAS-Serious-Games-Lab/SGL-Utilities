@@ -22,12 +22,12 @@ namespace SGL.Utilities.Crypto.Internals {
 		}
 
 		public static KeyPair? TryLoadKeyPair(TextReader reader, IPasswordFinder passwordFinder) {
-			PemReader pemReader = new PemReader(reader, passwordFinder);
+			var pemReader = new PemReader(reader, passwordFinder);
 			return ReadKeyPair(pemReader);
 		}
 		public static IEnumerable<KeyPair> LoadKeyPairs(TextReader reader, IPasswordFinder passwordFinder) {
-			PemReader pemReader = new PemReader(reader, passwordFinder);
-			KeyPair? kp = null;
+			var pemReader = new PemReader(reader, passwordFinder);
+			KeyPair? kp;
 			while ((kp = ReadKeyPair(pemReader)) != null) {
 				yield return kp;
 			}
@@ -62,12 +62,12 @@ namespace SGL.Utilities.Crypto.Internals {
 		}
 
 		public static PublicKey? TryLoadPublicKey(TextReader reader) {
-			PemReader pemReader = new PemReader(reader);
+			var pemReader = new PemReader(reader);
 			return ReadPublicKey(pemReader) ?? throw new PemException("Input contained no PEM objects.");
 		}
 		public static IEnumerable<PublicKey> LoadPublicKeys(TextReader reader) {
-			PemReader pemReader = new PemReader(reader);
-			PublicKey? pk = null;
+			var pemReader = new PemReader(reader);
+			PublicKey? pk;
 			while ((pk = ReadPublicKey(pemReader)) != null) {
 				yield return pk;
 			}
@@ -101,12 +101,12 @@ namespace SGL.Utilities.Crypto.Internals {
 		}
 
 		public static PrivateKey? TryLoadPrivateKey(TextReader reader, IPasswordFinder passwordFinder) {
-			PemReader pemReader = new PemReader(reader, passwordFinder);
+			var pemReader = new PemReader(reader, passwordFinder);
 			return ReadPrivateKey(pemReader) ?? throw new PemException("Input contained no PEM objects.");
 		}
 		public static IEnumerable<PrivateKey> LoadPrivateKeys(TextReader reader, IPasswordFinder passwordFinder) {
-			PemReader pemReader = new PemReader(reader, passwordFinder);
-			PrivateKey? pk = null;
+			var pemReader = new PemReader(reader, passwordFinder);
+			PrivateKey? pk;
 			while ((pk = ReadPrivateKey(pemReader)) != null) {
 				yield return pk;
 			}
@@ -140,12 +140,12 @@ namespace SGL.Utilities.Crypto.Internals {
 		}
 
 		public static Certificate? TryLoadCertificate(TextReader reader) {
-			PemReader pemReader = new PemReader(reader);
+			var pemReader = new PemReader(reader);
 			return ReadCertificate(pemReader) ?? throw new PemException("Input contained no PEM objects.");
 		}
 		public static IEnumerable<Certificate> LoadCertificates(TextReader reader) {
-			PemReader pemReader = new PemReader(reader);
-			Certificate? cert = null;
+			var pemReader = new PemReader(reader);
+			Certificate? cert;
 			while ((cert = ReadCertificate(pemReader)) != null) {
 				yield return cert;
 			}
@@ -232,13 +232,13 @@ namespace SGL.Utilities.Crypto.Internals {
 		}
 
 		internal static CertificateSigningRequest? TryLoadCertificateSigningRequest(TextReader reader) {
-			PemReader pemReader = new PemReader(reader);
+			var pemReader = new PemReader(reader);
 			return ReadCertificateSigningRequest(pemReader) ?? throw new PemException("Input contained no PEM objects.");
 		}
 
 		internal static IEnumerable<CertificateSigningRequest> LoadCertificateSigningRequests(TextReader reader) {
-			PemReader pemReader = new PemReader(reader);
-			CertificateSigningRequest? csr = null;
+			var pemReader = new PemReader(reader);
+			CertificateSigningRequest? csr;
 			while ((csr = ReadCertificateSigningRequest(pemReader)) != null) {
 				yield return csr;
 			}

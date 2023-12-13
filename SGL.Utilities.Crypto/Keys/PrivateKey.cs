@@ -21,7 +21,7 @@ namespace SGL.Utilities.Crypto.Keys {
 
 		internal static bool IsValidWrappedType(AsymmetricKeyParameter wrapped) => TryGetKeyType(wrapped) != null;
 		internal static KeyType? TryGetKeyType(AsymmetricKeyParameter wrapped) => wrapped switch {
-			RsaPrivateCrtKeyParameters rsa => KeyType.RSA,
+			RsaPrivateCrtKeyParameters => KeyType.RSA,
 			ECPrivateKeyParameters => KeyType.EllipticCurves,
 			_ => null
 		};
@@ -97,6 +97,6 @@ namespace SGL.Utilities.Crypto.Keys {
 		/// Derives the matching public key for this private key (as is done by <see cref="DerivePublicKey"/>) and combines them into a <see cref="KeyPair"/>.
 		/// </summary>
 		/// <returns>A key pair consisting of this private key and its matching public key.</returns>
-		public KeyPair DeriveKeyPair() => new KeyPair(DerivePublicKey(), this);
+		public KeyPair DeriveKeyPair() => new(DerivePublicKey(), this);
 	}
 }

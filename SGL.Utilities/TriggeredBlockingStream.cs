@@ -11,10 +11,10 @@ namespace SGL.Utilities {
 	/// This can be useful to simulate waiting times and I/O errors for testing.
 	/// </summary>
 	public class TriggeredBlockingStream : Stream {
-		private Stream innerStream;
-		private object lockObject = new object();
-		private List<TaskCompletionSource<int>> readTCSs = new List<TaskCompletionSource<int>> { new TaskCompletionSource<int>() };
-		private List<TaskCompletionSource<bool>> writeTCSs = new List<TaskCompletionSource<bool>> { new TaskCompletionSource<bool>() };
+		private readonly Stream innerStream;
+		private readonly object lockObject = new();
+		private readonly List<TaskCompletionSource<int>> readTCSs = new() { new TaskCompletionSource<int>() };
+		private readonly List<TaskCompletionSource<bool>> writeTCSs = new() { new TaskCompletionSource<bool>() };
 
 		/// <summary>
 		/// Creates a <see cref="TriggeredBlockingStream"/> wrapping the given inner <see cref="Stream"/>.

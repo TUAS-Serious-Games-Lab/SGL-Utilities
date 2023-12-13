@@ -56,7 +56,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 					.GroupBy(pk => pk.PublicKeyParamSet.Id)
 					.OrderByDescending(grp => grp.Count())
 					.ToList();
-				if (ecRecipientKeyCurveNames.Count() > 0) {
+				if (ecRecipientKeyCurveNames.Count > 0) {
 					ecSharedMessageKeyPairCurveName = ecRecipientKeyCurveNames.First().First().PublicKeyParamSet;
 					useSharedMessageKeyPair = true;
 				}
@@ -88,16 +88,11 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 			return (trustedRecipients.ToDictionary(kv => kv.Key, kv => EncryptDataKey(kv.Value.wrapped, dataKey, sharedMessageKeyPair, encodedSharedMessagePublicKey)), encodedSharedMessagePublicKey);
 		}
 
-		private DataKeyInfo EncryptDataKey(AsymmetricKeyParameter recipientKey, byte[] dataKey, AsymmetricCipherKeyPair? sharedMessageKeyPair, byte[]? encodedSharedMessagePublicKey) {
-			switch (recipientKey) {
-				case RsaKeyParameters rsa when !rsa.IsPrivate:
-					return EncryptDataKeyRsa(rsa, dataKey);
-				case ECPublicKeyParameters ec:
-					return EncryptDataKeyEcdhAes(ec, dataKey, sharedMessageKeyPair, encodedSharedMessagePublicKey);
-				default:
-					throw new EncryptionException($"Unsupported recipient key type {recipientKey.GetType().FullName}.");
-			}
-		}
+		private DataKeyInfo EncryptDataKey(AsymmetricKeyParameter recipientKey, byte[] dataKey, AsymmetricCipherKeyPair? sharedMessageKeyPair, byte[]? encodedSharedMessagePublicKey) => recipientKey switch {
+			RsaKeyParameters rsa when !rsa.IsPrivate => EncryptDataKeyRsa(rsa, dataKey),
+			ECPublicKeyParameters ec => EncryptDataKeyEcdhAes(ec, dataKey, sharedMessageKeyPair, encodedSharedMessagePublicKey),
+			_ => throw new EncryptionException($"Unsupported recipient key type {recipientKey.GetType().FullName}."),
+		};
 		private DataKeyInfo EncryptDataKeyRsa(RsaKeyParameters recipientKey, byte[] dataKey) {
 			try {
 				var rsa = new Pkcs1Encoding(new RsaEngine());

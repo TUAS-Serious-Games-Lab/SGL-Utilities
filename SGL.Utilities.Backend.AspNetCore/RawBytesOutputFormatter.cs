@@ -36,10 +36,9 @@ namespace SGL.Utilities.Backend.AspNetCore {
 		public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context) {
 			try {
 				var ct = context.HttpContext.RequestAborted;
-				var value = context.Object as IEnumerable<byte>;
 				var body = context.HttpContext.Response.Body;
 
-				if (value == null) {
+				if (context.Object is not IEnumerable<byte> value) {
 					var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<RawBytesOutputFormatter>>();
 					logger.LogError("The value to write was not a valid IEnumerable<byte>.");
 					throw new ArgumentException("The Object to write was not a valid IEnumerable<byte>.", nameof(context));

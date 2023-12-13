@@ -14,7 +14,7 @@ using Xunit.Abstractions;
 namespace SGL.Utilities.Tests {
 	public class FileDataMapTest {
 		private const string TestDir = "./FileDataMapTest";
-		private ILoggerFactory loggerFactory;
+		private readonly ILoggerFactory loggerFactory;
 
 		public FileDataMapTest(ITestOutputHelper output) {
 			if (Directory.Exists(TestDir)) {
@@ -24,9 +24,9 @@ namespace SGL.Utilities.Tests {
 		}
 
 		public class TestData {
-			public string Name { get; set; }
+			public string Name { get; set; } = null!;
 			public int Number { get; set; }
-			public List<string> List { get; set; }
+			public List<string> List { get; set; } = null!;
 
 			public static async Task<TestData> DeserializeAsync(Stream stream, CancellationToken ct) {
 				return await JsonSerializer.DeserializeAsync<TestData>(stream, cancellationToken: ct) ?? throw new Exception("Read null value");
@@ -37,8 +37,8 @@ namespace SGL.Utilities.Tests {
 		}
 
 		public class TestKey {
-			public string Level1 { get; set; }
-			public string Level2 { get; set; }
+			public string Level1 { get; set; } = null!;
+			public string Level2 { get; set; } = null!;
 
 			public override string? ToString() {
 				return $"{Level1}/{Level2}";

@@ -60,7 +60,7 @@ namespace SGL.Utilities {
 			await output.WriteLineAsync(line.AsMemory(), ct).ConfigureAwait(false);
 		}
 
-		private static char[] charsToEscape = Environment.NewLine.ToCharArray().Append('"').Append(';').ToArray();
+		private static readonly char[] charsToEscape = Environment.NewLine.ToCharArray().Append('"').Append(';').ToArray();
 		private static string EscapeString(string str) {
 			if (str.IndexOfAny(charsToEscape) == -1) {
 				return str;
@@ -89,11 +89,11 @@ namespace SGL.Utilities {
 				throw new InvalidDataException("Couldn't read header from CSV.");
 			}
 			var sb = new StringBuilder();
-			var columnNames = (await ParseLine(headerLine, sb, () => input.ReadLineAsync()).ToListAsync(ct).ConfigureAwait(false)).ToList();
+			var columnNames = (await ParseLine(headerLine, sb, input.ReadLineAsync, ct).ToListAsync(ct).ConfigureAwait(false)).ToList();
 			string? line;
 			while ((line = await input.ReadLineAsync().ConfigureAwait(false)) != null) {
 				ct.ThrowIfCancellationRequested();
-				var fields = await ParseLine(line, sb, () => input.ReadLineAsync()).ToListAsync(ct).ConfigureAwait(false);
+				var fields = await ParseLine(line, sb, input.ReadLineAsync, ct).ToListAsync(ct).ConfigureAwait(false);
 				if (fields.Count != columnNames.Count) {
 					throw new InvalidDataException("Encountered line with incorrect field count.");
 				}
@@ -114,7 +114,7 @@ namespace SGL.Utilities {
 				throw new InvalidDataException("Couldn't read header from CSV.");
 			}
 			var sb = new StringBuilder();
-			return (await ParseLine(headerLine, sb, () => input.ReadLineAsync()).ToListAsync(ct).ConfigureAwait(false)).ToList();
+			return (await ParseLine(headerLine, sb, input.ReadLineAsync, ct).ToListAsync(ct).ConfigureAwait(false)).ToList();
 		}
 
 		/// <summary>
@@ -126,7 +126,7 @@ namespace SGL.Utilities {
 			string? line;
 			if ((line = await input.ReadLineAsync().ConfigureAwait(false)) != null) {
 				ct.ThrowIfCancellationRequested();
-				return (await ParseLine(line, sb, () => input.ReadLineAsync()).ToListAsync(ct).ConfigureAwait(false)).ToList();
+				return (await ParseLine(line, sb, input.ReadLineAsync, ct).ToListAsync(ct).ConfigureAwait(false)).ToList();
 			}
 			else {
 				return null;
@@ -165,7 +165,7 @@ namespace SGL.Utilities {
 			int? fieldCount = null;
 			while ((line = await input.ReadLineAsync().ConfigureAwait(false)) != null) {
 				ct.ThrowIfCancellationRequested();
-				var fields = (await ParseLine(line, sb, () => input.ReadLineAsync()).ToListAsync(ct).ConfigureAwait(false)).ToList();
+				var fields = (await ParseLine(line, sb, input.ReadLineAsync, ct).ToListAsync(ct).ConfigureAwait(false)).ToList();
 				if (!fieldCount.HasValue) {
 					fieldCount = fields.Count;
 				}
@@ -190,7 +190,7 @@ namespace SGL.Utilities {
 			string? line;
 			while ((line = await input.ReadLineAsync().ConfigureAwait(false)) != null) {
 				ct.ThrowIfCancellationRequested();
-				var fields = await ParseLine(line, sb, () => input.ReadLineAsync()).ToListAsync(ct).ConfigureAwait(false);
+				var fields = await ParseLine(line, sb, input.ReadLineAsync, ct).ToListAsync(ct).ConfigureAwait(false);
 				if (fields.Count != columnNames.Count) {
 					throw new InvalidDataException("Encountered line with incorrect field count.");
 				}
@@ -217,10 +217,9 @@ namespace SGL.Utilities {
 							sb.Append(line[pos]);
 						}
 						if (pos + 1 == line.Length) { // This field spans multiple lines, read next line and continue
-							var nextLine = await readNextLine().ConfigureAwait(false);
-							if (nextLine == null) {
-								throw new InvalidDataException("Unexpected end of quoted field");
-							}
+							ct.ThrowIfCancellationRequested();
+							var nextLine = (await readNextLine().ConfigureAwait(false))
+								?? throw new InvalidDataException("Unexpected end of quoted field");
 							line = nextLine;
 							sb.AppendLine();
 							pos = -1; // Set to 0 with increment in for loop

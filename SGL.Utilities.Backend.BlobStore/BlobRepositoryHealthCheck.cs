@@ -9,7 +9,7 @@ namespace SGL.Utilities.Backend.BlobStore {
 	/// Implements a health check for <see cref="IBlobRepository"/> implementations to allow an ASP.NET Core application to include their health status in its reported health.
 	/// </summary>
 	public class BlobRepositoryHealthCheck : IHealthCheck {
-		private IBlobRepository blobRepo;
+		private readonly IBlobRepository blobRepo;
 
 		/// <summary>
 		/// Constructs a health check object, injecting the active configured <see cref="IBlobRepository"/> implementation.

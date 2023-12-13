@@ -24,7 +24,7 @@ namespace SGL.Utilities.Backend.AspNetCore {
 				var headerName = $"{prefix}{ctorParams[i].Name}";
 				if (bindingContext.HttpContext.Request.Headers.TryGetValue(headerName, out var values) && values.Count > 0) {
 					var strVal = values.First();
-					var converter = getConverter(ctorParams[i].ParameterType);
+					var converter = GetConverter(ctorParams[i].ParameterType);
 					var convertedVal = converter(strVal);
 					if (convertedVal is not null) {
 						ctorArgs[i] = convertedVal;
@@ -49,32 +49,19 @@ namespace SGL.Utilities.Backend.AspNetCore {
 			return Task.CompletedTask;
 		}
 
-		private Func<string, object?> getConverter(Type type) {
-			switch (type) {
-				case Type _ when type == typeof(DateTime):
-					return source => DateTime.TryParse(source, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var dt) ? dt : null;
-				case Type _ when type == typeof(string):
-					return source => source;
-				case Type _ when type == typeof(Guid):
-					return source => Guid.TryParse(source, out var guid) ? guid : null;
-				case { IsEnum: true }:
-					return source => Enum.TryParse(type, source, out var e) ? e : null;
-				case Type _ when type == typeof(short):
-					return source => short.TryParse(source, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i) ? i : null;
-				case Type _ when type == typeof(int):
-					return source => int.TryParse(source, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i) ? i : null;
-				case Type _ when type == typeof(long):
-					return source => long.TryParse(source, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i) ? i : null;
-				case Type _ when type == typeof(double):
-					return source => double.TryParse(source, NumberStyles.Float, CultureInfo.InvariantCulture, out var fp) ? fp : null;
-				case Type _ when type == typeof(decimal):
-					return source => decimal.TryParse(source, NumberStyles.Float, CultureInfo.InvariantCulture, out var fp) ? fp : null;
-				case Type _ when type == typeof(bool):
-					return source => bool.TryParse(source, out var b) ? b : null;
-				default:
-					return source => null;
-			}
-		}
+		private Func<string, object?> GetConverter(Type type) => type switch {
+			Type _ when type == typeof(DateTime) => source => DateTime.TryParse(source, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var dt) ? dt : null,
+			Type _ when type == typeof(string) => source => source,
+			Type _ when type == typeof(Guid) => source => Guid.TryParse(source, out var guid) ? guid : null,//
+			{ IsEnum: true } => source => Enum.TryParse(type, source, out var e) ? e : null,
+			Type _ when type == typeof(short) => source => short.TryParse(source, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i) ? i : null,
+			Type _ when type == typeof(int) => source => int.TryParse(source, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i) ? i : null,
+			Type _ when type == typeof(long) => source => long.TryParse(source, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i) ? i : null,
+			Type _ when type == typeof(double) => source => double.TryParse(source, NumberStyles.Float, CultureInfo.InvariantCulture, out var fp) ? fp : null,
+			Type _ when type == typeof(decimal) => source => decimal.TryParse(source, NumberStyles.Float, CultureInfo.InvariantCulture, out var fp) ? fp : null,
+			Type _ when type == typeof(bool) => source => bool.TryParse(source, out var b) ? b : null,
+			_ => source => null,
+		};
 	}
 
 	/// <summary>

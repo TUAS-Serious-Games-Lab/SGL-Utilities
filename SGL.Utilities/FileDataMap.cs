@@ -53,9 +53,9 @@ namespace SGL.Utilities {
 		/// </summary>
 		public string FileTerminology { get; set; } = "file {key}";
 
-		private Func<Stream, CancellationToken, Task<TValue>> readContent;
-		private Func<Stream, TValue, CancellationToken, Task> writeContent;
-		private Func<TKey, string> getFilePath;
+		private readonly Func<Stream, CancellationToken, Task<TValue>> readContent;
+		private readonly Func<Stream, TValue, CancellationToken, Task> writeContent;
+		private readonly Func<TKey, string> getFilePath;
 		private readonly bool concurrent;
 
 		/// <summary>
@@ -86,7 +86,7 @@ namespace SGL.Utilities {
 		/// Note: The event handlers are invoked from a threadpool thread. If this requires synchronization, it must be done in the handlers.
 		/// </summary>
 		public event AsyncEventHandler<TemporaryFileWrittenEventArgs>? TemporaryFileWritten;
-		private StringGenerator tempSuffixGenerator = new StringGenerator();
+		private readonly StringGenerator tempSuffixGenerator = new();
 
 		/// <summary>
 		/// Constructs a <see cref="FileDataMap{TKey, TValue}"/> with the given parameters.
@@ -114,9 +114,7 @@ namespace SGL.Utilities {
 			DirectoryPath = directoryPath;
 			this.readContent = readContent;
 			this.writeContent = writeContent;
-			if (getFilePath == null) {
-				getFilePath = key => key.ToString();
-			}
+			getFilePath ??= key => key.ToString() ?? throw new ArgumentNullException(nameof(key));
 			this.getFilePath = getFilePath;
 			this.concurrent = concurrent;
 		}
@@ -198,7 +196,7 @@ namespace SGL.Utilities {
 				var tempFile = GetTempFilePath(filePath);
 				ct.ThrowIfCancellationRequested();
 				try {
-					Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+					Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
 					if (concurrent) {
 						using var ctsDelay = new CancellationTokenSource(WaitTimeout);
 						using var ctsCombined = CancellationTokenSource.CreateLinkedTokenSource(ct, ctsDelay.Token);
@@ -264,7 +262,7 @@ namespace SGL.Utilities {
 		/// <returns>A <see cref="Task{TResult}"/> for the operation, containing the read value, or null if no file is present for <paramref name="key"/>.</returns>
 		public Task<TValue?> GetValueAsync(TKey key, CancellationToken ct = default) {
 			var filePath = Path.Combine(DirectoryPath, getFilePath(key));
-			return Task.Run(async Task<TValue?> () => {
+			return Task.Run(async Task<TValue?>? () => {
 				try {
 					await using (var fileStream = await OpenRawReadInnerAsync(key, filePath, ct)) {
 						if (fileStream == null) {
@@ -472,7 +470,7 @@ namespace SGL.Utilities {
 	/// It automatically uses <see cref="JsonSerializer"/> for (de)serialization of the values.
 	/// </summary>
 	public class JsonFileDataMap<TKey, TValue> : FileDataMap<TKey, TValue> where TKey : notnull where TValue : class {
-		private static readonly JsonSerializerOptions defaultJsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+		private static readonly JsonSerializerOptions defaultJsonOptions = new(JsonSerializerDefaults.Web);
 		/// <summary>
 		/// Constructs a <see cref="JsonFileDataMap{TKey, TValue}"/> with the given parameters.
 		/// </summary>
@@ -491,23 +489,18 @@ namespace SGL.Utilities {
 		/// <param name="concurrent">Whether to enable the concurrent mode.</param>
 		public JsonFileDataMap(string directoryPath, Func<TKey, string>? getFilePath = null, JsonSerializerOptions? jsonOptions = null, bool concurrent = false) :
 			base(directoryPath,
-				(stream, ct) => readContent(stream, jsonOptions, ct),
-				(stream, value, ct) => writeContent(stream, value, jsonOptions, ct),
+				(stream, ct) => ReadContent(stream, jsonOptions, ct),
+				(stream, value, ct) => WriteContent(stream, value, jsonOptions, ct),
 				getFilePath ?? (key => $"{key}.json"),
 				concurrent) {
 		}
-		private static async Task<TValue> readContent(Stream stream, JsonSerializerOptions? jsonOptions, CancellationToken ct) {
-			if (jsonOptions == null) {
-				jsonOptions = defaultJsonOptions;
-			}
+		private static async Task<TValue> ReadContent(Stream stream, JsonSerializerOptions? jsonOptions, CancellationToken ct) {
+			jsonOptions ??= defaultJsonOptions;
 			return await JsonSerializer.DeserializeAsync<TValue>(stream, jsonOptions, ct) ?? throw new InvalidDataException("Read null value.");
 		}
-		private static Task writeContent(Stream stream, TValue value, JsonSerializerOptions? jsonOptions, CancellationToken ct) {
-			if (jsonOptions == null) {
-				jsonOptions = defaultJsonOptions;
-			}
+		private static Task WriteContent(Stream stream, TValue value, JsonSerializerOptions? jsonOptions, CancellationToken ct) {
+			jsonOptions ??= defaultJsonOptions;
 			return JsonSerializer.SerializeAsync(stream, value, jsonOptions, ct);
 		}
 	}
-
 }

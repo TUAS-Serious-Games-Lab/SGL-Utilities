@@ -24,7 +24,7 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 	/// Parsing <see cref="PrivateKey"/>s or <see cref="KeyPair"/>s is not supported, as there is no reasonable way to provide an encryption password for reading the submitted object.
 	/// </summary>
 	public class PemInputFormatter : TextInputFormatter {
-		private static Type[] supportedTypes = new[] { typeof(IEnumerable<object>), typeof(string), typeof(IEnumerable<string>), typeof(Certificate), typeof(IEnumerable<Certificate>), typeof(CertificateSigningRequest), typeof(IEnumerable<CertificateSigningRequest>), typeof(PublicKey), typeof(IEnumerable<PublicKey>) };
+		private static readonly Type[] supportedTypes = new[] { typeof(IEnumerable<object>), typeof(string), typeof(IEnumerable<string>), typeof(Certificate), typeof(IEnumerable<Certificate>), typeof(CertificateSigningRequest), typeof(IEnumerable<CertificateSigningRequest>), typeof(PublicKey), typeof(IEnumerable<PublicKey>) };
 
 		/// <summary>
 		/// Initializes a PemInputFormatter.
@@ -42,7 +42,7 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 		/// <returns>A bool indicating whether the given type can be formatted by this formatter.</returns>
 		protected override bool CanReadType(Type type) => supportedTypes.Any(t => t.IsAssignableFrom(type));
 
-		private InputFormatterResult HandleNoValueString(ILogger<PemInputFormatter> logger, InputFormatterContext context, string logMessage) {
+		private static InputFormatterResult HandleNoValueString(ILogger<PemInputFormatter> logger, InputFormatterContext context, string logMessage) {
 			if (context.TreatEmptyInputAsDefaultValue) {
 				logger.LogDebug(logMessage);
 				return InputFormatterResult.Success("");
@@ -121,7 +121,7 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 				ct.ThrowIfCancellationRequested();
 				using var strReader = context.ReaderFactory(context.HttpContext.Request.Body, encoding);
 				var values = new List<string>();
-				StringBuilder sbBuff = new StringBuilder();
+				StringBuilder sbBuff = new();
 				StringBuilder? sb = null; // The string builder for the current PEM object, if there is one, or null if outside PEM object.
 				string? line;
 				while ((line = await strReader.ReadLineAsync()) != null) {

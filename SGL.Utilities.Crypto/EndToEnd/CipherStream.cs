@@ -35,7 +35,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 	/// <see cref="DataDecryptor.OpenDecryptionWriteStream(Stream, int, bool)"/>, and <see cref="DataDecryptor.OpenDecryptionReadStream(Stream, int, bool)"/>.
 	/// </summary>
 	public class CipherStream : Stream {
-		private Stream wrapped;
+		private readonly Stream wrapped;
 
 		/// <summary>
 		/// The operation mode of the stream.

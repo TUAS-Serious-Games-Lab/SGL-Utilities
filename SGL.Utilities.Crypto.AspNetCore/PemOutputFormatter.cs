@@ -20,7 +20,7 @@ namespace SGL.Utilities.Crypto.AspNetCore {
 	/// Formatting <see cref="PrivateKey"/>s or <see cref="KeyPair"/>s is not supported, as private keys should usually not be served through an API route for security reasons and also there is no reasonable way to provide an encryption password for the formatted response.
 	/// </summary>
 	public class PemOutputFormatter : TextOutputFormatter {
-		private static Type[] supportedTypes = new[] { typeof(string), typeof(IEnumerable<string>), typeof(Certificate), typeof(IEnumerable<Certificate>), typeof(CertificateSigningRequest), typeof(IEnumerable<CertificateSigningRequest>), typeof(PublicKey), typeof(IEnumerable<PublicKey>), typeof(IEnumerable<object>) };
+		private static readonly Type[] supportedTypes = new[] { typeof(string), typeof(IEnumerable<string>), typeof(Certificate), typeof(IEnumerable<Certificate>), typeof(CertificateSigningRequest), typeof(IEnumerable<CertificateSigningRequest>), typeof(PublicKey), typeof(IEnumerable<PublicKey>), typeof(IEnumerable<object>) };
 
 		/// <summary>
 		/// Initializes a PemOutputFormatter.

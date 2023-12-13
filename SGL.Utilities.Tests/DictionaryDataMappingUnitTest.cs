@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 
 namespace SGL.Utilities.Tests {
 	public class DictionaryDataMappingUnitTest {
-		private ITestOutputHelper output;
+		private readonly ITestOutputHelper output;
 
 		public DictionaryDataMappingUnitTest(ITestOutputHelper output) {
 			this.output = output;
@@ -35,7 +35,7 @@ namespace SGL.Utilities.Tests {
 
 		[Fact]
 		public void ToDictionaryCanMapExampleTypeCorrectly() {
-			TestUserData ud = new TestUserData();
+			TestUserData ud = new();
 			var dict = DictionaryDataMapping.ToDataMappingDictionary(ud);
 			Assert.Equal(ud.Username, dict["Username"]);
 			Assert.Equal(ud.Age, dict["Age"]);
@@ -45,7 +45,9 @@ namespace SGL.Utilities.Tests {
 			Assert.Equal(ud.CurrentMeasurement.Value2, (dict["CurrentMeasurement"] as IDictionary<string, object?>)?["Value2"]);
 			Assert.Equal(ud.CurrentMeasurement.Location, (dict["CurrentMeasurement"] as IDictionary<string, object?>)?["Location"]);
 
-			Assert.All(ud.TimeSeries.Keys, k => Assert.Contains(k.ToString("O"), dict["TimeSeries"] as IDictionary<string, object?>));
+			var tsDict = dict["TimeSeries"] as IDictionary<string, object?>;
+			Assert.NotNull(tsDict);
+			Assert.All(ud.TimeSeries.Keys, k => Assert.Contains(k.ToString("O"), tsDict));
 			Assert.All(ud.SomeRatings.Keys, k => {
 				var d = dict["SomeRatings"] as IDictionary<string, object?>;
 				Assert.NotNull(d);
@@ -86,7 +88,9 @@ namespace SGL.Utilities.Tests {
 				output.WriteStreamContents(stream);
 				stream.Position = 0;
 				var deserialized = await JsonSerializer.DeserializeAsync<JsonConversionTestData>(stream, options);
-				Assert.All(orig.ObjectData, origElem => Assert.Equal(origElem.Value, Assert.Contains(origElem.Key, deserialized?.ObjectData as IDictionary<string, object?>)));
+				var deserialObjDataDict = deserialized?.ObjectData as IDictionary<string, object?>;
+				Assert.NotNull(deserialObjDataDict);
+				Assert.All(orig.ObjectData, origElem => Assert.Equal(origElem.Value, Assert.Contains(origElem.Key, deserialObjDataDict)));
 			}
 		}
 	}

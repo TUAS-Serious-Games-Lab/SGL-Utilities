@@ -15,8 +15,8 @@ namespace SGL.Utilities.Backend.Applications {
 	/// <typeparam name="TQueryOptions">A class that encapsulates options for querying methods, e.g. whether related entities should be fetched.</typeparam>
 	/// <typeparam name="TContext">The database context class by which the application entity objects shall be managed.</typeparam>
 	public class DbApplicationRepository<TApp, TQueryOptions, TContext> : IApplicationRepository<TApp, TQueryOptions> where TApp : class, IApplication where TQueryOptions : class where TContext : DbContext {
-		private TContext context;
-		private DbSet<TApp> appsSet;
+		private readonly TContext context;
+		private readonly DbSet<TApp> appsSet;
 
 		/// <summary>
 		/// Creates a repository object using the given database context object for data access.

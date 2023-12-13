@@ -11,7 +11,7 @@ namespace SGL.Utilities {
 	/// </summary>
 	/// <typeparam name="T">The type of the elements, the queue should hold.</typeparam>
 	public class AsyncConsumerQueue<T> {
-		private Channel<T> channel = Channel.CreateUnbounded<T>(new UnboundedChannelOptions() { AllowSynchronousContinuations = false, SingleReader = true, SingleWriter = false });
+		private readonly Channel<T> channel = Channel.CreateUnbounded<T>(new UnboundedChannelOptions() { AllowSynchronousContinuations = false, SingleReader = true, SingleWriter = false });
 		/// <summary>
 		/// Adds the given item to the end of the queue. This may be called from any thread.
 		/// </summary>

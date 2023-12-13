@@ -26,7 +26,7 @@ namespace SGL.Utilities {
 		/// <param name="onSeparator">A delegate to invoke for each separator. The line's content is passed as a string.</param>
 		public static void ReadTextSegments(TextReader reader, int maxLinesPerSegment, Action<string> onSegment,
 				Func<string, bool> isSeparator, Action<string> onSeparator) {
-			string line;
+			string? line;
 			int segmentLineCount = 0;
 			var lines = new StringBuilder();
 			while ((line = reader.ReadLine()) != null) {
@@ -63,7 +63,7 @@ namespace SGL.Utilities {
 		/// <param name="maxLinesPerSegment">The maximum number of lines in a segment, i.e. segments are completed after this many lines or at the end of the input.</param>
 		/// <param name="onSegment">A delegate to invoke for each read segment. The segment's content is passed as a string.</param>
 		public static void ReadTextSegments(TextReader reader, int maxLinesPerSegment, Action<string> onSegment) {
-			string line;
+			string? line;
 			int segmentLineCount = 0;
 			var lines = new StringBuilder();
 			while ((line = reader.ReadLine()) != null) {
@@ -97,7 +97,7 @@ namespace SGL.Utilities {
 		/// Separator tuples have the line's content as the second element and segment tuples have the all lines in the segment as the second element.
 		/// </returns>
 		public static IEnumerable<(bool IsSeparator, string Content)> ReadTextSegments(TextReader reader, int maxLinesPerSegment, Func<string, bool> isSeparator) {
-			string line;
+			string? line;
 			int segmentLineCount = 0;
 			var lines = new StringBuilder();
 			while ((line = reader.ReadLine()) != null) {
@@ -148,7 +148,7 @@ namespace SGL.Utilities {
 		/// </returns>
 		public static async IAsyncEnumerable<(bool IsSeparator, string Content)> ReadTextSegmentsAsync(TextReader reader, int maxLinesPerSegment,
 				Func<string, bool> isSeparator, [EnumeratorCancellation] CancellationToken ct = default) {
-			string line;
+			string? line;
 			int segmentLineCount = 0;
 			var lines = new StringBuilder();
 #if NET7_0_OR_GREATER
@@ -193,7 +193,7 @@ namespace SGL.Utilities {
 		/// </returns>
 		public static async IAsyncEnumerable<string> ReadTextSegmentsAsync(TextReader reader, int maxLinesPerSegment,
 				[EnumeratorCancellation] CancellationToken ct = default) {
-			string line;
+			string? line;
 			int segmentLineCount = 0;
 			var lines = new StringBuilder();
 #if NET7_0_OR_GREATER

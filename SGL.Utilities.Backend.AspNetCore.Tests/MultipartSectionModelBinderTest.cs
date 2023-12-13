@@ -87,7 +87,7 @@ namespace SGL.Utilities.Backend.AspNetCore.Tests {
 	[ApiController]
 	public class MultipartSectionModelBinderTestController : ControllerBase {
 
-		private MultipartSectionModelBinderTestFixture fixture;
+		private readonly MultipartSectionModelBinderTestFixture fixture;
 
 		public MultipartSectionModelBinderTestController(MultipartSectionModelBinderTestFixture fixture) {
 			this.fixture = fixture;
@@ -147,14 +147,15 @@ namespace SGL.Utilities.Backend.AspNetCore.Tests {
 			fixture.Output = output;
 		}
 
-		private async Task testTwoJsons(string path, string part1Name, string part2Name) {
+		private async Task TestTwoJsons(string path, string part1Name, string part2Name) {
 			using var client = fixture.CreateClient();
 			var request = new HttpRequestMessage(HttpMethod.Post, path);
 			var contentPart1 = JsonContent.Create(fixture.SimpleBody);
 			var contentPart2 = JsonContent.Create(fixture.ComplexBody);
-			var content = new MultipartFormDataContent();
-			content.Add(contentPart1, part1Name);
-			content.Add(contentPart2, part2Name);
+			var content = new MultipartFormDataContent {
+				{ contentPart1, part1Name },
+				{ contentPart2, part2Name }
+			};
 			request.Content = content;
 			var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead);
 			output.WriteStreamContents(await response.Content.ReadAsStreamAsync());
@@ -163,16 +164,16 @@ namespace SGL.Utilities.Backend.AspNetCore.Tests {
 		}
 
 		[Fact]
-		public async Task TwoJsonBodiesWithoutNameOverrideWithoutContentTypeAreBoundCorrectly() => await testTwoJsons("api/multipart-section-model-binder-test/two-json/no-name-override/no-content-type", "simple", "complex");
+		public async Task TwoJsonBodiesWithoutNameOverrideWithoutContentTypeAreBoundCorrectly() => await TestTwoJsons("api/multipart-section-model-binder-test/two-json/no-name-override/no-content-type", "simple", "complex");
 		[Fact]
-		public async Task TwoJsonBodiesWithNameOverrideWithoutContentTypeAreBoundCorrectly() => await testTwoJsons("api/multipart-section-model-binder-test/two-json/name-override/no-content-type", "foo", "bar");
+		public async Task TwoJsonBodiesWithNameOverrideWithoutContentTypeAreBoundCorrectly() => await TestTwoJsons("api/multipart-section-model-binder-test/two-json/name-override/no-content-type", "foo", "bar");
 		[Fact]
-		public async Task TwoJsonBodiesWithoutNameOverrideWithContentTypeAreBoundCorrectly() => await testTwoJsons("api/multipart-section-model-binder-test/two-json/no-name-override/content-type", "simple", "complex");
+		public async Task TwoJsonBodiesWithoutNameOverrideWithContentTypeAreBoundCorrectly() => await TestTwoJsons("api/multipart-section-model-binder-test/two-json/no-name-override/content-type", "simple", "complex");
 		[Fact]
-		public async Task TwoJsonBodiesWithNameOverrideWithContentTypeAreBoundCorrectly() => await testTwoJsons("api/multipart-section-model-binder-test/two-json/name-override/content-type", "foo", "bar");
+		public async Task TwoJsonBodiesWithNameOverrideWithContentTypeAreBoundCorrectly() => await TestTwoJsons("api/multipart-section-model-binder-test/two-json/name-override/content-type", "foo", "bar");
 		[Fact]
-		public async Task TwoJsonBodiesWithoutNameOverrideWithContentTypesAreBoundCorrectly() => await testTwoJsons("api/multipart-section-model-binder-test/two-json/no-name-override/content-types", "simple", "complex");
+		public async Task TwoJsonBodiesWithoutNameOverrideWithContentTypesAreBoundCorrectly() => await TestTwoJsons("api/multipart-section-model-binder-test/two-json/no-name-override/content-types", "simple", "complex");
 		[Fact]
-		public async Task TwoJsonBodiesWithNameOverrideWithContentTypesAreBoundCorrectly() => await testTwoJsons("api/multipart-section-model-binder-test/two-json/name-override/content-types", "foo", "bar");
+		public async Task TwoJsonBodiesWithNameOverrideWithContentTypesAreBoundCorrectly() => await TestTwoJsons("api/multipart-section-model-binder-test/two-json/name-override/content-types", "foo", "bar");
 	}
 }

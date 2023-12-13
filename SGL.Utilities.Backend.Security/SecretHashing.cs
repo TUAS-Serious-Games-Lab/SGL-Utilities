@@ -20,7 +20,7 @@ namespace SGL.Utilities.Backend.Security {
 	public static class SecretHashing {
 		private static readonly IOptions<PasswordHasherOptions> options = Options.Create(new PasswordHasherOptions() { IterationCount = 10 * new PasswordHasherOptions().IterationCount });
 		private class DummyUser { }
-		private static readonly DummyUser dummyUser = new DummyUser();
+		private static readonly DummyUser dummyUser = new();
 
 		/// <summary>
 		/// Creates an encoded hashed and salted secret, also containing associated parameters (like the salt), from the given plaintext secret.

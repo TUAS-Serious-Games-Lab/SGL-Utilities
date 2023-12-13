@@ -52,16 +52,11 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// </param>
 		/// <returns>The decrypted data key.</returns>
 		/// <exception cref="DecryptionException">If <paramref name="dataKeyInfo"/> uses an unsupported encryption mode or if the decryption itself fails.</exception>
-		public byte[] DecryptKey(DataKeyInfo dataKeyInfo, byte[]? sharedMessagePublicKey) {
-			switch (dataKeyInfo.Mode) {
-				case KeyEncryptionMode.ECDH_KDF2_SHA256_AES_256_CCM:
-					return DecryptKeyEcdhAes(dataKeyInfo, sharedMessagePublicKey);
-				case KeyEncryptionMode.RSA_PKCS1:
-					return DecryptKeyRsa(dataKeyInfo);
-				default:
-					throw new DecryptionException("Unsupported key encryption mode.");
-			}
-		}
+		public byte[] DecryptKey(DataKeyInfo dataKeyInfo, byte[]? sharedMessagePublicKey) => dataKeyInfo.Mode switch {
+			KeyEncryptionMode.ECDH_KDF2_SHA256_AES_256_CCM => DecryptKeyEcdhAes(dataKeyInfo, sharedMessagePublicKey),
+			KeyEncryptionMode.RSA_PKCS1 => DecryptKeyRsa(dataKeyInfo),
+			_ => throw new DecryptionException("Unsupported key encryption mode."),
+		};
 
 		private byte[] DecryptKeyRsa(DataKeyInfo dataKeyInfo) {
 			try {

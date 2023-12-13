@@ -22,7 +22,7 @@ namespace SGL.Utilities.Crypto.Keys {
 	/// </remarks>
 	[JsonConverter(typeof(KeyIdJsonConverter))]
 	public class KeyId {
-		private byte[] id = new byte[1] { 0 }; // First byte indicates type (0 = empty, 1 = RSA, 2 = EC), remaining 32 bytes = SHA256 fingerprint
+		private readonly byte[] id = new byte[1] { 0 }; // First byte indicates type (0 = empty, 1 = RSA, 2 = EC), remaining 32 bytes = SHA256 fingerprint
 
 		/// <summary>
 		/// Constructs a KeyId that represents the given id.
@@ -83,10 +83,10 @@ namespace SGL.Utilities.Crypto.Keys {
 		/// </summary>
 		/// <returns>The formatted <see cref="KeyId"/></returns>
 		public override string? ToString() {
-			StringBuilder sb = new StringBuilder(33 /*bytes in id*/ * 2 /*hex per byte*/ + 8 /*separators*/);
+			StringBuilder sb = new(33 /*bytes in id*/ * 2 /*hex per byte*/ + 8 /*separators*/);
 			sb.AppendFormat("{0:X2}", id.First());
 			var remainder = id.Skip(1);
-			while (remainder.Count() > 0) {
+			while (remainder.Any()) {
 				sb.AppendFormat(":{0:X2}{1:X2}{2:X2}{3:X2}", remainder.ElementAt(0), remainder.ElementAt(1), remainder.ElementAt(2), remainder.ElementAt(3));
 				remainder = remainder.Skip(4);
 			}
@@ -178,8 +178,7 @@ namespace SGL.Utilities.Crypto.Keys {
 #if NET6_0_OR_GREATER
 		/// <inheritdoc/>
 		public override KeyId ReadAsPropertyName(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-			var str = reader.GetString();
-			if (str == null) throw new NotSupportedException("Null values are not allowed as dictionary keys.");
+			var str = reader.GetString() ?? throw new NotSupportedException("Null values are not allowed as dictionary keys.");
 			return KeyId.Parse(str);
 		}
 #endif
@@ -208,10 +207,8 @@ namespace SGL.Utilities.Crypto.Keys {
 				string keyStr = reader.GetString() ?? throw new JsonException("Couldn't read JSON property name.");
 				reader.Read();
 				var key = KeyId.Parse(keyStr);
-				var value = JsonSerializer.Deserialize<Value>(ref reader, options);
-				if (value == null) {
-					throw new JsonException($"Couldn't reed value for key '{keyStr}'.");
-				}
+				var value = JsonSerializer.Deserialize<Value>(ref reader, options)
+					?? throw new JsonException($"Couldn't reed value for key '{keyStr}'.");
 				dict.Add(key, value);
 			}
 			if (reader.TokenType == JsonTokenType.EndObject) {
@@ -226,8 +223,7 @@ namespace SGL.Utilities.Crypto.Keys {
 		public override void Write(Utf8JsonWriter writer, Dictionary<KeyId, Value> value, JsonSerializerOptions options) {
 			writer.WriteStartObject();
 			foreach (var kv in value) {
-				var keyIdStr = kv.Key.ToString();
-				if (keyIdStr == null) throw new NotSupportedException("Null values are not allowed as dictionary keys.");
+				var keyIdStr = kv.Key.ToString() ?? throw new NotSupportedException("Null values are not allowed as dictionary keys.");
 				writer.WritePropertyName(keyIdStr);
 				JsonSerializer.Serialize(writer, kv.Value, options);
 			}

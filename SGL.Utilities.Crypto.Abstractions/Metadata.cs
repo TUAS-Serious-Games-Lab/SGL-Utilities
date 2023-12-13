@@ -116,7 +116,7 @@ namespace SGL.Utilities.Crypto.EndToEnd {
 		/// <summary>
 		/// The randomly generated data key used for the content ecryption, encrypting for the recipients key using the mode indicated by <see cref="Mode"/>.
 		/// </summary>
-		public byte[] EncryptedKey { get; set; } = new byte[0];
+		public byte[] EncryptedKey { get; set; } = Array.Empty<byte>();
 		/// <summary>
 		/// When <see cref="KeyEncryptionMode.ECDH_KDF2_SHA256_AES_256_CCM"/> is used with a recipient-specific message key pair,
 		/// this property holds an encoded version of the public key.

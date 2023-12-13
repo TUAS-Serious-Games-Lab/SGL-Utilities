@@ -32,15 +32,15 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// <summary>
 		/// Returns the public key of the subject of the certificate.
 		/// </summary>
-		public PublicKey PublicKey => new PublicKey(wrapped.GetPublicKey());
+		public PublicKey PublicKey => new(wrapped.GetPublicKey());
 		/// <summary>
 		/// Returns the distinguished name of the subject.
 		/// </summary>
-		public DistinguishedName SubjectDN => new DistinguishedName(wrapped.SubjectDN);
+		public DistinguishedName SubjectDN => new(wrapped.SubjectDN);
 		/// <summary>
 		/// Returns the distinguished name of the issuer.
 		/// </summary>
-		public DistinguishedName IssuerDN => new DistinguishedName(wrapped.IssuerDN);
+		public DistinguishedName IssuerDN => new(wrapped.IssuerDN);
 		/// <summary>
 		/// Returns the date on which the validity period of the certificate begins.
 		/// </summary>

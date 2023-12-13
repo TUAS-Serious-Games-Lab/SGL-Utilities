@@ -85,8 +85,8 @@ namespace SGL.Utilities.Backend {
 	/// ]]></code>
 	/// </example>
 	public abstract class CommandService<TResult> : IScopedBackgroundService {
-		private IHost host;
-		private ServiceResultWrapper<TResult> resultWrapper;
+		private readonly IHost host;
+		private readonly ServiceResultWrapper<TResult> resultWrapper;
 
 		/// <summary>
 		/// Accepts the required injected object from the derived class' constructor.
@@ -108,7 +108,7 @@ namespace SGL.Utilities.Backend {
 			catch (Exception ex) {
 				resultWrapper.Result = ResultForUncaughtException(ex);
 			}
-			_ = host.StopAsync();
+			_ = host.StopAsync(CancellationToken.None);
 		}
 
 		/// <summary>

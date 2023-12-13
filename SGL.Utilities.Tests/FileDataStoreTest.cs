@@ -14,7 +14,7 @@ using Xunit.Abstractions;
 namespace SGL.Utilities.Tests {
 	public class FileDataStoreTest {
 		private const string TestFile = "FileDataStoreTest.json";
-		private ILoggerFactory loggerFactory;
+		private readonly ILoggerFactory loggerFactory;
 
 		public FileDataStoreTest(ITestOutputHelper output) {
 			File.Delete(TestFile);
@@ -22,9 +22,9 @@ namespace SGL.Utilities.Tests {
 		}
 
 		public class TestData {
-			public string Name { get; set; }
+			public string Name { get; set; } = null!;
 			public int Number { get; set; }
-			public List<string> List { get; set; }
+			public List<string> List { get; set; } = null!;
 
 			public static async Task<TestData> DeserializeAsync(Stream stream, CancellationToken ct) {
 				return await JsonSerializer.DeserializeAsync<TestData>(stream, cancellationToken: ct) ?? throw new Exception("Read null value");

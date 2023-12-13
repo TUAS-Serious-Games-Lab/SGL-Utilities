@@ -21,9 +21,9 @@ namespace SGL.Utilities.Crypto.Certificates {
 		private readonly ILogger<CertificateStore> logger;
 		private readonly Func<Certificate, ILogger<CertificateStore>, bool> customChecks;
 		private readonly ICertificateValidator validator;
-		private Dictionary<KeyId, Certificate> certificatesByKeyId = new Dictionary<KeyId, Certificate>();
-		private Dictionary<DistinguishedName, Certificate> certificatesBySubjectDN = new Dictionary<DistinguishedName, Certificate>();
-		private Dictionary<KeyIdentifier, Certificate> certificatesBySKID = new Dictionary<KeyIdentifier, Certificate>();
+		private readonly Dictionary<KeyId, Certificate> certificatesByKeyId = new();
+		private readonly Dictionary<DistinguishedName, Certificate> certificatesBySubjectDN = new();
+		private readonly Dictionary<KeyIdentifier, Certificate> certificatesBySKID = new();
 
 		/// <summary>
 		/// Creates a certifiacte store that uses the given <see cref="ICertificateValidator"/> to validate loaded certificates and the given logger to log information about its operations.
@@ -157,7 +157,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 		public async Task LoadCertificatesFromHttpAsync(HttpClient httpClient, Uri source, CancellationToken ct = default) {
 			using var reader = new StreamReader(
 #if NETSTANDARD
-				await httpClient.GetStreamAsync(source/*, ct*/), 
+				await httpClient.GetStreamAsync(source/*, ct*/),
 #else
 				await httpClient.GetStreamAsync(source, ct),
 #endif
@@ -231,7 +231,7 @@ namespace SGL.Utilities.Crypto.Certificates {
 		/// <param name="reader">A reader containing the certificates in PEM text format.</param>
 		/// <param name="sourceName">A name for the source behind <paramref name="reader"/> to use for log messages. This can, e.g. be a filename or an URL.</param>
 		public void LoadCertificatesFromReader(TextReader reader, string sourceName) {
-			var certs = loadCertificates(reader, sourceName);
+			var certs = LoadCertificates(reader, sourceName);
 			AddCertificatesWithValidation(certs, sourceName);
 		}
 
@@ -258,11 +258,11 @@ namespace SGL.Utilities.Crypto.Certificates {
 			}
 		}
 
-		private IEnumerable<Certificate> loadCertificates(TextReader reader, string sourceName) {
-			PemReader pemReader = new PemReader(reader);
+		private IEnumerable<Certificate> LoadCertificates(TextReader reader, string sourceName) {
+			var pemReader = new PemReader(reader);
 			int loadedCount = 0;
 			for (; ; ) {
-				Certificate? cert = null;
+				Certificate? cert;
 				try {
 					cert = PemHelper.ReadCertificate(pemReader);
 					if (cert == null) break;

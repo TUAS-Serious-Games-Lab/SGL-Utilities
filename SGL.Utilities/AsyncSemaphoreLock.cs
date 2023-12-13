@@ -16,8 +16,8 @@ namespace SGL.Utilities {
 	/// Thus, the inner operations would need their own synchronization mechanism.
 	/// </summary>
 	public class AsyncSemaphoreLock : IDisposable {
-		private SemaphoreSlim semaphore = new SemaphoreSlim(1);
-		private AsyncLocal<Context> currentOperationHoldsLock = new AsyncLocal<Context>(); // Context with counter instead of bool to support recursive use
+		private readonly SemaphoreSlim semaphore = new(1);
+		private readonly AsyncLocal<Context> currentOperationHoldsLock = new(); // Context with counter instead of bool to support recursive use
 
 		private class Context {
 			internal int RecursionLevel { get; set; } = 0;

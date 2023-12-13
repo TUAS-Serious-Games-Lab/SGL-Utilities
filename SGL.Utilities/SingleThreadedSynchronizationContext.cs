@@ -14,22 +14,23 @@ namespace SGL.Utilities {
 	/// </summary>
 	public class SingleThreadedSynchronizationContext : SynchronizationContext, IDisposable {
 		private class State : IDisposable {
-			private Action<Exception> uncaughtExceptionCallback;
+			private readonly Action<Exception> uncaughtExceptionCallback;
 			private readonly Thread thread;
-			private readonly AutoResetEvent resetEvent = new AutoResetEvent(false);
-			private readonly CancellationTokenSource shutdownTokenSource = new CancellationTokenSource();
+			private readonly AutoResetEvent resetEvent = new(false);
+			private readonly CancellationTokenSource shutdownTokenSource = new();
 			private readonly CancellationToken shutdownToken;
-			private readonly ConcurrentQueue<(SendOrPostCallback Callback, object? State)> queue = new ConcurrentQueue<(SendOrPostCallback Callback, object? State)>();
+			private readonly ConcurrentQueue<(SendOrPostCallback Callback, object? State)> queue = new();
 			private long refCount = 1;
 
 			internal State(Action<Exception> uncaughtExceptionCallback, string threadName, SingleThreadedSynchronizationContext ctx) {
 				this.uncaughtExceptionCallback = uncaughtExceptionCallback;
 				shutdownToken = shutdownTokenSource.Token;
-				thread = new Thread(() => pump(ctx));
-				thread.Name = threadName;
+				thread = new Thread(() => Pump(ctx)) {
+					Name = threadName
+				};
 				thread.Start();
 			}
-			internal void pump(SingleThreadedSynchronizationContext ctx) {
+			internal void Pump(SingleThreadedSynchronizationContext ctx) {
 				SetSynchronizationContext(ctx);
 				while (!shutdownToken.IsCancellationRequested) {
 					resetEvent.WaitOne();
@@ -44,7 +45,7 @@ namespace SGL.Utilities {
 			}
 			public void Dispose() {
 				shutdownTokenSource.Cancel();
-				if (Thread.CurrentThread.ManagedThreadId == thread.ManagedThreadId) {
+				if (Environment.CurrentManagedThreadId == thread.ManagedThreadId) {
 					Process();
 				}
 				else {
@@ -82,7 +83,7 @@ namespace SGL.Utilities {
 				resetEvent.Set();
 			}
 
-			public bool IsCurrentThreadWorker => Thread.CurrentThread.ManagedThreadId == thread.ManagedThreadId;
+			public bool IsCurrentThreadWorker => Environment.CurrentManagedThreadId == thread.ManagedThreadId;
 
 			public void Execute(SendOrPostCallback callback, object? state) {
 				try {

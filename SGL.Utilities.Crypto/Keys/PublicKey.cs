@@ -23,7 +23,7 @@ namespace SGL.Utilities.Crypto.Keys {
 
 		internal static bool IsValidWrappedType(AsymmetricKeyParameter wrapped) => TryGetKeyType(wrapped) != null;
 		internal static KeyType? TryGetKeyType(AsymmetricKeyParameter wrapped) => wrapped switch {
-			RsaKeyParameters rsa => KeyType.RSA,
+			RsaKeyParameters => KeyType.RSA,
 			ECPublicKeyParameters => KeyType.EllipticCurves,
 			_ => null
 		};
@@ -39,20 +39,14 @@ namespace SGL.Utilities.Crypto.Keys {
 		/// Calculates the key id of this public key.
 		/// </summary>
 		/// <returns>A <see cref="KeyId"/> object identifying this public key.</returns>
-		public KeyId CalculateId() {
-			switch (wrapped) {
-				case null:
-					throw new KeyException("Key object contained null value.");
-				case RsaKeyParameters rsa:
-					return new KeyId(getKeyId(rsa));
-				case ECPublicKeyParameters ec:
-					return new KeyId(getKeyId(ec));
-				default:
-					throw new KeyException($"Unsupported key type {wrapped.GetType().FullName}.");
-			}
-		}
+		public KeyId CalculateId() => wrapped switch {
+			null => throw new KeyException("Key object contained null value."),
+			RsaKeyParameters rsa => new KeyId(GetKeyId(rsa)),
+			ECPublicKeyParameters ec => new KeyId(GetKeyId(ec)),
+			_ => throw new KeyException($"Unsupported key type {wrapped.GetType().FullName}."),
+		};
 
-		private static byte[] getKeyId(ECPublicKeyParameters ec) {
+		private static byte[] GetKeyId(ECPublicKeyParameters ec) {
 			try {
 				var digest = new Sha256Digest();
 				var keyBytes = ec.Q.GetEncoded(compressed: false); // TODO: Recheck, if this is deterministic
@@ -67,7 +61,7 @@ namespace SGL.Utilities.Crypto.Keys {
 			}
 		}
 
-		private static byte[] getKeyId(RsaKeyParameters rsa) {
+		private static byte[] GetKeyId(RsaKeyParameters rsa) {
 			try {
 				var digest = new Sha256Digest();
 				var modulusBytes = rsa.Modulus.ToByteArrayUnsigned();

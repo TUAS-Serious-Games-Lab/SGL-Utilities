@@ -62,19 +62,19 @@ namespace SGL.Utilities.Logging.FileLogging {
 	/// </remarks>
 	[ProviderAlias("File")]
 	public class FileLoggingProvider : ILoggerProvider, IAsyncDisposable {
-		private FileLoggingProviderOptions options;
-		internal AsyncConsumerQueue<LogMessage> WriterQueue = new();
-		internal LoggerExternalScopeProvider Scopes = new LoggerExternalScopeProvider();
-		private List<FileLoggingSink> sinks;
-		private Task writerWorkerHandle;
+		private readonly FileLoggingProviderOptions options;
+		internal readonly AsyncConsumerQueue<LogMessage> WriterQueue = new();
+		internal readonly LoggerExternalScopeProvider Scopes = new();
+		private readonly List<FileLoggingSink> sinks;
+		private readonly Task writerWorkerHandle;
 		private bool disposed = false;
-		internal LogLevel MinLevel;
+		internal readonly LogLevel MinLevel;
 
-		private Action<INamedPlaceholderFormatterFactoryBuilder<LogMessage>> formaterFactoryBuilder;
-		private NamedPlaceholderFormatterFactory<LogMessage> formatterFactory;
-		private NamedPlaceholderFormatterFactory<LogMessage> formatterFactoryFixedTime;
+		private readonly Action<INamedPlaceholderFormatterFactoryBuilder<LogMessage>> formaterFactoryBuilder;
+		private readonly NamedPlaceholderFormatterFactory<LogMessage> formatterFactory;
+		private readonly NamedPlaceholderFormatterFactory<LogMessage> formatterFactoryFixedTime;
 
-		private Task startWriterWorker() {
+		private Task StartWriterWorker() {
 			return Task.Run(async () => {
 				await foreach (var msg in WriterQueue.DequeueAllAsync().ConfigureAwait(false)) {
 					await Task.WhenAll(sinks.Select(sink => sink.WriteAsync(msg)).ToArray()).ConfigureAwait(false);
@@ -83,7 +83,7 @@ namespace SGL.Utilities.Logging.FileLogging {
 		}
 
 		private class Builder : IFileLoggingProviderBuilder {
-			INamedPlaceholderFormatterFactoryBuilder<LogMessage> formatterFactoryBuilder;
+			private readonly INamedPlaceholderFormatterFactoryBuilder<LogMessage> formatterFactoryBuilder;
 
 			public Builder(INamedPlaceholderFormatterFactoryBuilder<LogMessage> formatterFactoryBuilder) {
 				this.formatterFactoryBuilder = formatterFactoryBuilder;
@@ -148,7 +148,7 @@ namespace SGL.Utilities.Logging.FileLogging {
 				formatterFactory.Create(s.FilenameFormat ?? options.FilenameFormat),
 				formatterFactoryFixedTime.Create(s.FilenameFormat ?? options.FilenameFormat)
 				)).ToList();
-			writerWorkerHandle = startWriterWorker();
+			writerWorkerHandle = StartWriterWorker();
 		}
 
 		/// <inheritdoc/>

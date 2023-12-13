@@ -12,16 +12,16 @@ namespace SGL.Utilities.TestUtilities.XUnit {
 	/// An <see cref="ILoggerProvider"/> implementation that outputs the log messages to a <see cref="ITestOutputHelper"/> to provide log output for test cases.
 	/// </summary>
 	public class XUnitLoggingProvider : ILoggerProvider {
-		private Func<ITestOutputHelper?> outputObtainer;
-		private Configurator configuration = new Configurator();
-		private static ThreadLocal<StringBuilder> cachedStringBuilder = new ThreadLocal<StringBuilder>(() => new StringBuilder());
-		private LoggerExternalScopeProvider scopes = new LoggerExternalScopeProvider();
+		private readonly Func<ITestOutputHelper?> outputObtainer;
+		private readonly Configurator configuration = new();
+		private static readonly ThreadLocal<StringBuilder> cachedStringBuilder = new(() => new StringBuilder());
+		private readonly LoggerExternalScopeProvider scopes = new();
 
 		internal class XUnitLogger : ILogger {
-			private Func<ITestOutputHelper?> outputObtainer;
-			private string categoryName;
-			private LoggerExternalScopeProvider scopes;
-			private Configurator configuration;
+			private readonly Func<ITestOutputHelper?> outputObtainer;
+			private readonly string categoryName;
+			private readonly LoggerExternalScopeProvider scopes;
+			private readonly Configurator configuration;
 
 			internal XUnitLogger(Func<ITestOutputHelper?> outputObtainer, string categoryName, LoggerExternalScopeProvider scopes, Configurator configuration) {
 				this.outputObtainer = outputObtainer;
@@ -67,7 +67,7 @@ namespace SGL.Utilities.TestUtilities.XUnit {
 					builder.Append(exception);
 					builder.AppendLine();
 				}
-				builder.Append(" ");
+				builder.Append(' ');
 				scopes.ForEachScope((scope, sb) => sb.AppendFormat("<{0}>", scope), builder);
 				var str = builder.ToString();
 				lock (output) {

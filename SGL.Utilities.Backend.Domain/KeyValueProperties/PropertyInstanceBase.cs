@@ -11,7 +11,7 @@ namespace SGL.Utilities.Backend.Domain.KeyValueProperties {
 	/// <typeparam name="TInstanceOwner">The entity type that holds these property instances.</typeparam>
 	/// <typeparam name="TDefinition">The concrete weak entity type of the property definitions for these property instances.</typeparam>
 	public class PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
-		private static JsonSerializerOptions jsonOptions = new JsonSerializerOptions { Converters = { new ObjectDictionaryValueJsonConverter() } };
+		private static readonly JsonSerializerOptions jsonOptions = new() { Converters = { new ObjectDictionaryValueJsonConverter() } };
 
 		/// <summary>
 		/// The unique database id of the property instance.
@@ -143,7 +143,7 @@ namespace SGL.Utilities.Backend.Domain.KeyValueProperties {
 		/// <returns>The created property instance object.</returns>
 		public static TInstance Create<TInstance>(TDefinition definition, TInstanceOwner owner)
 				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition>, new() =>
-			new TInstance {
+			new() {
 				Id = Guid.Empty,
 				DefinitionId = definition.Id,
 				Definition = definition,

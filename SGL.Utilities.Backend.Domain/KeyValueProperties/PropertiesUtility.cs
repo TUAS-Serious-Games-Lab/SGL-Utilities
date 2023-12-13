@@ -54,7 +54,7 @@ namespace SGL.Utilities.Backend.Domain.KeyValueProperties {
 		}
 
 
-		private static TInstance setPropertyImpl<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner, string name, object? value,
+		private static TInstance SetPropertyImpl<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner, string name, object? value,
 				Func<TInstanceOwner, ICollection<TInstance>> getPropInsts, Func<string, TDefinition> getPropDef, Func<TDefinition, TInstanceOwner, TInstance> createInst)
 				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
 			ICollection<TInstance> instances = getPropInsts(instanceOwner) ?? throw new PropertyInstancesCollectionMissingException();
@@ -100,7 +100,7 @@ namespace SGL.Utilities.Backend.Domain.KeyValueProperties {
 		public static TInstance SetKeyValueProperty<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner, string name, object? value,
 				Func<TInstanceOwner, ICollection<TInstance>> getPropInsts, Func<TInstanceOwner, IEnumerable<TDefinition>> getPropDefs, Func<TDefinition, TInstanceOwner, TInstance> createInst)
 				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
-			return setPropertyImpl(instanceOwner, name, value,
+			return SetPropertyImpl(instanceOwner, name, value,
 				getPropInsts,
 				name => {
 					var propDef = (getPropDefs(instanceOwner) ?? throw new PropertyDefinitionsCollectionMissingException()).SingleOrDefault(p => p.Name == name)
@@ -119,7 +119,7 @@ namespace SGL.Utilities.Backend.Domain.KeyValueProperties {
 		/// <param name="name">The name of the property for which to get the value.</param>
 		/// <param name="getPropInsts">The delegate to get the collection of property instances from the owning entity.</param>
 		/// <param name="definitionHint">
-		/// Needs to a lambda referencing <see cref="PropertyInstanceBase{TInstanceOwner, TDefinition}"/> within <typeparamref name="TInstanceOwner"/>.
+		/// Needs to be a lambda referencing <see cref="PropertyInstanceBase{TInstanceOwner, TDefinition}"/> within <typeparamref name="TInstanceOwner"/>.
 		/// This is just needed as a workaround to make type parameter deduction work.
 		/// </param>
 		/// <returns>The value of the property.</returns>
@@ -161,7 +161,7 @@ namespace SGL.Utilities.Backend.Domain.KeyValueProperties {
 		public static TInstance SetKeyValueProperty<TInstanceOwner, TInstance, TDefinition>(TInstanceOwner instanceOwner, TDefinition propDef, object? value,
 				Func<TInstanceOwner, ICollection<TInstance>> getPropInsts, Func<TDefinition, TInstanceOwner, TInstance> createInst)
 				where TInstance : PropertyInstanceBase<TInstanceOwner, TDefinition> where TInstanceOwner : class where TDefinition : PropertyDefinitionBase {
-			return setPropertyImpl(instanceOwner, propDef.Name, value, getPropInsts, name => propDef, createInst);
+			return SetPropertyImpl(instanceOwner, propDef.Name, value, getPropInsts, name => propDef, createInst);
 		}
 
 		/// <summary>

@@ -32,7 +32,7 @@ namespace SGL.Utilities {
 		/// </summary>
 		protected string PrefixUriPath { get; }
 
-		private AsyncSemaphoreLock authorizationLock = new AsyncSemaphoreLock();
+		private readonly AsyncSemaphoreLock authorizationLock = new();
 
 		/// <summary>
 		/// Constructs the object with the given <see cref="HttpClient"/>, initializing <see cref="Authorization"/> with the given token.
@@ -56,9 +56,8 @@ namespace SGL.Utilities {
 		/// <param name="ct">A <see cref="CancellationToken"/> that allows cancelling the waiting for the lock.</param>
 		/// <returns>A task object representing the operation.</returns>
 		public async Task SetAuthorizationLockedAsync(AuthorizationData? value, CancellationToken ct = default) {
-			using (var lockHandle = await authorizationLock.WaitAsyncWithScopedRelease(ct)) {
-				Authorization = value;
-			}
+			using var lockHandle = await authorizationLock.WaitAsyncWithScopedRelease(ct);
+			Authorization = value;
 		}
 
 		/// <summary>
@@ -123,7 +122,7 @@ namespace SGL.Utilities {
 				MediaTypeWithQualityHeaderValue? accept = null, CancellationToken ct = default, bool authenticated = true, bool statusCodeExceptionMapping = true) {
 			string requestUriPath = PrefixUriPath +
 				((!string.IsNullOrWhiteSpace(PrefixUriPath) && !PrefixUriPath.EndsWith('/') && relativeUriPath.Length != 0) ? "/" : "") + relativeUriPath;
-			requestUriPath += buildQueryString(queryParameters);
+			requestUriPath += BuildQueryString(queryParameters);
 			using var request = new HttpRequestMessage(httpMethod, requestUriPath);
 			if (requestContent != null) {
 				request.Content = requestContent;
@@ -172,7 +171,7 @@ namespace SGL.Utilities {
 			}
 		}
 
-		private static string buildQueryString(IEnumerable<KeyValuePair<string, string>> queryParameters) {
+		private static string BuildQueryString(IEnumerable<KeyValuePair<string, string>> queryParameters) {
 			string paramsString = string.Join('&', queryParameters.Select(param => string.Format("{0}={1}", Uri.EscapeDataString(param.Key), Uri.EscapeDataString(param.Value))));
 			return string.IsNullOrEmpty(paramsString) ? string.Empty : "?" + paramsString;
 		}
@@ -203,7 +202,7 @@ namespace SGL.Utilities {
 		/// or <see cref="SendRequest(HttpMethod, string, HttpContent?, Action{HttpRequestMessage}, MediaTypeWithQualityHeaderValue?, CancellationToken, bool, bool)"/> to indicate the error.
 		/// The default wraps <paramref name="ex"/> in <see cref="HttpApiRequestFailedException"/> with context information from <paramref name="request"/>.
 		/// </summary>
-		/// <param name="ex">The exception thrown by <see cref="HttpClient.Send(HttpRequestMessage, HttpCompletionOption, CancellationToken)"/>.</param>
+		/// <param name="ex">The exception thrown by <see cref="HttpClient.SendAsync(HttpRequestMessage, HttpCompletionOption, CancellationToken)"/>.</param>
 		/// <param name="request">The request that couldn't be sent.</param>
 		/// <returns>The exception to throw.</returns>
 		protected virtual Exception MapExceptionForError(HttpRequestException ex, HttpRequestMessage request) {

@@ -18,7 +18,7 @@ namespace SGL.Utilities {
 	/// Encapsulates an authorization token used for authentication and authorization purposes between a user login service and other services being used using the authenticated credentials.
 	/// The token is issued to the client by a login service and the client passes it along when calling other services.
 	/// </summary>
-	public struct AuthorizationToken {
+	public readonly struct AuthorizationToken {
 		/// <summary>
 		/// The scheme used by this token.
 		/// </summary>
@@ -45,10 +45,10 @@ namespace SGL.Utilities {
 		/// <summary>
 		/// Returns an <see cref="AuthenticationHeaderValue"/> with the properties in the object, for use with an <see cref="HttpClient"/>.
 		/// </summary>
-		public AuthenticationHeaderValue ToHttpHeaderValue() => new AuthenticationHeaderValue(Scheme.ToString(), Value);
+		public AuthenticationHeaderValue ToHttpHeaderValue() => new(Scheme.ToString(), Value);
 		/// <summary>
 		/// Returns a string representation of the token scheme and value combination.
 		/// </summary>
-		public override string? ToString() => $"{Scheme.ToString()} {Value}";
+		public override string? ToString() => $"{Scheme} {Value}";
 	}
 }

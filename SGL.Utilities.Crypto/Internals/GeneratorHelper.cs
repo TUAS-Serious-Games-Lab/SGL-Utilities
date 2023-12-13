@@ -17,7 +17,7 @@ namespace SGL.Utilities.Crypto.Internals {
 	internal class GeneratorHelper {
 		public static KeyPair GenerateEcKeyPair(RandomGenerator random, int keyLength, string? curveName = null) {
 			try {
-				ECKeyPairGenerator keyGen = new ECKeyPairGenerator();
+				var keyGen = new ECKeyPairGenerator();
 				if (curveName != null) {
 					keyGen.Init(new ECKeyGenerationParameters(ECNamedCurveTable.GetOid(curveName), random.wrapped));
 				}
@@ -32,7 +32,7 @@ namespace SGL.Utilities.Crypto.Internals {
 		}
 		public static KeyPair GenerateRsaKeyPair(RandomGenerator random, int keyLength) {
 			try {
-				RsaKeyPairGenerator keyGen = new RsaKeyPairGenerator();
+				var keyGen = new RsaKeyPairGenerator();
 				keyGen.Init(new KeyGenerationParameters(random.wrapped, keyLength));
 				return new KeyPair(keyGen.GenerateKeyPair());
 			}
@@ -40,18 +40,16 @@ namespace SGL.Utilities.Crypto.Internals {
 				throw new KeyException("Failed generating RSA key pair.", ex);
 			}
 		}
-		public static KeyPair GenerateKeyPair(RandomGenerator random, KeyType type, int keyLength, string? paramSetName = null) {
-			switch (type) {
-				case KeyType.RSA: return GenerateRsaKeyPair(random, keyLength);
-				case KeyType.EllipticCurves: return GenerateEcKeyPair(random, keyLength, paramSetName);
-				default: throw new KeyException("Unsupported key type");
-			}
-		}
+		public static KeyPair GenerateKeyPair(RandomGenerator random, KeyType type, int keyLength, string? paramSetName = null) => type switch {
+			KeyType.RSA => GenerateRsaKeyPair(random, keyLength),
+			KeyType.EllipticCurves => GenerateEcKeyPair(random, keyLength, paramSetName),
+			_ => throw new KeyException("Unsupported key type"),
+		};
 
 		public static Certificate GenerateCertificate(DistinguishedName signerIdentity, PrivateKey signerKey, DistinguishedName subjectIdentity, PublicKey subjectKey, DateTime validFrom, DateTime validTo,
 				BigInteger serialNumber, SignatureDigest signatureDigest = SignatureDigest.Sha256, KeyIdentifier? authorityKeyIdentifier = null, bool generateSubjectKeyIdentifier = false,
 				KeyUsages keyUsages = KeyUsages.NoneDefined, (bool IsCA, int? CAPathLength)? caConstraint = null) {
-			X509V3CertificateGenerator certGen = new X509V3CertificateGenerator();
+			var certGen = new X509V3CertificateGenerator();
 			try {
 				certGen.SetIssuerDN(signerIdentity.wrapped);
 				certGen.SetSubjectDN(subjectIdentity.wrapped);
@@ -88,7 +86,7 @@ namespace SGL.Utilities.Crypto.Internals {
 			catch (Exception ex) {
 				throw new CertificateException("Failed setting up certificate data.", ex);
 			}
-			Asn1SignatureFactory signatureFactory = new Asn1SignatureFactory(SignatureHelper.GetSignatureAlgorithmName(signerKey.Type, signatureDigest), signerKey.wrapped);
+			var signatureFactory = new Asn1SignatureFactory(SignatureHelper.GetSignatureAlgorithmName(signerKey.Type, signatureDigest), signerKey.wrapped);
 			try {
 				return new Certificate(certGen.Generate(signatureFactory));
 			}
@@ -98,7 +96,7 @@ namespace SGL.Utilities.Crypto.Internals {
 		}
 
 		internal static ExtendedKeyUsage MapKeyUsageEnumToExtensionObject(KeyUsages keyUsages) {
-			List<KeyPurposeID> purposeIds = new List<KeyPurposeID>();
+			var purposeIds = new List<KeyPurposeID>();
 			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtAnyPurpose, KeyPurposeID.AnyExtendedKeyUsage, purposeIds);
 			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtServerAuth, KeyPurposeID.id_kp_serverAuth, purposeIds);
 			AddPurposeIfUsagePresent(keyUsages, KeyUsages.ExtClientAuth, KeyPurposeID.id_kp_clientAuth, purposeIds);

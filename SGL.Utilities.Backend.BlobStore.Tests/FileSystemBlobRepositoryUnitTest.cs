@@ -1,5 +1,5 @@
-﻿using SGL.Utilities.TestUtilities.XUnit;
-using SGL.Utilities;
+﻿using SGL.Utilities;
+using SGL.Utilities.TestUtilities.XUnit;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -27,17 +27,17 @@ namespace SGL.Utilities.Backend.BlobStore.Tests {
 	public class FileSystemBlobRepositoryUnitTest : IClassFixture<FileSystemBlobRepositoryUnitTestFixture> {
 		private const string appName = "FileSystemBlobRepositoryUnitTest";
 		private const string suffix = ".blob";
-		private FileSystemBlobRepository fsStorage => fixture.FSStorage;
-		private IBlobRepository storage => fixture.Storage;
-		private ITestOutputHelper output;
-		private FileSystemBlobRepositoryUnitTestFixture fixture;
+		private FileSystemBlobRepository FsStorage => fixture.FSStorage;
+		private IBlobRepository Storage => fixture.Storage;
+		private readonly ITestOutputHelper output;
+		private readonly FileSystemBlobRepositoryUnitTestFixture fixture;
 
 		public FileSystemBlobRepositoryUnitTest(ITestOutputHelper output, FileSystemBlobRepositoryUnitTestFixture fixture) {
 			this.output = output;
 			this.fixture = fixture;
 		}
 
-		private MemoryStream makeRandomTextContent() {
+		private static MemoryStream MakeRandomTextContent() {
 			var content = new MemoryStream();
 			using (var writer = new StreamWriter(content, leaveOpen: true)) {
 				for (int i = 0; i < 10; ++i) {
@@ -50,11 +50,11 @@ namespace SGL.Utilities.Backend.BlobStore.Tests {
 
 		[Fact]
 		public async Task BlobIsStoredAndRetrievedCorrectly() {
-			BlobPath blobPath = new BlobPath { AppName = appName, OwnerId = Guid.NewGuid(), BlobId = Guid.NewGuid(), Suffix = suffix };
-			using (var content = makeRandomTextContent()) {
-				await storage.StoreBlobAsync(blobPath, content);
+			BlobPath blobPath = new() { AppName = appName, OwnerId = Guid.NewGuid(), BlobId = Guid.NewGuid(), Suffix = suffix };
+			using (var content = MakeRandomTextContent()) {
+				await Storage.StoreBlobAsync(blobPath, content);
 				content.Position = 0;
-				using (var readStream = await storage.ReadBlobAsync(blobPath)) {
+				using (var readStream = await Storage.ReadBlobAsync(blobPath)) {
 					output.WriteStreamContents(readStream);
 					readStream.Position = 0;
 					using (var origReader = new StreamReader(content, leaveOpen: true))
@@ -64,16 +64,16 @@ namespace SGL.Utilities.Backend.BlobStore.Tests {
 				}
 			}
 		}
-		private async Task separationTest(BlobPath blobPathA, BlobPath blobPathB) {
-			using (var contentA = makeRandomTextContent())
-			using (var contentB = makeRandomTextContent()) {
-				var taskA = storage.StoreBlobAsync(blobPathA, contentA);
-				var taskB = storage.StoreBlobAsync(blobPathB, contentB);
+		private async Task SeparationTest(BlobPath blobPathA, BlobPath blobPathB) {
+			using (var contentA = MakeRandomTextContent())
+			using (var contentB = MakeRandomTextContent()) {
+				var taskA = Storage.StoreBlobAsync(blobPathA, contentA);
+				var taskB = Storage.StoreBlobAsync(blobPathB, contentB);
 				await Task.WhenAll(taskA, taskB);
 				contentA.Position = 0;
 				contentB.Position = 0;
-				using (var readStreamA = await storage.ReadBlobAsync(blobPathA))
-				using (var readStreamB = await storage.ReadBlobAsync(blobPathB)) {
+				using (var readStreamA = await Storage.ReadBlobAsync(blobPathA))
+				using (var readStreamB = await Storage.ReadBlobAsync(blobPathB)) {
 					using (var origAReader = new StreamReader(contentA, leaveOpen: true))
 					using (var readBackAReader = new StreamReader(readStreamA, leaveOpen: true))
 					using (var origBReader = new StreamReader(contentB, leaveOpen: true))
@@ -93,16 +93,16 @@ namespace SGL.Utilities.Backend.BlobStore.Tests {
 
 		[Fact]
 		public async Task BlobsWithSameIdAreSeparatedByUser() {
-			BlobPath blobPathA = new BlobPath { AppName = appName, OwnerId = Guid.NewGuid(), BlobId = Guid.NewGuid(), Suffix = suffix };
-			BlobPath blobPathB = new BlobPath { AppName = blobPathA.AppName, OwnerId = Guid.NewGuid(), BlobId = blobPathA.BlobId, Suffix = suffix };
-			await separationTest(blobPathA, blobPathB);
+			BlobPath blobPathA = new() { AppName = appName, OwnerId = Guid.NewGuid(), BlobId = Guid.NewGuid(), Suffix = suffix };
+			BlobPath blobPathB = new() { AppName = blobPathA.AppName, OwnerId = Guid.NewGuid(), BlobId = blobPathA.BlobId, Suffix = suffix };
+			await SeparationTest(blobPathA, blobPathB);
 		}
 
 		[Fact]
 		public async Task BlobsWithSameIdAndUserAreSeparatedByApp() {
-			BlobPath blobPathA = new BlobPath { AppName = appName + "_A", OwnerId = Guid.NewGuid(), BlobId = Guid.NewGuid(), Suffix = suffix };
-			BlobPath blobPathB = new BlobPath { AppName = appName + "_B", OwnerId = blobPathA.OwnerId, BlobId = blobPathA.BlobId, Suffix = suffix };
-			await separationTest(blobPathA, blobPathB);
+			BlobPath blobPathA = new() { AppName = appName + "_A", OwnerId = Guid.NewGuid(), BlobId = Guid.NewGuid(), Suffix = suffix };
+			BlobPath blobPathB = new() { AppName = appName + "_B", OwnerId = blobPathA.OwnerId, BlobId = blobPathA.BlobId, Suffix = suffix };
+			await SeparationTest(blobPathA, blobPathB);
 		}
 
 		[Fact]
@@ -121,14 +121,14 @@ namespace SGL.Utilities.Backend.BlobStore.Tests {
 			};
 			using (var content = new MemoryStream()) {
 				foreach (var p in positivePathList) {
-					await storage.StoreBlobAsync(p, content);
+					await Storage.StoreBlobAsync(p, content);
 				}
 				foreach (var p in negativePathList) {
-					await storage.StoreBlobAsync(p, content);
+					await Storage.StoreBlobAsync(p, content);
 				}
 			}
-			Assert.All(positivePathList, p => Assert.Contains(p, storage.EnumerateBlobs(appName, userId)));
-			Assert.All(negativePathList, p => Assert.DoesNotContain(p, storage.EnumerateBlobs(appName, userId)));
+			Assert.All(positivePathList, p => Assert.Contains(p, Storage.EnumerateBlobs(appName, userId)));
+			Assert.All(negativePathList, p => Assert.DoesNotContain(p, Storage.EnumerateBlobs(appName, userId)));
 		}
 
 		[Fact]
@@ -147,14 +147,14 @@ namespace SGL.Utilities.Backend.BlobStore.Tests {
 			};
 			using (var content = new MemoryStream()) {
 				foreach (var p in positivePathList) {
-					await storage.StoreBlobAsync(p, content);
+					await Storage.StoreBlobAsync(p, content);
 				}
 				foreach (var p in negativePathList) {
-					await storage.StoreBlobAsync(p, content);
+					await Storage.StoreBlobAsync(p, content);
 				}
 			}
-			Assert.All(positivePathList, p => Assert.Contains(p, storage.EnumerateBlobs(appName)));
-			Assert.All(negativePathList, p => Assert.DoesNotContain(p, storage.EnumerateBlobs(appName)));
+			Assert.All(positivePathList, p => Assert.Contains(p, Storage.EnumerateBlobs(appName)));
+			Assert.All(negativePathList, p => Assert.DoesNotContain(p, Storage.EnumerateBlobs(appName)));
 		}
 
 		[Fact]
@@ -171,16 +171,16 @@ namespace SGL.Utilities.Backend.BlobStore.Tests {
 			};
 			using (var content = new MemoryStream()) {
 				foreach (var p in pathList) {
-					await storage.StoreBlobAsync(p, content);
+					await Storage.StoreBlobAsync(p, content);
 				}
 			}
-			Assert.All(pathList, p => Assert.Contains(p, storage.EnumerateBlobs()));
+			Assert.All(pathList, p => Assert.Contains(p, Storage.EnumerateBlobs()));
 		}
 
 		[Fact]
 		public async Task AttemptingToReadNonExistentBlobThrowsCorrectException() {
 			var path = new BlobPath() { AppName = appName, OwnerId = Guid.NewGuid(), BlobId = Guid.NewGuid(), Suffix = suffix };
-			var ex = await Assert.ThrowsAsync<BlobNotAvailableException>(async () => { await using (var stream = await storage.ReadBlobAsync(path)) { } });
+			var ex = await Assert.ThrowsAsync<BlobNotAvailableException>(async () => { await using (var stream = await Storage.ReadBlobAsync(path)) { } });
 			Assert.Equal(path, ex.BlobPath);
 		}
 
@@ -188,10 +188,10 @@ namespace SGL.Utilities.Backend.BlobStore.Tests {
 		public async Task DeletedBlobIsNoLongerEnumerated() {
 			var path = new BlobPath() { AppName = appName, OwnerId = Guid.NewGuid(), BlobId = Guid.NewGuid(), Suffix = suffix };
 			using (var content = new MemoryStream()) {
-				await storage.StoreBlobAsync(path, content);
-				Assert.Contains(path, storage.EnumerateBlobs());
-				await storage.DeleteBlobAsync(path);
-				Assert.DoesNotContain(path, storage.EnumerateBlobs());
+				await Storage.StoreBlobAsync(path, content);
+				Assert.Contains(path, Storage.EnumerateBlobs());
+				await Storage.DeleteBlobAsync(path);
+				Assert.DoesNotContain(path, Storage.EnumerateBlobs());
 			}
 		}
 
@@ -199,16 +199,16 @@ namespace SGL.Utilities.Backend.BlobStore.Tests {
 		public async Task LastFinishedStoreWins() {
 			var path = new BlobPath() { AppName = appName, OwnerId = Guid.NewGuid(), BlobId = Guid.NewGuid(), Suffix = suffix };
 
-			using (var contentA = makeRandomTextContent())
-			using (var contentB = makeRandomTextContent()) {
+			using (var contentA = MakeRandomTextContent())
+			using (var contentB = MakeRandomTextContent()) {
 				using (var trigStreamA = new TriggeredBlockingStream(contentA))
 				using (var trigStreamB = new TriggeredBlockingStream(contentB)) {
-					var taskA = storage.StoreBlobAsync(path, trigStreamA);
-					var taskB = storage.StoreBlobAsync(path, trigStreamB);
+					var taskA = Storage.StoreBlobAsync(path, trigStreamA);
+					var taskB = Storage.StoreBlobAsync(path, trigStreamB);
 					trigStreamB.TriggerReadReady();
 					await taskB;
 					contentB.Position = 0;
-					using (var readStream = await storage.ReadBlobAsync(path)) {
+					using (var readStream = await Storage.ReadBlobAsync(path)) {
 						output.WriteStreamContents(readStream);
 						readStream.Position = 0;
 						using (var origReader = new StreamReader(contentB, leaveOpen: true))
@@ -220,7 +220,7 @@ namespace SGL.Utilities.Backend.BlobStore.Tests {
 					trigStreamA.TriggerReadReady();
 					await taskA;
 					contentA.Position = 0;
-					using (var readStream = await storage.ReadBlobAsync(path)) {
+					using (var readStream = await Storage.ReadBlobAsync(path)) {
 						output.WriteStreamContents(readStream);
 						readStream.Position = 0;
 						using (var origReader = new StreamReader(contentA, leaveOpen: true))
