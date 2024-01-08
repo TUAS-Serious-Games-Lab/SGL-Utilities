@@ -106,7 +106,7 @@ namespace SGL.Utilities.Backend.Security {
 				}
 			}
 			catch (Exception ex) {
-				logger.LogError(ex, "Login failed due to unexpected exception.", userId);
+				logger.LogError(ex, "Login failed for user {userid} due to unexpected exception.", userId);
 				await fixedFailureDelay.WaitAsync().ConfigureAwait(false);
 				return null;
 			}
