@@ -23,7 +23,7 @@ namespace SGL.Utilities {
 		public override int Peek() {
 			int scanReaderIndex = currentReaderIndex;
 			while (true) {
-				var rdr = GetCurrentReader(scanReaderIndex);
+				var rdr = GetInnerReader(scanReaderIndex);
 				if (rdr == null) {
 					return -1;
 				}
@@ -37,7 +37,7 @@ namespace SGL.Utilities {
 
 		public override int Read() {
 			while (true) {
-				var rdr = GetCurrentReader(currentReaderIndex);
+				var rdr = GetInnerReader(currentReaderIndex);
 				if (rdr == null) {
 					return -1;
 				}
@@ -58,7 +58,7 @@ namespace SGL.Utilities {
 			}
 		}
 
-		private TextReader? GetCurrentReader(int readerIndex) {
+		private TextReader? GetInnerReader(int readerIndex) {
 			if (readerIndex < readers.Count) {
 				return readers[readerIndex];
 			}
