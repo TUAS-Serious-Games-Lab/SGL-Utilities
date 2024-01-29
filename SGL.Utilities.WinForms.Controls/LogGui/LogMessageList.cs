@@ -100,6 +100,7 @@ namespace SGL.Utilities.WinForms.Controls.LogGui {
 			get => traceItemForeground; set {
 				traceItemForeground = value;
 				traceItemForegroundBrush = new SolidBrush(value);
+				lstMessages.Invalidate();
 			}
 		}
 		[Browsable(true)]
@@ -108,6 +109,7 @@ namespace SGL.Utilities.WinForms.Controls.LogGui {
 			get => traceItemBackground; set {
 				traceItemBackground = value;
 				traceItemBackgroundBrush = new SolidBrush(value);
+				lstMessages.Invalidate();
 			}
 		}
 		[Browsable(true)]
@@ -116,6 +118,7 @@ namespace SGL.Utilities.WinForms.Controls.LogGui {
 			get => debugItemForeground; set {
 				debugItemForeground = value;
 				debugItemForegroundBrush = new SolidBrush(value);
+				lstMessages.Invalidate();
 			}
 		}
 		[Browsable(true)]
@@ -124,6 +127,7 @@ namespace SGL.Utilities.WinForms.Controls.LogGui {
 			get => debugItemBackground; set {
 				debugItemBackground = value;
 				debugItemBackgroundBrush = new SolidBrush(value);
+				lstMessages.Invalidate();
 			}
 		}
 		[Browsable(true)]
@@ -132,6 +136,7 @@ namespace SGL.Utilities.WinForms.Controls.LogGui {
 			get => infoItemForeground; set {
 				infoItemForeground = value;
 				infoItemForegroundBrush = new SolidBrush(value);
+				lstMessages.Invalidate();
 			}
 		}
 		[Browsable(true)]
@@ -140,6 +145,7 @@ namespace SGL.Utilities.WinForms.Controls.LogGui {
 			get => infoItemBackground; set {
 				infoItemBackground = value;
 				infoItemBackgroundBrush = new SolidBrush(value);
+				lstMessages.Invalidate();
 			}
 		}
 		[Browsable(true)]
@@ -148,6 +154,7 @@ namespace SGL.Utilities.WinForms.Controls.LogGui {
 			get => warningItemForeground; set {
 				warningItemForeground = value;
 				warningItemForegroundBrush = new SolidBrush(value);
+				lstMessages.Invalidate();
 			}
 		}
 		[Browsable(true)]
@@ -156,6 +163,7 @@ namespace SGL.Utilities.WinForms.Controls.LogGui {
 			get => warningItemBackground; set {
 				warningItemBackground = value;
 				warningItemBackgroundBrush = new SolidBrush(value);
+				lstMessages.Invalidate();
 			}
 		}
 		[Browsable(true)]
@@ -164,6 +172,7 @@ namespace SGL.Utilities.WinForms.Controls.LogGui {
 			get => errorItemForeground; set {
 				errorItemForeground = value;
 				errorItemForegroundBrush = new SolidBrush(value);
+				lstMessages.Invalidate();
 			}
 		}
 		[Browsable(true)]
@@ -172,6 +181,7 @@ namespace SGL.Utilities.WinForms.Controls.LogGui {
 			get => errorItemBackground; set {
 				errorItemBackground = value;
 				errorItemBackgroundBrush = new SolidBrush(value);
+				lstMessages.Invalidate();
 			}
 		}
 		[Browsable(true)]
@@ -180,6 +190,7 @@ namespace SGL.Utilities.WinForms.Controls.LogGui {
 			get => criticalItemForeground; set {
 				criticalItemForeground = value;
 				criticalItemForegroundBrush = new SolidBrush(value);
+				lstMessages.Invalidate();
 			}
 		}
 		[Browsable(true)]
@@ -188,6 +199,7 @@ namespace SGL.Utilities.WinForms.Controls.LogGui {
 			get => criticalItemBackground; set {
 				criticalItemBackground = value;
 				criticalItemBackgroundBrush = new SolidBrush(value);
+				lstMessages.Invalidate();
 			}
 		}
 		[Browsable(true)]
@@ -196,6 +208,7 @@ namespace SGL.Utilities.WinForms.Controls.LogGui {
 			get => selectedItemForeground; set {
 				selectedItemForeground = value;
 				selectedItemForegroundBrush = new SolidBrush(value);
+				lstMessages.Invalidate();
 			}
 		}
 		[Browsable(true)]
@@ -204,6 +217,7 @@ namespace SGL.Utilities.WinForms.Controls.LogGui {
 			get => selectedItemBackground; set {
 				selectedItemBackground = value;
 				selectedItemBackgroundBrush = new SolidBrush(value);
+				lstMessages.Invalidate();
 			}
 		}
 		private void lstMessages_DrawItem(object sender, DrawItemEventArgs e) {
