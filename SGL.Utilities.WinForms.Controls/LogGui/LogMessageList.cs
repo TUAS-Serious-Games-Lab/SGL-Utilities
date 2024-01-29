@@ -222,7 +222,6 @@ namespace SGL.Utilities.WinForms.Controls.LogGui {
 			}
 		}
 
-		[Category("Formatting")]
 		public Func<LogMessage, string> FormatItem {
 			get => formatItem; set {
 				formatItem = value;
