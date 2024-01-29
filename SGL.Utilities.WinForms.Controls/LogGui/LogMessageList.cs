@@ -222,6 +222,7 @@ namespace SGL.Utilities.WinForms.Controls.LogGui {
 			}
 		}
 
+		[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 		public Func<LogMessage, string> FormatItem {
 			get => formatItem; set {
 				formatItem = value;
