@@ -19,7 +19,8 @@
             "SGL.Utilities.EntityFrameworkCore/bin/Debug/*/SGL.Utilities.EntityFrameworkCore.dll",
             "SGL.Utilities.Logging/bin/Debug/*/SGL.Utilities.Logging.dll",
             "SGL.Utilities.PrometheusNet/bin/Debug/*/SGL.Utilities.PrometheusNet.dll",
-            "SGL.Utilities.TestUtilities.XUnit/bin/Debug/*/SGL.Utilities.TestUtilities.XUnit.dll"
+            "SGL.Utilities.TestUtilities.XUnit/bin/Debug/*/SGL.Utilities.TestUtilities.XUnit.dll",
+            "SGL.Utilities.WinForms.Controls/bin/Debug/*/SGL.Utilities.WinForms.Controls.dll"
           ],
           "src": ".."
         }

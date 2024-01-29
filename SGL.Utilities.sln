@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31729.503
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SGL.Utilities", "SGL.Utilities\SGL.Utilities.csproj", "{F7DE1B3E-C84C-4EDC-886D-1847A52C1895}"
 EndProject
@@ -57,7 +57,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SGL.Utilities.Crypto.Abstra
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SGL.Utilities.Backend.Domain", "SGL.Utilities.Backend.Domain\SGL.Utilities.Backend.Domain.csproj", "{2A943276-D6C0-41F5-8B05-E2D9DABB1930}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SGL.Utilities.EntityFrameworkCore", "SGL.Utilities.EntityFrameworkCore\SGL.Utilities.EntityFrameworkCore.csproj", "{4820A355-5C69-4BE0-A301-983C9AF3B58D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SGL.Utilities.EntityFrameworkCore", "SGL.Utilities.EntityFrameworkCore\SGL.Utilities.EntityFrameworkCore.csproj", "{4820A355-5C69-4BE0-A301-983C9AF3B58D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SGL.Utilities.WinForms.Controls", "SGL.Utilities.WinForms.Controls\SGL.Utilities.WinForms.Controls.csproj", "{A457E9EB-8E7B-45D8-AB3E-699C96A188C9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -345,6 +347,18 @@ Global
 		{4820A355-5C69-4BE0-A301-983C9AF3B58D}.Release|x64.Build.0 = Release|Any CPU
 		{4820A355-5C69-4BE0-A301-983C9AF3B58D}.Release|x86.ActiveCfg = Release|Any CPU
 		{4820A355-5C69-4BE0-A301-983C9AF3B58D}.Release|x86.Build.0 = Release|Any CPU
+		{A457E9EB-8E7B-45D8-AB3E-699C96A188C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A457E9EB-8E7B-45D8-AB3E-699C96A188C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A457E9EB-8E7B-45D8-AB3E-699C96A188C9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A457E9EB-8E7B-45D8-AB3E-699C96A188C9}.Debug|x64.Build.0 = Debug|Any CPU
+		{A457E9EB-8E7B-45D8-AB3E-699C96A188C9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A457E9EB-8E7B-45D8-AB3E-699C96A188C9}.Debug|x86.Build.0 = Debug|Any CPU
+		{A457E9EB-8E7B-45D8-AB3E-699C96A188C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A457E9EB-8E7B-45D8-AB3E-699C96A188C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A457E9EB-8E7B-45D8-AB3E-699C96A188C9}.Release|x64.ActiveCfg = Release|Any CPU
+		{A457E9EB-8E7B-45D8-AB3E-699C96A188C9}.Release|x64.Build.0 = Release|Any CPU
+		{A457E9EB-8E7B-45D8-AB3E-699C96A188C9}.Release|x86.ActiveCfg = Release|Any CPU
+		{A457E9EB-8E7B-45D8-AB3E-699C96A188C9}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
