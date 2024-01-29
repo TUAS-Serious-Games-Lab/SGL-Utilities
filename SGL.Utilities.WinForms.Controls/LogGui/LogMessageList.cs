@@ -49,6 +49,7 @@ namespace SGL.Utilities.WinForms.Controls.LogGui {
 		private SolidBrush criticalItemBackgroundBrush;
 		private SolidBrush selectedItemForegroundBrush;
 		private SolidBrush selectedItemBackgroundBrush;
+		private Func<LogMessage, string> formatItem = getMessageString;
 
 		public LogMessageList() {
 			traceItemForegroundBrush = new SolidBrush(traceItemForeground);
@@ -220,6 +221,15 @@ namespace SGL.Utilities.WinForms.Controls.LogGui {
 				lstMessages.Invalidate();
 			}
 		}
+
+		[Category("Formatting")]
+		public Func<LogMessage, string> FormatItem {
+			get => formatItem; set {
+				formatItem = value;
+				lstMessages.Invalidate();
+			}
+		}
+
 		private void lstMessages_DrawItem(object sender, DrawItemEventArgs e) {
 			if (e.Index < 0) {
 				e.DrawBackground();
@@ -254,7 +264,7 @@ namespace SGL.Utilities.WinForms.Controls.LogGui {
 					backgroundBrush = selectedItemBackgroundBrush;
 				}
 				g.FillRectangle(backgroundBrush, e.Bounds);
-				g.DrawString(getMessageString(msg), e.Font ?? lstMessages.Font, foregroundBrush, new PointF(e.Bounds.X, e.Bounds.Y));
+				g.DrawString(FormatItem(msg), e.Font ?? lstMessages.Font, foregroundBrush, new PointF(e.Bounds.X, e.Bounds.Y));
 			}
 			else {
 				g.DrawString(item.ToString(), e.Font ?? lstMessages.Font, new SolidBrush(e.ForeColor), new PointF(e.Bounds.X, e.Bounds.Y));
@@ -288,7 +298,7 @@ namespace SGL.Utilities.WinForms.Controls.LogGui {
 			if (hadMessages) {
 				lstMessages.TopIndex = lstMessages.Items.Count - 1;
 				int maxWidth = lstMessages.Items.OfType<LogMessage>().Max(
-					msg => TextRenderer.MeasureText(getMessageString(msg), lstMessages.Font).Width);
+					msg => TextRenderer.MeasureText(FormatItem(msg), lstMessages.Font).Width);
 				lstMessages.HorizontalExtent = maxWidth;
 			}
 		}
@@ -302,7 +312,7 @@ namespace SGL.Utilities.WinForms.Controls.LogGui {
 			var item = lb.Items[e.Index];
 			var msg = item as LogMessage;
 			if (msg != null) {
-				var size = g.MeasureString(getMessageString(msg), lb.Font);
+				var size = g.MeasureString(FormatItem(msg), lb.Font);
 				e.ItemWidth = (int)MathF.Ceiling(size.Width);
 				e.ItemHeight = (int)MathF.Ceiling(size.Height);
 			}
