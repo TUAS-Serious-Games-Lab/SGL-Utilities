@@ -75,6 +75,7 @@ namespace SGL.Utilities {
 		public static T RandomElementWeighted<T>(this IReadOnlyCollection<T> source, Func<double, double> rng, IReadOnlyCollection<double> weights) {
 			if (source.Count == 0) throw new ArgumentException("Can't draw random item from empty collection.", nameof(source));
 			if (weights.Count != source.Count) throw new ArgumentException("Length of weights collection needs to be the same as length of source collection.", nameof(weights));
+			if (weights.Any(w => w < 0)) throw new ArgumentException("Weights must not be negative.", nameof(weights));
 			var totalWeight = weights.Sum();
 			var selectedWeight = rng(totalWeight);
 			double accumulated = 0;
@@ -91,6 +92,7 @@ namespace SGL.Utilities {
 		public static T RandomElementWeighted<T>(this IReadOnlyCollection<T> source, Func<int, int> rng, IReadOnlyCollection<int> weights) {
 			if (source.Count == 0) throw new ArgumentException("Can't draw random item from empty collection.", nameof(source));
 			if (weights.Count != source.Count) throw new ArgumentException("Length of weights collection needs to be the same as length of source collection.", nameof(weights));
+			if (weights.Any(w => w < 0)) throw new ArgumentException("Weights must not be negative.", nameof(weights));
 			var totalWeight = weights.Sum();
 			var selectedWeight = rng(totalWeight);
 			int accumulated = 0;
