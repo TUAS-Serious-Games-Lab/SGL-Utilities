@@ -62,6 +62,11 @@ namespace SGL.Utilities {
 			return source.RandomSample(1, rng).First();
 		}
 
+		public static T RandomElementWeighted<T>(this IReadOnlyCollection<T> source, System.Random rng, Func<T, double> weight) =>
+			source.RandomElementWeighted(rng, source.Select(weight).ToList());
+		public static T RandomElementWeighted<T>(this IReadOnlyCollection<T> source, System.Random rng, Func<T, int> weight) =>
+			source.RandomElementWeighted(rng, source.Select(weight).ToList());
+
 		public static T RandomElementWeighted<T>(this IReadOnlyCollection<T> source, System.Random rng, IReadOnlyCollection<double> weights) {
 			if (source.Count == 0) throw new ArgumentException("Can't draw random item from empty collection.", nameof(source));
 			if (weights.Count != source.Count) throw new ArgumentException("Length of weights collection needs to be the same as length of source collection.", nameof(weights));
@@ -78,7 +83,6 @@ namespace SGL.Utilities {
 			}
 			return source.Last();
 		}
-
 		public static T RandomElementWeighted<T>(this IReadOnlyCollection<T> source, System.Random rng, IReadOnlyCollection<int> weights) {
 			if (source.Count == 0) throw new ArgumentException("Can't draw random item from empty collection.", nameof(source));
 			if (weights.Count != source.Count) throw new ArgumentException("Length of weights collection needs to be the same as length of source collection.", nameof(weights));
