@@ -67,11 +67,16 @@ namespace SGL.Utilities {
 		public static T RandomElementWeighted<T>(this IReadOnlyCollection<T> source, System.Random rng, Func<T, int> weight) =>
 			source.RandomElementWeighted(rng, source.Select(weight).ToList());
 
-		public static T RandomElementWeighted<T>(this IReadOnlyCollection<T> source, System.Random rng, IReadOnlyCollection<double> weights) {
+		public static T RandomElementWeighted<T>(this IReadOnlyCollection<T> source, System.Random rng, IReadOnlyCollection<double> weights) =>
+			RandomElementWeighted(source, totalWeight => rng.NextDouble() * totalWeight, weights);
+		public static T RandomElementWeighted<T>(this IReadOnlyCollection<T> source, System.Random rng, IReadOnlyCollection<int> weights) =>
+			RandomElementWeighted(source, rng.Next, weights);
+
+		public static T RandomElementWeighted<T>(this IReadOnlyCollection<T> source, Func<double, double> rng, IReadOnlyCollection<double> weights) {
 			if (source.Count == 0) throw new ArgumentException("Can't draw random item from empty collection.", nameof(source));
 			if (weights.Count != source.Count) throw new ArgumentException("Length of weights collection needs to be the same as length of source collection.", nameof(weights));
 			var totalWeight = weights.Sum(x => x);
-			var selectedWeight = rng.NextDouble() * totalWeight;
+			var selectedWeight = rng(totalWeight);
 			double accumulated = 0;
 			int index = 0;
 			foreach (var weight in weights) {
@@ -83,11 +88,11 @@ namespace SGL.Utilities {
 			}
 			return source.Last();
 		}
-		public static T RandomElementWeighted<T>(this IReadOnlyCollection<T> source, System.Random rng, IReadOnlyCollection<int> weights) {
+		public static T RandomElementWeighted<T>(this IReadOnlyCollection<T> source, Func<int, int> rng, IReadOnlyCollection<int> weights) {
 			if (source.Count == 0) throw new ArgumentException("Can't draw random item from empty collection.", nameof(source));
 			if (weights.Count != source.Count) throw new ArgumentException("Length of weights collection needs to be the same as length of source collection.", nameof(weights));
 			var totalWeight = weights.Sum(x => x);
-			var selectedWeight = rng.Next(totalWeight);
+			var selectedWeight = rng(totalWeight);
 			int accumulated = 0;
 			int index = 0;
 			foreach (var weight in weights) {
