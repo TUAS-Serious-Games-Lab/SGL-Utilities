@@ -61,6 +61,24 @@ namespace SGL.Utilities {
 		public static T RandomElement<T>(this IReadOnlyCollection<T> source, System.Random rng) {
 			return source.RandomSample(1, rng).First();
 		}
+
+		public static T RandomElementWeighted<T>(this IReadOnlyCollection<T> source, System.Random rng, IReadOnlyCollection<double> weights) {
+			if (source.Count == 0) throw new ArgumentException("Can't draw random item from empty collection.", nameof(source));
+			if (weights.Count != source.Count) throw new ArgumentException("Length of weights collection needs to be the same as length of source collection.", nameof(weights));
+			var totalWeight = weights.Sum(x => x);
+			var selectedWeight = rng.NextDouble() * totalWeight;
+			double accumulated = 0;
+			int index = 0;
+			foreach (var weight in weights) {
+				accumulated += weight;
+				if (accumulated > selectedWeight) {
+					return source.Skip(index).First();
+				}
+				++index;
+			}
+			return source.Last();
+		}
+
 		/// <summary>
 		/// Returns the elements from <paramref name="source"/> in random order.
 		/// </summary>
