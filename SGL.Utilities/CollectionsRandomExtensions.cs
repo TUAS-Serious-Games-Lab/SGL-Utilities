@@ -62,16 +62,76 @@ namespace SGL.Utilities {
 			return source.RandomSample(1, rng).First();
 		}
 
+		/// <summary>
+		/// Returns a randomly drawn element from <paramref name="source"/> with selection probabilities based on the weights indicated by <paramref name="weight"/>.
+		/// </summary>
+		/// <typeparam name="T">The type of the collection elements.</typeparam>
+		/// <param name="source">A non-empty collection to draw from.</param>
+		/// <param name="rng">The random generator used as the randomness source.</param>
+		/// <param name="weight">
+		/// A delegate that returns the weight for a given element.
+		/// The probability of selecting an element is it's weight divided by the sum of the weights of all elements.
+		/// </param>
+		/// <returns>A single randomly selected element from <paramref name="source"/> based on <paramref name="weight"/>.</returns>
 		public static T RandomElementWeighted<T>(this IReadOnlyCollection<T> source, System.Random rng, Func<T, double> weight) =>
 			source.RandomElementWeighted(rng, source.Select(weight).ToList());
+		/// <summary>
+		/// Returns a randomly drawn element from <paramref name="source"/> with selection probabilities based on the weights indicated by <paramref name="weight"/>.
+		/// </summary>
+		/// <typeparam name="T">The type of the collection elements.</typeparam>
+		/// <param name="source">A non-empty collection to draw from.</param>
+		/// <param name="rng">The random generator used as the randomness source.</param>
+		/// <param name="weight">
+		/// A delegate that returns the weight for a given element.
+		/// The probability of selecting an element is it's weight divided by the sum of the weights of all elements.
+		/// Weights must not be negative.
+		/// </param>
+		/// <returns>A single randomly selected element from <paramref name="source"/> based on <paramref name="weight"/>.</returns>
 		public static T RandomElementWeighted<T>(this IReadOnlyCollection<T> source, System.Random rng, Func<T, int> weight) =>
 			source.RandomElementWeighted(rng, source.Select(weight).ToList());
 
+		/// <summary>
+		/// Returns a randomly drawn element from <paramref name="source"/> with selection probabilities based on the weights specified in <paramref name="weights"/>.
+		/// </summary>
+		/// <typeparam name="T">The type of the collection elements.</typeparam>
+		/// <param name="source">A non-empty collection to draw from.</param>
+		/// <param name="rng">The random generator used as the randomness source.</param>
+		/// <param name="weights">
+		/// A sequence collection containing one weight for each element in <paramref name="source"/> with corresponding indices.
+		/// The probability of selecting an element is it's weight divided by the sum of the weights of all elements.
+		/// The length must be the same as the length of <paramref name="source"/>. Weights must not be negative.
+		/// </param>
+		/// <returns>A single randomly selected element from <paramref name="source"/> based on <paramref name="weights"/>.</returns>
 		public static T RandomElementWeighted<T>(this IReadOnlyCollection<T> source, System.Random rng, IReadOnlyCollection<double> weights) =>
 			RandomElementWeighted(source, totalWeight => rng.NextDouble() * totalWeight, weights);
+		/// <summary>
+		/// Returns a randomly drawn element from <paramref name="source"/> with selection probabilities based on the weights specified in <paramref name="weights"/>.
+		/// </summary>
+		/// <typeparam name="T">The type of the collection elements.</typeparam>
+		/// <param name="source">A non-empty collection to draw from.</param>
+		/// <param name="rng">The random generator used as the randomness source.</param>
+		/// <param name="weights">
+		/// A sequence collection containing one weight for each element in <paramref name="source"/> with corresponding indices.
+		/// The probability of selecting an element is it's weight divided by the sum of the weights of all elements.
+		/// The length must be the same as the length of <paramref name="source"/>. Weights must not be negative.
+		/// </param>
+		/// <returns>A single randomly selected element from <paramref name="source"/> based on <paramref name="weights"/>.</returns>
 		public static T RandomElementWeighted<T>(this IReadOnlyCollection<T> source, System.Random rng, IReadOnlyCollection<int> weights) =>
 			RandomElementWeighted(source, rng.Next, weights);
 
+		/// <summary>
+		/// Returns a randomly drawn element from <paramref name="source"/> with selection probabilities based on the weights specified in <paramref name="weights"/>.
+		/// </summary>
+		/// <typeparam name="T">The type of the collection elements.</typeparam>
+		/// <param name="source">A non-empty collection to draw from.</param>
+		/// <param name="rng">A delegate acting as the randomness source by being invoked with the total weight and
+		/// returning a value greater or equal to 0 and less than the given total weight.</param>
+		/// <param name="weights">
+		/// A sequence collection containing one weight for each element in <paramref name="source"/> with corresponding indices.
+		/// The probability of selecting an element is it's weight divided by the sum of the weights of all elements.
+		/// The length must be the same as the length of <paramref name="source"/>. Weights must not be negative.
+		/// </param>
+		/// <returns>A single randomly selected element from <paramref name="source"/> based on <paramref name="weights"/>.</returns>
 		public static T RandomElementWeighted<T>(this IReadOnlyCollection<T> source, Func<double, double> rng, IReadOnlyCollection<double> weights) {
 			if (source.Count == 0) throw new ArgumentException("Can't draw random item from empty collection.", nameof(source));
 			if (weights.Count != source.Count) throw new ArgumentException("Length of weights collection needs to be the same as length of source collection.", nameof(weights));
@@ -89,6 +149,19 @@ namespace SGL.Utilities {
 			}
 			return source.Last();
 		}
+		/// <summary>
+		/// Returns a randomly drawn element from <paramref name="source"/> with selection probabilities based on the weights specified in <paramref name="weights"/>.
+		/// </summary>
+		/// <typeparam name="T">The type of the collection elements.</typeparam>
+		/// <param name="source">A non-empty collection to draw from.</param>
+		/// <param name="rng">A delegate acting as the randomness source by being invoked with the total weight and
+		/// returning a value greater or equal to 0 and less than the given total weight.</param>
+		/// <param name="weights">
+		/// A sequence collection containing one weight for each element in <paramref name="source"/> with corresponding indices.
+		/// The probability of selecting an element is it's weight divided by the sum of the weights of all elements.
+		/// The length must be the same as the length of <paramref name="source"/>. Weights must not be negative.
+		/// </param>
+		/// <returns>A single randomly selected element from <paramref name="source"/> based on <paramref name="weights"/>.</returns>
 		public static T RandomElementWeighted<T>(this IReadOnlyCollection<T> source, Func<int, int> rng, IReadOnlyCollection<int> weights) {
 			if (source.Count == 0) throw new ArgumentException("Can't draw random item from empty collection.", nameof(source));
 			if (weights.Count != source.Count) throw new ArgumentException("Length of weights collection needs to be the same as length of source collection.", nameof(weights));
