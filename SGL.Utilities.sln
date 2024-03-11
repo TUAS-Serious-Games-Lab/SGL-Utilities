@@ -59,7 +59,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SGL.Utilities.Backend.Domai
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SGL.Utilities.EntityFrameworkCore", "SGL.Utilities.EntityFrameworkCore\SGL.Utilities.EntityFrameworkCore.csproj", "{4820A355-5C69-4BE0-A301-983C9AF3B58D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SGL.Utilities.WinForms.Controls", "SGL.Utilities.WinForms.Controls\SGL.Utilities.WinForms.Controls.csproj", "{A457E9EB-8E7B-45D8-AB3E-699C96A188C9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SGL.Utilities.WinForms.Controls", "SGL.Utilities.WinForms.Controls\SGL.Utilities.WinForms.Controls.csproj", "{A457E9EB-8E7B-45D8-AB3E-699C96A188C9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
